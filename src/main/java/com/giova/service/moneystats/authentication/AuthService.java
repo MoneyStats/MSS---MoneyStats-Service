@@ -4,6 +4,7 @@ import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
+import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -77,5 +78,25 @@ public class AuthService {
         Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
 
         return ResponseEntity.ok(response);
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public UserEntity checkLogin(String authToken) throws UtilsException {
+        AuthToken token = new AuthToken();
+        token.setAccessToken(authToken);
+        User user = new User();
+        try {
+            user = tokenService.parseToken(token);
+        } catch (UtilsException e) {
+            throw new UtilsException(AuthException.ERR_AUTH_MSS_004, e.getMessage());
+        }
+        UserEntity userEntity = iAuthDAO.findUserEntityByUsername(user.getUsername());
+        userEntity.setPassword(null);
+
+        if (userEntity == null) {
+            LOG.error("User not found");
+            throw new UtilsException(AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+        }
+        return userEntity;
     }
 }

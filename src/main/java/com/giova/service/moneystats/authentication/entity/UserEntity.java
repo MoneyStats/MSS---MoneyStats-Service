@@ -36,7 +36,7 @@ public class UserEntity extends GenericEntity {
     @Column(name = "USERNAME", nullable = false, unique = true)
     private String username;
 
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "PASSWORD")
     private String password;
 
     @Enumerated(EnumType.STRING)

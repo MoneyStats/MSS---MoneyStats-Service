@@ -67,8 +67,8 @@ public class TokenService {
         } catch (JwtException e) {
             LOG.error(
                     "Not Authorized, parseToken - Exception -> {}",
-                    AuthException.ERR_AUTH_MSS_002);
-            throw new UtilsException(AuthException.ERR_AUTH_MSS_002, AuthException.ERR_AUTH_MSS_002.getMessage());
+                    e.getMessage());
+            throw new UtilsException(AuthException.ERR_AUTH_MSS_002, e.getMessage());
         }
 
         return new User(
@@ -76,7 +76,7 @@ public class TokenService {
                 (@NotNull String) body.get(LASTNAME),
                 (@NotNull String) body.get(EMAIL),
                 body.getSubject(),
-                (@NotNull UserRole) body.get(ROLE),
+                UserRole.valueOf((@NotNull String) body.get(ROLE)),
                 (@NotNull String) body.get(PROFILE_PHOTO),
                 (@NotNull String) body.get(CURRENCY));
     }
