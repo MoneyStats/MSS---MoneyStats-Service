@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IAuthDAO extends JpaRepository<UserEntity, Long> {
+
+    UserEntity findUserEntityByUsername(String username);
 }

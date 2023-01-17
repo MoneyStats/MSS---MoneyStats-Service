@@ -9,3 +9,7 @@ spring:
 
 springdoc:
   packagesToScan: com.giova.service.moneystats
+
+jwt:
+  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
+  time: 3600

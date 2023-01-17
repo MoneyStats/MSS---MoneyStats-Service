@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 @ControllerAdvice
 public class ExceptionHandler extends UtilsException {
@@ -23,8 +24,13 @@ public class ExceptionHandler extends UtilsException {
                 e.getMessage());
         HttpStatus status = HttpStatus.BAD_REQUEST;
         ExceptionResponse response = getExceptionResponse(e, request, AuthException.ERR_AUTH_MSS_001, status);
-        String value = e.getCause().getMessage().split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
-        response.getError().setMessage(AuthException.ERR_AUTH_MSS_001.getMessage() + value);
+        String value = "";
+        if (response.getError().getExceptionMessage().contains("constraint")) {
+            value = Objects.requireNonNull(e.getMessage()).split(";")[2];
+        } else {
+            value = AuthException.ERR_AUTH_MSS_001.getMessage() + e.getCause().getMessage().split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
+        }
+        response.getError().setMessage(value);
         return new ResponseEntity<>(response, status);
     }
 }

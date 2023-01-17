@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 
 public enum AuthException implements ExceptionCode {
 
-    ERR_AUTH_MSS_001("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Missing Value for: ");
+    ERR_AUTH_MSS_001("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Missing Value for: "),
+    ERR_AUTH_MSS_002("TOKEN_PARSE", HttpStatus.BAD_REQUEST, "Error during parsing Access-Token"),
+    ERR_AUTH_MSS_003("WRONG_CREDENTIAL", HttpStatus.BAD_REQUEST, "Wrong Credential for username or password. Try again!");
 
     private final HttpStatus status;
     private final String message;

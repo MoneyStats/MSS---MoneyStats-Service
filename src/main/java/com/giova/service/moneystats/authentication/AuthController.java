@@ -2,6 +2,7 @@ package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.generic.Response;
+import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -24,10 +25,18 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(value = "/sign-up", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Tag(name = "Sign-Up", description = "API to send email from giovannilamarmora.working@gmail.com")
-    @Operation(description = "API to send email from giovannilamarmora.working@gmail.com", tags = "Sign-Up")
+    @Tag(name = "Sign-Up", description = "API to register an account")
+    @Operation(description = "API to register an account", tags = "Sign-Up")
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
     public ResponseEntity<Response> signUp(@RequestBody @Valid User user) {
         return authService.register(user);
+    }
+
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "Login", description = "API to register an account")
+    @Operation(description = "API to register an account", tags = "Login")
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+    public ResponseEntity<Response> login(@RequestParam String username, @RequestParam String password) throws UtilsException {
+        return authService.login(username, password);
     }
 }
