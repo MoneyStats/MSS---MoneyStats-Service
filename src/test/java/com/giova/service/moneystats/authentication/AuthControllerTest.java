@@ -1,0 +1,47 @@
+package com.giova.service.moneystats.authentication;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.giova.service.moneystats.authentication.dto.User;
+import com.giova.service.moneystats.generic.Response;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+@ActiveProfiles("test")
+@WebMvcTest(controllers = AuthController.class)
+public class AuthControllerTest {
+
+    @MockBean
+    private AuthService authService;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+
+    @Test
+    public void testUploadAttachment_successfully() throws Exception {
+        Response expected = objectMapper.readValue(
+                new ClassPathResource("mock/response/user.json").getInputStream(), Response.class);
+        User user = objectMapper.readValue(
+                new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+
+        String userAsString = objectMapper.writeValueAsString(user);
+
+        Mockito.when(authService.register(user))
+                .thenReturn(ResponseEntity.ok(expected));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/auth/sign-up")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(userAsString))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+}

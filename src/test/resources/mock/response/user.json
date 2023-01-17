@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "message": "User: giovannilamarmora Successfully registered!",
+  "correlationId": null,
+  "data": {
+    "creationDate": [
+      2023,
+      1,
+      17,
+      13,
+      17,
+      42
+    ],
+    "updateDate": [
+      2023,
+      1,
+      17,
+      13,
+      17,
+      42
+    ],
+    "name": "Giovanni",
+    "surname": "Lamarmora",
+    "email": "gio.lamarmora@gmail.com",
+    "username": "giovannilamarmora",
+    "role": "USER",
+    "profilePhoto": "string",
+    "currency": "EUR"
+  }
+}
