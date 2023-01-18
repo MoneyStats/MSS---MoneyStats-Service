@@ -7,6 +7,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class WalletMapper {
 
@@ -22,5 +25,14 @@ public class WalletMapper {
         Wallet wallet = new Wallet();
         BeanUtils.copyProperties(walletEntity, wallet);
         return wallet;
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+    public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities) {
+        return walletEntities.stream().map((walletEntity -> {
+            Wallet wallet = new Wallet();
+            BeanUtils.copyProperties(walletEntity, wallet);
+            return wallet;
+        })).collect(Collectors.toList());
     }
 }

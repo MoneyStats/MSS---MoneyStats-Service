@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.app.category.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.GenericEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,10 +26,6 @@ public class CategoryEntity extends GenericEntity {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "IMG", nullable = false)
+    @Column(name = "IMG")
     private String img;
-
-    @ManyToOne
-    @JoinColumn(name = "USER_ID", nullable = false)
-    private UserEntity user;
 }

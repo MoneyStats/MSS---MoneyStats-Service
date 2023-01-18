@@ -2,7 +2,9 @@ package com.giova.service.moneystats.authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.authentication.dto.User;
+import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.Response;
+import io.github.giovannilamarmora.utils.exception.UtilsException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,16 +24,61 @@ public class AuthServiceTest {
     private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
-    public void sendMailTest_successfully() throws IOException {
+    public void registerTest_successfully() throws IOException {
         Response expected = objectMapper.readValue(
                 new ClassPathResource("mock/response/user.json").getInputStream(), Response.class);
         User user = objectMapper.readValue(
                 new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
 
-        String data = objectMapper.writeValueAsString(expected.getData());
+        User userEx = objectMapper.convertValue(expected.getData(), User.class);
 
         ResponseEntity<Response> actual = authService.register(user);
+
+        User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
         assertEquals(expected.getStatus(), actual.getBody().getStatus());
         assertEquals(expected.getMessage(), actual.getBody().getMessage());
+        assertEquals(userEx.getName(), userAc.getName());
+        assertEquals(userEx.getUsername(), userAc.getUsername());
+    }
+
+    @Test
+    public void loginTest_successfully() throws IOException, UtilsException {
+        User register = objectMapper.readValue(
+                new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+
+        ResponseEntity<Response> actualR = authService.register(register);
+
+        User registered = objectMapper.convertValue(actualR.getBody().getData(), User.class);
+
+        Response expected = objectMapper.readValue(
+                new ClassPathResource("mock/response/login.json").getInputStream(), Response.class);
+
+        User user = objectMapper.convertValue(expected.getData(), User.class);
+
+        ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+
+        User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
+        assertEquals(expected.getStatus(), actual.getBody().getStatus());
+        assertEquals(expected.getMessage(), actual.getBody().getMessage());
+        assertEquals(user.getName(), userAc.getName());
+        assertEquals(user.getUsername(), userAc.getUsername());
+    }
+
+    @Test
+    public void checkLoginTest_successfully() throws IOException, UtilsException {
+        User register = objectMapper.readValue(
+                new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+
+        ResponseEntity<Response> actualR = authService.register(register);
+
+        User registered = objectMapper.convertValue(actualR.getBody().getData(), User.class);
+
+        ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+
+        User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
+
+        UserEntity checkLogin = authService.checkLogin(userAc.getAuthToken().getAccessToken());
+        assertEquals(userAc.getName(), checkLogin.getName());
+        assertEquals(userAc.getUsername(), checkLogin.getUsername());
     }
 }

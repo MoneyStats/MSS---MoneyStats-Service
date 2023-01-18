@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Logged
 public class WalletService {
@@ -32,7 +34,7 @@ public class WalletService {
     private AuthService authService;
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-    public ResponseEntity<Response> addWallet(Wallet wallet, String authToken) throws UtilsException {
+    public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet, String authToken) throws UtilsException {
         UserEntity user = authService.checkLogin(authToken);
 
         WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet);
@@ -43,6 +45,25 @@ public class WalletService {
         Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
 
         String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
+
+        Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+        return ResponseEntity.ok(response);
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public ResponseEntity<Response> getWallets(String authToken) throws UtilsException {
+        UserEntity user = authService.checkLogin(authToken);
+
+        List<WalletEntity> walletEntity = iWalletDAO.findAllByUserId(user.getId());
+
+        String message = "";
+        if (walletEntity.isEmpty()) {
+            message = "Wallet Empty, insert new Wallet to get it!";
+        } else {
+            message = "Found " + walletEntity.size() + " Wallets";
+        }
+
+        List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
 
         Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
         return ResponseEntity.ok(response);

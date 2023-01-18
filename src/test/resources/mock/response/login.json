@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "message": "Login Successfully! Welcome back giovannilamarmora!",
+  "data": {
+    "name": "Giovanni",
+    "surname": "Lamarmora",
+    "email": "gio.lamarmora@gmail.com",
+    "username": "giovannilamarmora",
+    "role": "USER",
+    "profilePhoto": "string",
+    "currency": "EUR",
+    "authToken": {
+      "expirationTime": 3600,
+      "accessToken": "authToken"
+    }
+  }
+}

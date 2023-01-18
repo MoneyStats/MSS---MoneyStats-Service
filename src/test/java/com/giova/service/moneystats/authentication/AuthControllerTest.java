@@ -29,7 +29,7 @@ public class AuthControllerTest {
     private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
-    public void testUploadAttachment_successfully() throws Exception {
+    public void testRegister_successfully() throws Exception {
         Response expected = objectMapper.readValue(
                 new ClassPathResource("mock/response/user.json").getInputStream(), Response.class);
         User user = objectMapper.readValue(
@@ -42,6 +42,21 @@ public class AuthControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/v1/auth/sign-up")
                         .contentType(MediaType.APPLICATION_JSON_VALUE).content(userAsString))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void testLogin_successfully() throws Exception {
+        Response expected = objectMapper.readValue(
+                new ClassPathResource("mock/response/login.json").getInputStream(), Response.class);
+        User user = objectMapper.readValue(
+                new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+
+        Mockito.when(authService.login(user.getUsername(), "string"))
+                .thenReturn(ResponseEntity.ok(expected));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/auth/login?username=" + user.getUsername() + "&password=string")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

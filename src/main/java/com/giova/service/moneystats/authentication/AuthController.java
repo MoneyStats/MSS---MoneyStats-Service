@@ -25,16 +25,16 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(value = "/sign-up", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Tag(name = "Sign-Up", description = "API to register an account")
-    @Operation(description = "API to register an account", tags = "Sign-Up")
+    @Tag(name = "Authentication", description = "API to register an account")
+    @Operation(description = "API to register an account", tags = "Authentication")
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
     public ResponseEntity<Response> signUp(@RequestBody @Valid User user) {
         return authService.register(user);
     }
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Tag(name = "Login", description = "API to register an account")
-    @Operation(description = "API to register an account", tags = "Login")
+    @Tag(name = "Authentication", description = "API to register an account")
+    @Operation(description = "API to register an account", tags = "Authentication")
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
     public ResponseEntity<Response> login(@RequestParam String username, @RequestParam String password) throws UtilsException {
         return authService.login(username, password);

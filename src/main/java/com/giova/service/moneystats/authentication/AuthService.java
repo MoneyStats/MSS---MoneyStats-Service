@@ -91,7 +91,7 @@ public class AuthService {
             throw new UtilsException(AuthException.ERR_AUTH_MSS_004, e.getMessage());
         }
         UserEntity userEntity = iAuthDAO.findUserEntityByUsername(user.getUsername());
-        userEntity.setPassword(null);
+        //userEntity.setPassword(null);
 
         if (userEntity == null) {
             LOG.error("User not found");

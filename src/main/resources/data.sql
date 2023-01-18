@@ -1,0 +1,41 @@
+SET @n_category = 10;
+
+INSERT INTO CATEGORY (name, img)
+SELECT 'Cash', 'test'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Credit Card'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Debit Card'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Recurrence'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Bank Account'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Save'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Coupon'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Check'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Investments'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;
+
+INSERT INTO CATEGORY (name)
+SELECT 'Others'
+    WHERE (SELECT COUNT(*) FROM CATEGORY) < @n_category;

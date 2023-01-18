@@ -24,11 +24,19 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
 
-    @PostMapping(value = "/insert", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/insert-update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Wallet", description = "API to insert a wallet")
     @Operation(description = "API to insert a wallet", tags = "Wallet")
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-    public ResponseEntity<Response> insertWallet(@RequestBody @Valid Wallet wallet, @RequestHeader("authToken") String authToken) throws UtilsException {
-        return walletService.addWallet(wallet, authToken);
+    public ResponseEntity<Response> insertOrUpdateWallet(@RequestBody @Valid Wallet wallet, @RequestHeader("authToken") String authToken) throws UtilsException {
+        return walletService.insertOrUpdateWallet(wallet, authToken);
+    }
+
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "Wallet", description = "API to get all wallet")
+    @Operation(description = "API to get all wallet", tags = "Wallet")
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+    public ResponseEntity<Response> listWallet(@RequestHeader("authToken") String authToken) throws UtilsException {
+        return walletService.getWallets(authToken);
     }
 }

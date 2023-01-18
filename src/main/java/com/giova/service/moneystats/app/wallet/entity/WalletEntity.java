@@ -66,7 +66,7 @@ public class WalletEntity extends GenericEntity {
     @Column(name = "DATE_LAST_STATS")
     private LocalDate dateLastStats;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "USER_ID", nullable = false)
     private UserEntity user;
 
