@@ -2,6 +2,7 @@ package com.giova.service.moneystats.app.stats.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.GenericEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +37,10 @@ public class StatsEntity extends GenericEntity {
 
     @Column(name = "TREND", nullable = false)
     private Double trend;
+
+    @ManyToOne
+    @JoinColumn(name = "USER_ID", nullable = false)
+    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "WALLET_ID", nullable = false)

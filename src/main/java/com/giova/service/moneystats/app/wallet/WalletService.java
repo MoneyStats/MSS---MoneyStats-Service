@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
+import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.AuthService;
@@ -31,18 +32,23 @@ public class WalletService {
     private WalletMapper walletMapper;
 
     @Autowired
+    private StatsService statsService;
+
+    @Autowired
     private AuthService authService;
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet, String authToken) throws UtilsException {
         UserEntity user = authService.checkLogin(authToken);
 
-        WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet);
-        walletEntity.setUser(user);
+        WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
 
         WalletEntity saved = iWalletDAO.save(walletEntity);
 
         Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
+        if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
+            walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
+        }
 
         String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 

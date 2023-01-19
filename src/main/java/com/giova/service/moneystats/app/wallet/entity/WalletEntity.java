@@ -70,6 +70,6 @@ public class WalletEntity extends GenericEntity {
     @JoinColumn(name = "USER_ID", nullable = false)
     private UserEntity user;
 
-    @Transient
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
     private List<StatsEntity> history;
 }
