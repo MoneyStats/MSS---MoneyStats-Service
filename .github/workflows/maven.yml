@@ -35,8 +35,6 @@ jobs:
   install:
     name: 🌱 Install
     runs-on: ubuntu-latest
-    environment:
-      name: stg-email-sender
     needs: [ setting-up, java ]
     steps:
       - uses: actions/checkout@v3
@@ -52,8 +50,6 @@ jobs:
   test:
     name: 📂 Test
     runs-on: ubuntu-latest
-    environment:
-      name: stg-email-sender
     needs: [ install, java ]
     steps:
       - uses: actions/checkout@v3
@@ -68,8 +64,6 @@ jobs:
   build:
     name: 📂 Build
     runs-on: ubuntu-latest
-    environment:
-      name: stg-email-sender
     needs: [ test, java ]
     steps:
       - uses: actions/checkout@v3
