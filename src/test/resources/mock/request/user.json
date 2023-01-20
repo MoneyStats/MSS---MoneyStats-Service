@@ -1,0 +1,10 @@
+{
+  "name": "Giovanni",
+  "surname": "Lamarmora",
+  "email": "gio.lamarmora@gmail.com",
+  "username": "giovannilamarmora",
+  "password": "string",
+  "role": "USER",
+  "profilePhoto": "string",
+  "currency": "EUR"
+}
