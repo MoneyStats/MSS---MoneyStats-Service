@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -29,7 +30,7 @@ public class AppController {
     @Tag(name = "App", description = "API to register an account")
     @Operation(description = "API to register an account", tags = "App")
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-    public ResponseEntity<Response> getDashboard(@RequestHeader("authToken") String authToken) throws UtilsException {
+    public ResponseEntity<Response> getDashboard(@RequestHeader("authToken") String authToken) throws UtilsException, JsonProcessingException {
         return appService.getDashboardData(authToken);
     }
 
