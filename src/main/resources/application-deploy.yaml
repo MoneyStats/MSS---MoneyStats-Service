@@ -1,11 +1,14 @@
 spring:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://mysqldb:3306/${env.DATABASE_NAME}
-    username: ${env.DATABASE_USERNAME}
-    password: ${env.DATABASE_PASSWORD}
+    url: jdbc:mysql://mysqldb:3306/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   jpa:
-    hibernate.ddl-auto: update
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     generate-ddl: true
     show-sql: true
     defer-datasource-initialization: true
