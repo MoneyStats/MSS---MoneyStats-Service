@@ -34,18 +34,17 @@ public class ExceptionHandler extends UtilsException {
         return new ResponseEntity<>(response, status);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(
-            value = RuntimeException.class)
+    /** @org.springframework.web.bind.annotation.ExceptionHandler( value = RuntimeException.class)
     public ResponseEntity<ExceptionResponse> handleRuntimeException(
-            RuntimeException e, HttpServletRequest request) {
-        LOG.error(
-                "An error happened while calling {} Downstream APIIII: {}",
-                request.getRequestURI(),
-                e.getMessage());
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        ExceptionResponse response = getExceptionResponse(e, request, AuthException.ERR_AUTH_MSS_004, status);
+    RuntimeException e, HttpServletRequest request) {
+    LOG.error(
+    "An error happened while calling {} Downstream APIIII: {}",
+    request.getRequestURI(),
+    e.getMessage());
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    ExceptionResponse response = getExceptionResponse(e, request, AuthException.ERR_AUTH_MSS_004, status);
 
-        response.getError().setMessage(e.getMessage());
-        return new ResponseEntity<>(response, status);
-    }
+    response.getError().setMessage(e.getMessage());
+    return new ResponseEntity<>(response, status);
+    }*/
 }

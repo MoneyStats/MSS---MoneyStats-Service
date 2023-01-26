@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -61,9 +62,11 @@ public class AppInterceptor extends OncePerRequestFilter {
         } catch (UtilsException e) {
             LOG.error("Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
             exceptionResponse = getExceptionResponse(e, request, e.getExceptionCode(), e.getExceptionCode().getStatus());
+            response.addHeader("EXCEPTION_RESPONSE", objectMapper.writeValueAsString(exceptionResponse));
             response.setStatus(e.getExceptionCode().getStatus().value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(), exceptionResponse);
+            response.getWriter().write(convertObjectToJson(exceptionResponse));
+            //objectMapper.writeValue(response.getWriter(), exceptionResponse);
             return;
         }
         setUserInContext(checkUser);
@@ -77,6 +80,13 @@ public class AppInterceptor extends OncePerRequestFilter {
         String path = request.getRequestURI();
         List<String> notFiltering = List.of("/v1/auth/sign-up", "/v1/auth/login");
         return notFiltering.contains(path);
+    }
+
+    public String convertObjectToJson(Object object) throws JsonProcessingException {
+        if (object == null) {
+            return null;
+        }
+        return objectMapper.writeValueAsString(object);
     }
 
     private void setUserInContext(UserEntity user) {

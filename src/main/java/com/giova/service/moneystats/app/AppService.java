@@ -165,11 +165,13 @@ public class AppService {
                                 h.getDate().getYear() == year).collect(Collectors.toList());
                 wallet1.setHistory(listFilter);
 
-                balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
-                initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
-                if (listFilter.size() > 1) {
-                    lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
-                } else lastBalance.set(0.01D);
+                if (!listFilter.isEmpty()) {
+                    balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
+                    initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
+                    if (listFilter.size() > 1) {
+                        lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
+                    } else lastBalance.set(0.01D);
+                }
 
                 if (index.get() > 0) {
                     try {
