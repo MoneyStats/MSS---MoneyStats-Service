@@ -11,6 +11,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @Logged
+@AllArgsConstructor
 public class WalletService {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -36,10 +38,11 @@ public class WalletService {
 
     @Autowired
     private AuthService authService;
+    private final UserEntity user;
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet, String authToken) throws UtilsException {
-        UserEntity user = authService.checkLogin(authToken);
+        //UserEntity user = authService.checkLogin(authToken);
 
         WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
 
@@ -58,7 +61,7 @@ public class WalletService {
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getWallets(String authToken) throws UtilsException {
-        UserEntity user = authService.checkLogin(authToken);
+        //UserEntity user = authService.checkLogin(authToken);
 
         List<WalletEntity> walletEntity = iWalletDAO.findAllByUserId(user.getId());
 

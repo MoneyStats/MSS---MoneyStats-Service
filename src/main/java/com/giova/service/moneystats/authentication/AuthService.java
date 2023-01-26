@@ -99,4 +99,16 @@ public class AuthService {
         }
         return userEntity;
     }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException {
+        User user = authMapper.mapUserEntityToUser(userEntity);
+        AuthToken authToken = tokenService.generateToken(user);
+
+        if (authToken == null) {
+            LOG.error("Token not found");
+            throw new UtilsException(AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+        }
+        return authToken;
+    }
 }

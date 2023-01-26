@@ -18,6 +18,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.math.MathService;
+import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Logged
 @Service
+@AllArgsConstructor
 public class AppService {
 
     @Autowired
@@ -43,14 +47,17 @@ public class AppService {
     @Autowired
     private StatsService statsService;
 
+    private final UserEntity user;
     @Autowired
     private AuthService authService;
 
     private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {
-        UserEntity user = authService.checkLogin(authToken);
+        //UserEntity user = authService.checkLogin(authToken);
 
         List<LocalDate> getAllDates = statsService.getDistinctDates(user);
         List<LocalDate> filter = new ArrayList<>();
@@ -82,7 +89,7 @@ public class AppService {
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getResumeData(String authToken) throws UtilsException {
-        UserEntity user = authService.checkLogin(authToken);
+        //UserEntity user = authService.checkLogin(authToken);
 
         List<LocalDate> getAllDates = statsService.getDistinctDates(user);
         Map<String, Dashboard> getData = new HashMap<>();
@@ -158,11 +165,13 @@ public class AppService {
                                 h.getDate().getYear() == year).collect(Collectors.toList());
                 wallet1.setHistory(listFilter);
 
-                balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
-                initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
-                if (listFilter.size() > 1) {
-                    lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
-                } else lastBalance.set(0.01D);
+                if (!listFilter.isEmpty()) {
+                    balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
+                    initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
+                    if (listFilter.size() > 1) {
+                        lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
+                    } else lastBalance.set(0.01D);
+                }
 
                 if (index.get() > 0) {
                     try {
