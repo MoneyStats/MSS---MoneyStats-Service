@@ -1,7 +1,8 @@
 package com.giova.service.moneystats.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.giova.service.moneystats.authentication.AuthService;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -28,6 +30,8 @@ import static io.github.giovannilamarmora.utils.exception.UtilsException.getExce
 @AllArgsConstructor
 public class AppInterceptor extends OncePerRequestFilter {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     @Autowired
     private AuthService authService;
 
@@ -45,11 +49,6 @@ public class AppInterceptor extends OncePerRequestFilter {
         ExceptionResponse exceptionResponse = new ExceptionResponse();
         if (isEmpty(authToken)) {
             LOG.error("Auth-Token not found");
-            //exceptionResponse = getExceptionResponse(
-            //        new UtilsException(AuthException.ERR_AUTH_MSS_004, AuthException.ERR_AUTH_MSS_004.getMessage()),
-            //        request, AuthException.ERR_AUTH_MSS_004, HttpStatus.UNAUTHORIZED);
-            //response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            //response.getWriter().write(convertObjectToJson(exceptionResponse));
             response.reset();
             filterChain.doFilter(request, response);
             return;
@@ -63,9 +62,8 @@ public class AppInterceptor extends OncePerRequestFilter {
             LOG.error("Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
             exceptionResponse = getExceptionResponse(e, request, e.getExceptionCode(), e.getExceptionCode().getStatus());
             response.setStatus(e.getExceptionCode().getStatus().value());
-            response.getWriter().write(convertObjectToJson(exceptionResponse));
-            response.reset();
-            filterChain.doFilter(request, response);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(response.getWriter(), exceptionResponse);
             return;
         }
         setUserInContext(checkUser);
@@ -79,14 +77,6 @@ public class AppInterceptor extends OncePerRequestFilter {
         String path = request.getRequestURI();
         List<String> notFiltering = List.of("/v1/auth/sign-up", "/v1/auth/login");
         return notFiltering.contains(path);
-    }
-
-    public String convertObjectToJson(Object object) throws JsonProcessingException {
-        if (object == null) {
-            return null;
-        }
-        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-        return mapper.writeValueAsString(object);
     }
 
     private void setUserInContext(UserEntity user) {
