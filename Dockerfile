@@ -4,7 +4,7 @@ COPY /target/moneystats-service.jar moneystats-service.jar
 
 ARG DEPLOY
 
-RUN if [ "$DEPLOY" = "STG" ]; \
+RUN if [ "$DEPLOY" = "STG" ]; then \
     COPY /config/logback-stg.xml /src/main/resource/logback.xml \
   fi
 
