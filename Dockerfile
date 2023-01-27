@@ -1,6 +1,5 @@
 FROM openjdk:11
 EXPOSE 8080
-COPY /config/logback-stg.xml /resources/logback.xml
 COPY /target/moneystats-service.jar moneystats-service.jar
 
 #ARG DEPLOY
