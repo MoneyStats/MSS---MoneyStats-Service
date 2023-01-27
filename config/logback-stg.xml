@@ -3,16 +3,16 @@
 
     <appender name="LogtailHttp" class="com.logtail.logback.LogtailAppender">
         <encoder>
-            <pattern>%black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable</pattern>
+            <pattern>%yellow(%C{1.}): %msg%n%throwable</pattern>
         </encoder>
-        <appName>moneystats</appName>
+        <appName>stg-moneystats</appName>
         <ingestKey>bCN8eDMWkRUcUeCoBdBSWYWD</ingestKey>
         <mdcFields>requestId,requestTime</mdcFields>
         <mdcTypes>string,int</mdcTypes>
     </appender>
 
     <appender name="Logtail" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="LogtailHttp" />
+        <appender-ref ref="LogtailHttp"/>
         <queueSize>500</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>true</includeCallerData>
@@ -26,8 +26,8 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="Logtail" />
-        <appender-ref ref="Console" />
+        <appender-ref ref="Logtail"/>
+        <appender-ref ref="Console"/>
     </root>
 
 </configuration>
