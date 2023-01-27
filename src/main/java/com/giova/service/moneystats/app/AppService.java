@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app;
 
+import ch.qos.logback.classic.LoggerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.category.CategoryService;
@@ -58,6 +59,9 @@ public class AppService {
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {
         //UserEntity user = authService.checkLogin(authToken);
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger logger = LoggerFactory.getLogger("App");
+        logger.info("Hello world.");
 
         List<LocalDate> getAllDates = statsService.getDistinctDates(user);
         List<LocalDate> filter = new ArrayList<>();
