@@ -103,6 +103,7 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
+          build-args: DEPLOY=STG
           tags: latest
           registry: docker.io
           dockerfile: Dockerfile
