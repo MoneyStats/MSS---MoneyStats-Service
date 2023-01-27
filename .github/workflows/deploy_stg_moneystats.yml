@@ -101,9 +101,6 @@ jobs:
       - name: Setup Logback
         run: cp ${GITHUB_WORKSPACE}/config/logback-stg.xml ${GITHUB_WORKSPACE}/src/main/resources/logback.xml
 
-      - name: Status Logback
-      - run: cd ${GITHUB_WORKSPACE}/src/main/resources
-      - run: ls
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
