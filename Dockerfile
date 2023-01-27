@@ -6,7 +6,7 @@ ARG DEPLOY
 
 RUN if [ "$DEPLOY" = "STG" ]; then \
     COPY /config/logback-stg.xml /src/main/resource/logback.xml \
-  else if [ "$DEPLOY" = "PROD" ]; then \
+  else if [ "$DEPLOY" = "PROD" ]; \
     COPY /config/logback-prod.xml /src/main/resource/logback.xml \
   fi
 
