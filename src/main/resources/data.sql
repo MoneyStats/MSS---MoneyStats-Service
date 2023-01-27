@@ -1,3 +1,4 @@
+DELETE FROM CATEGORY;
 SET
 @n_category = 10;
 
