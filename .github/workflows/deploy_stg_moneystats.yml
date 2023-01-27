@@ -100,7 +100,6 @@ jobs:
       - name: Setup Logback
         run: cp ${GITHUB_WORKSPACE}/config/logback-stg.xml ${GITHUB_WORKSPACE}/src/main/resources/logback.xml
       - name: Build & push Docker image
-        run: cp ${GITHUB_WORKSPACE}/config/logback-stg.xml ${GITHUB_WORKSPACE}/src/main/resources/logback.xml
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
