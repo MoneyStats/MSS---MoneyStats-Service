@@ -1,12 +1,12 @@
 FROM openjdk:11
 EXPOSE 8080
+WORKDIR /app
 COPY /target/moneystats-service.jar moneystats-service.jar
 
 ARG DEPLOY
 
 RUN if [ "$DEPLOY" = "STG" ]; then \
-    echo ls; \
-    mv ./config/logback-stg.xml ./src/main/resource/logback.xml; \
+    mv app/config/logback-stg.xml app/src/main/resource/logback.xml; \
   fi
 
 #RUN if [ "$DEPLOY" = "STG" ]; then \
