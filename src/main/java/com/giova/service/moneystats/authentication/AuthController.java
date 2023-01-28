@@ -39,4 +39,12 @@ public class AuthController {
     public ResponseEntity<Response> login(@RequestParam String username, @RequestParam String password) throws UtilsException {
         return authService.login(username, password);
     }
+
+    @GetMapping(value = "/check-login", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "Authentication", description = "API to check an account")
+    @Operation(description = "API to check an account", tags = "Authentication")
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+    public ResponseEntity<Response> checkLogin(@RequestHeader("authToken") String authToken) throws UtilsException {
+        return authService.checkLoginFE(authToken);
+    }
 }

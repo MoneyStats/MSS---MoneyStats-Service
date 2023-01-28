@@ -151,6 +151,7 @@ public class AppService {
 
         AtomicInteger index = new AtomicInteger(0);
         distinctDatesByYear.stream().peek(year -> {
+            // Filtro le date secondo l'anno
             List<LocalDate> filterDateByYear = dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
             Dashboard dashboard = new Dashboard();
             dashboard.setCategories(getAllCategory);
@@ -170,11 +171,22 @@ public class AppService {
                 wallet1.setHistory(listFilter);
 
                 if (!listFilter.isEmpty()) {
-                    balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
-                    initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
-                    if (listFilter.size() > 1) {
-                        lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
-                    } else lastBalance.set(0.01D);
+                    Double balanceFilter = listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1))).collect(Collectors.toList()).size() != 0 ?
+                            listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1))).collect(Collectors.toList()).get(0).getBalance() : 0;
+                    balance.updateAndGet(v -> v + balanceFilter);
+                    //balance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 1).getBalance());
+                    Double initialBalanceFilter = listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0))).collect(Collectors.toList()).size() != 0 ?
+                            listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0))).collect(Collectors.toList()).get(0).getBalance() : 0;
+                    initialBalance.updateAndGet(v -> v + initialBalanceFilter);
+                    //initialBalance.updateAndGet(v -> v + listFilter.get(0).getBalance());
+                    //if (listFilter.size() > 1) {
+                    Double lastBalanceFilter = listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() > 1 ? filterDateByYear.size() - 2 : 0))).collect(Collectors.toList()).size() != 0 ?
+                            listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() > 1 ? filterDateByYear.size() - 2 : 0))).collect(Collectors.toList()).get(0).getBalance() : 0;
+                    //Double lastBalanceFilter = listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 2))).collect(Collectors.toList()).size() != 0 ?
+                    //        listFilter.stream().filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 2))).collect(Collectors.toList()).get(0).getBalance() : 0;
+                    lastBalance.updateAndGet(v -> v + lastBalanceFilter);
+                    //lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size() - 2).getBalance());
+                    //} else lastBalance.updateAndGet(v -> v + 0.01D);
                 }
 
                 if (index.get() > 0) {

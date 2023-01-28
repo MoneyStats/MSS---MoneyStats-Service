@@ -11,6 +11,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Logged
+@AllArgsConstructor
 public class AuthService {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
@@ -34,7 +36,9 @@ public class AuthService {
     @Autowired
     private TokenService tokenService;
 
-    BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+    private final UserEntity user;
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> register(User user) {
@@ -76,6 +80,19 @@ public class AuthService {
         String message = "Login Successfully! Welcome back " + user.getUsername() + "!";
 
         Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public ResponseEntity<Response> checkLoginFE(String authToken) {
+
+        User userDTO = authMapper.mapUserEntityToUser(user);
+        userDTO.setPassword(null);
+
+        String message = "Welcome back " + user.getUsername() + "!";
+
+        Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), userDTO);
 
         return ResponseEntity.ok(response);
     }
