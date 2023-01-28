@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -82,5 +83,22 @@ public class AuthServiceTest {
         UserEntity checkLogin = authService.checkLogin(userAc.getAuthToken().getAccessToken());
         assertEquals(userAc.getName(), checkLogin.getName());
         assertEquals(userAc.getUsername(), checkLogin.getUsername());
+    }
+
+    @Test
+    public void checkLoginFETest_successfully() throws IOException, UtilsException {
+        User register = objectMapper.readValue(
+                new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+
+        ResponseEntity<Response> actualR = authService.register(register);
+
+        User registered = objectMapper.convertValue(actualR.getBody().getData(), User.class);
+
+        ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+
+        User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
+
+        ResponseEntity<Response> checkLogin = authService.checkLoginFE(userAc.getAuthToken().getAccessToken());
+        assertEquals(HttpStatus.OK, checkLogin.getStatusCode());
     }
 }
