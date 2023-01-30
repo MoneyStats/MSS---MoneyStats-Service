@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.app;
 
-import ch.qos.logback.classic.LoggerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.category.CategoryService;
@@ -52,16 +51,13 @@ public class AppService {
     @Autowired
     private AuthService authService;
 
-    private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {
         //UserEntity user = authService.checkLogin(authToken);
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger logger = LoggerFactory.getLogger("App");
-        logger.info("Hello world.");
 
         List<LocalDate> getAllDates = statsService.getDistinctDates(user);
         List<LocalDate> filter = new ArrayList<>();
@@ -150,7 +146,8 @@ public class AppService {
         });
 
         AtomicInteger index = new AtomicInteger(0);
-        distinctDatesByYear.stream().peek(year -> {
+        distinctDatesByYear.stream().sorted(Collections.reverseOrder()).peek(year -> {
+            LOG.info("Mapping Data for year {}", year);
             // Filtro le date secondo l'anno
             List<LocalDate> filterDateByYear = dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
             Dashboard dashboard = new Dashboard();
@@ -191,7 +188,7 @@ public class AppService {
 
                 if (index.get() > 0) {
                     try {
-                        mapWalletInThePast(wallet);
+                        mapWalletInThePast(wallet1);
                     } catch (UtilsException e) {
                         throw new RuntimeException(e);
                     }
@@ -216,7 +213,7 @@ public class AppService {
         return response;
     }
 
-    private Wallet mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
+    private void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
         AtomicReference<Double> balance = new AtomicReference<>(0D);
         AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
         AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
@@ -228,14 +225,13 @@ public class AppService {
         wallet.setLowPrice(lowPrice.getBalance());
         wallet.setLowPriceDate(lowPrice.getDate());
 
-        balance.updateAndGet(v -> v + getStats.get(getStats.size() - 1).getBalance());
-        lastBalance.updateAndGet(v -> v + getStats.get(getStats.size() - 2).getBalance());
+        balance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
+        lastBalance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
         wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
         wallet.setDifferenceLastStats(balance.get() - lastBalance.get());
         wallet.setBalance(balance.get());
 
         wallet.setPerformanceLastStats(MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
 
-        return wallet;
     }
 }
