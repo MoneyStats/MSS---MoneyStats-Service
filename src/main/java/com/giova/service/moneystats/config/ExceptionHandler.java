@@ -6,11 +6,12 @@ import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
-//@ControllerAdvice
+@ControllerAdvice
 public class ExceptionHandler extends UtilsException {
 
     @org.springframework.web.bind.annotation.ExceptionHandler(
