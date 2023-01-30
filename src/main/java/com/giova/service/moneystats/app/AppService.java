@@ -186,7 +186,7 @@ public class AppService {
                     //} else lastBalance.updateAndGet(v -> v + 0.01D);
                 }
 
-                if (index.get() > 0) {
+                if (index.get() > 0 && !listFilter.isEmpty()) {
                     try {
                         mapWalletInThePast(wallet1);
                     } catch (UtilsException e) {
