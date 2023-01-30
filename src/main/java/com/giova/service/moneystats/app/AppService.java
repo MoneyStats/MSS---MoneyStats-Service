@@ -51,7 +51,7 @@ public class AppService {
     @Autowired
     private AuthService authService;
 
-    private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -147,6 +147,7 @@ public class AppService {
 
         AtomicInteger index = new AtomicInteger(0);
         distinctDatesByYear.stream().sorted(Collections.reverseOrder()).peek(year -> {
+            LOG.info("Mapping Data for year {}", year);
             // Filtro le date secondo l'anno
             List<LocalDate> filterDateByYear = dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
             Dashboard dashboard = new Dashboard();
@@ -212,7 +213,7 @@ public class AppService {
         return response;
     }
 
-    private Wallet mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
+    private void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
         AtomicReference<Double> balance = new AtomicReference<>(0D);
         AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
         AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
@@ -232,6 +233,5 @@ public class AppService {
 
         wallet.setPerformanceLastStats(MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
 
-        return wallet;
     }
 }
