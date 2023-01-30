@@ -150,7 +150,7 @@ public class AppService {
         });
 
         AtomicInteger index = new AtomicInteger(0);
-        distinctDatesByYear.stream().peek(year -> {
+        distinctDatesByYear.stream().sorted(Collections.reverseOrder()).peek(year -> {
             // Filtro le date secondo l'anno
             List<LocalDate> filterDateByYear = dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
             Dashboard dashboard = new Dashboard();
@@ -191,7 +191,7 @@ public class AppService {
 
                 if (index.get() > 0) {
                     try {
-                        mapWalletInThePast(wallet);
+                        mapWalletInThePast(wallet1);
                     } catch (UtilsException e) {
                         throw new RuntimeException(e);
                     }
@@ -228,8 +228,8 @@ public class AppService {
         wallet.setLowPrice(lowPrice.getBalance());
         wallet.setLowPriceDate(lowPrice.getDate());
 
-        balance.updateAndGet(v -> v + getStats.get(getStats.size() - 1).getBalance());
-        lastBalance.updateAndGet(v -> v + getStats.get(getStats.size() - 2).getBalance());
+        balance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
+        lastBalance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
         wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
         wallet.setDifferenceLastStats(balance.get() - lastBalance.get());
         wallet.setBalance(balance.get());
