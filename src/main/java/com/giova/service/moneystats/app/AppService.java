@@ -216,7 +216,7 @@ public class AppService {
     private void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
         AtomicReference<Double> balance = new AtomicReference<>(0D);
         AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
-        AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
+        AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
         Stats highPrice = wallet.getHistory().stream().max(Comparator.comparing(Stats::getBalance)).orElseThrow(UtilsException::new);
         Stats lowPrice = wallet.getHistory().stream().min(Comparator.comparing(Stats::getBalance)).orElseThrow(UtilsException::new);
         List<Stats> getStats = wallet.getHistory();
