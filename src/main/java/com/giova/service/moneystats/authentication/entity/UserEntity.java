@@ -49,4 +49,8 @@ public class UserEntity extends GenericEntity {
     //@Enumerated(EnumType.STRING)
     @Column(name = "CURRENCY", nullable = false)
     private String currency;
+
+    @Lob
+    @Column(name = "GITHUB_USER")
+    private String githubUser;
 }

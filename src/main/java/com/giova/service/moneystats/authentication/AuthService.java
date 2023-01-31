@@ -128,4 +128,24 @@ public class AuthService {
         }
         return authToken;
     }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public ResponseEntity<Response> updateUserData(String authToken, User userToUpdate) {
+
+        UserEntity userEntity = authMapper.mapUserToUserEntity(userToUpdate);
+        if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+            userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+        } else {
+            userEntity.setPassword(user.getPassword());
+        }
+
+        UserEntity saved = iAuthDAO.save(userEntity);
+        saved.setPassword(null);
+
+        String message = "User updated!";
+
+        Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), saved);
+
+        return ResponseEntity.ok(response);
+    }
 }

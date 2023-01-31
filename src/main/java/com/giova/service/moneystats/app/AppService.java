@@ -1,10 +1,13 @@
 package com.giova.service.moneystats.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.category.CategoryService;
 import com.giova.service.moneystats.app.category.dto.Category;
+import com.giova.service.moneystats.app.client.GithubClient;
 import com.giova.service.moneystats.app.model.Dashboard;
+import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
@@ -51,9 +54,24 @@ public class AppService {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private GithubClient githubClient;
+
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public ResponseEntity<Response> reportBug(GithubIssues githubIssues) throws JsonProcessingException {
+        LOG.info("Bug to report: {}", objectMapper.writeValueAsString(githubIssues));
+
+        ResponseEntity<Object> issues = githubClient.openGithubIssues(githubIssues);
+        String message = "Bug Reported!";
+
+        Response response = new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), issues.getBody());
+        return ResponseEntity.ok(response);
+    }
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {

@@ -47,4 +47,12 @@ public class AuthController {
     public ResponseEntity<Response> checkLogin(@RequestHeader("authToken") String authToken) throws UtilsException {
         return authService.checkLoginFE(authToken);
     }
+
+    @PostMapping(value = "/update/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "Authentication", description = "API to update an account")
+    @Operation(description = "API to update an account", tags = "Authentication")
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+    public ResponseEntity<Response> updateUser(@RequestHeader("authToken") String authToken, @RequestBody @Valid User user) {
+        return authService.updateUserData(authToken, user);
+    }
 }

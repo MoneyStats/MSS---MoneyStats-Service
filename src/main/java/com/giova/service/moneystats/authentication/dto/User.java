@@ -32,6 +32,7 @@ public class User extends GenericDTO {
     private String profilePhoto;
     @NotNull
     private String currency;
+    private String githubUser;
 
     private AuthToken authToken;
 
