@@ -11,6 +11,11 @@ spring:
     init:
       mode: always
 
+rest:
+  client:
+    github:
+      issuesUrl: https://api.github.com/repos/MoneyStats/MoneyStats-Service-Application/issues
+      authToken: ${GITHUB_AUTH_TOKEN}
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 3600000

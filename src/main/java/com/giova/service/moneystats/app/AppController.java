@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.app;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -49,4 +50,14 @@ public class AppController {
     public ResponseEntity<Response> addStats(@RequestBody @Valid List<Wallet> wallets, @RequestHeader("authToken") String authToken) throws UtilsException {
         return appService.addStats(wallets, authToken);
     }
+
+    @PostMapping(value = "/report/bug", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "App", description = "API to report a bug")
+    @Operation(description = "API to report a bug", tags = "App")
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+    public ResponseEntity<Response> bugReport(//@RequestHeader("authToken") String authToken,
+                                              @RequestBody @Valid GithubIssues githubIssues) throws JsonProcessingException {
+        return appService.reportBug(githubIssues);
+    }
+
 }

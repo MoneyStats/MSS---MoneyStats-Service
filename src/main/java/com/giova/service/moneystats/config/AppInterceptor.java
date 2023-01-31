@@ -78,7 +78,7 @@ public class AppInterceptor extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        List<String> notFiltering = List.of("/v1/auth/sign-up", "/v1/auth/login");
+        List<String> notFiltering = List.of("/v1/auth/sign-up", "/v1/auth/login", "/v1/app/report/bug");
         return notFiltering.contains(path);
     }
 
