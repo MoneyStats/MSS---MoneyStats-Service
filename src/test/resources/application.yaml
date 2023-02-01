@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+
+springdoc:
+  packagesToScan: com.giova.service.moneystats
+
+rest:
+  client:
+    github:
+      issuesUrl: https://api.github.com/repos/MoneyStats/MoneyStats-Service-Application/issues
+      authToken: token
+
+jwt:
+  secret: B710834ECC17FAAC9977FE2980C4604E9AAA59
+  time: 3600
