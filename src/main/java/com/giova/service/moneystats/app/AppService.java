@@ -34,6 +34,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Logged
@@ -204,7 +205,12 @@ public class AppService {
                     //} else lastBalance.updateAndGet(v -> v + 0.01D);
                 }
 
+                // Mi serve per mappare il passato
                 if (index.get() > 0 && !listFilter.isEmpty()) {
+                    // Se gli stats all'ultima posizione ha la stessa data dell'ultima data della lista dell'anno, il wallet non era cancellato
+                    if (listFilter.get(listFilter.size() - 1).getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
+                        wallet1.setDeletedDate(null);
+                    }
                     try {
                         mapWalletInThePast(wallet1);
                     } catch (UtilsException e) {
@@ -214,6 +220,14 @@ public class AppService {
                 indexWallet.incrementAndGet();
                 return wallet1;
             }).collect(Collectors.toList());
+
+            // Mi serve per mappare il passato
+            if (index.get() > 0) {
+                // Remove wallet that haven't any stats
+                Predicate<Wallet> hasEmptyStats = wallet -> wallet.getHistory().isEmpty();
+                filterWallet.removeIf(hasEmptyStats);
+            }
+
             dashboard.setWallets(filterWallet);
             dashboard.setBalance(balance.get());
             dashboard.setPerformanceValue(balance.get() - initialBalance.get());
