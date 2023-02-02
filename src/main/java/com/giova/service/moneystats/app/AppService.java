@@ -221,6 +221,10 @@ public class AppService {
                 return wallet1;
             }).collect(Collectors.toList());
 
+            // Filtro Wallet cancellati da anni che non hanno stats
+            Predicate<Wallet> walletRemovedInThePast = wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+            filterWallet.removeIf(walletRemovedInThePast);
+
             // Mi serve per mappare il passato
             if (index.get() > 0) {
                 // Remove wallet that haven't any stats
