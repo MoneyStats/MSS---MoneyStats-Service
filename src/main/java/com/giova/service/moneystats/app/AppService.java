@@ -229,10 +229,10 @@ public class AppService {
             }
 
             dashboard.setWallets(filterWallet);
-            dashboard.setBalance(balance.get());
-            dashboard.setPerformanceValue(balance.get() - initialBalance.get());
-            dashboard.setLastStatsBalanceDifference(balance.get() - lastBalance.get());
             try {
+                dashboard.setPerformanceValue(MathService.round(balance.get() - initialBalance.get(), 2));
+                dashboard.setLastStatsBalanceDifference(MathService.round(balance.get() - lastBalance.get(), 2));
+                dashboard.setBalance(MathService.round(balance.get(), 2));
                 dashboard.setPerformance(MathService.round(((balance.get() - initialBalance.get()) / initialBalance.get()) * 100, 2));
                 dashboard.setLastStatsPerformance(MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
             } catch (UtilsException e) {
@@ -260,8 +260,8 @@ public class AppService {
         balance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
         lastBalance.updateAndGet(v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
         wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
-        wallet.setDifferenceLastStats(balance.get() - lastBalance.get());
-        wallet.setBalance(balance.get());
+        wallet.setDifferenceLastStats(MathService.round(balance.get() - lastBalance.get(), 2));
+        wallet.setBalance(MathService.round(balance.get(), 2));
 
         wallet.setPerformanceLastStats(MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
 
