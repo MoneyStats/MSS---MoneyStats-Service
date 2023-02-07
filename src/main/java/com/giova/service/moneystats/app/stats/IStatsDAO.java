@@ -19,4 +19,6 @@ public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
             value =
                     "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId")
     List<LocalDate> selectDistinctDate(Long userId);
+
+    List<StatsEntity> findStatsEntitiesByWalletId(Long walletId);
 }
