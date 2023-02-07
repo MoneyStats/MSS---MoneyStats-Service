@@ -135,7 +135,7 @@ public class AppService {
 
     @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
     public ResponseEntity<Response> addStats(List<Wallet> wallets, String authToken) throws UtilsException {
-        UserEntity user = authService.checkLogin(authToken);
+        //UserEntity user = authService.checkLogin(authToken);
 
         wallets.stream().peek(wallet -> {
             try {
@@ -143,7 +143,10 @@ public class AppService {
             } catch (UtilsException e) {
                 throw new RuntimeException(e);
             }
+            List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
+            wallet.setHistory(statsList);
         }).collect(Collectors.toList());
+        
 
         String message = "Stats Added Successfully!";
 

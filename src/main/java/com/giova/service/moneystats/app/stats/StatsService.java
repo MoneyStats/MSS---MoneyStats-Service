@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,22 @@ public class StatsService {
             BeanUtils.copyProperties(statsEntity, stats2);
             return stats2;
         }).collect(Collectors.toList());
+        return response;
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public List<Stats> getStatsByWallet(Long walletId) {
+
+        List<StatsEntity> stats = iStatsDAO.findStatsEntitiesByWalletId(walletId);
+        List<Stats> response = new ArrayList<>();
+        if (!stats.isEmpty()) {
+            response = stats.stream().map(statsEntity -> {
+                Stats stats2 = new Stats();
+                BeanUtils.copyProperties(statsEntity, stats2);
+                return stats2;
+            }).collect(Collectors.toList());
+        }
+
         return response;
     }
 }
