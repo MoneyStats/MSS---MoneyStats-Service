@@ -93,4 +93,4 @@ jobs:
           cache: maven
 
       - name: Deploy
-        run: deploy railway
+        run: echo deploy railway
