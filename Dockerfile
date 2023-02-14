@@ -1,5 +1,6 @@
 FROM openjdk:11
 EXPOSE 8080
+WORKDIR /
 COPY /target/moneystats-service.jar moneystats-service.jar
 
 #ARG DEPLOY
