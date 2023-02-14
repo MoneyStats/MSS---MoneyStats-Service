@@ -111,3 +111,7 @@ jobs:
           dockerfile: Dockerfile
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Remove File
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: /Dockerfile
