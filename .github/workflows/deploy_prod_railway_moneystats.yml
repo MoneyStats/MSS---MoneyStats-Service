@@ -5,7 +5,7 @@ name: Prod RailWay Deploy MoneyStats
 
 on:
   push:
-    branches: [ master ]
+    branches: [ deploy_railway ]
 
 jobs:
   setting-up:
