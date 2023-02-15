@@ -30,8 +30,9 @@ public class AuthController {
   @Tag(name = "Authentication", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> signUp(@RequestBody @Valid User user) {
-    return authService.register(user);
+  public ResponseEntity<Response> signUp(
+      @RequestBody @Valid User user, @RequestParam String invitationCode) throws UtilsException {
+    return authService.register(user, invitationCode);
   }
 
   @PostMapping(

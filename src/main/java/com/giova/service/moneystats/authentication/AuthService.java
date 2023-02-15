@@ -11,10 +11,11 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,8 +23,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Logged
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthService {
+
+  @Value(value = "${app.invitationCode}")
+  private String registerToken;
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -38,8 +42,14 @@ public class AuthService {
   private final UserEntity user;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> register(User user) {
+  public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
     user.setRole(UserRole.USER);
+
+    if (!registerToken.equalsIgnoreCase(invitationCode)) {
+      LOG.error("Invitation code: {}, is wrong", invitationCode);
+      throw new UtilsException(
+          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+    }
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));

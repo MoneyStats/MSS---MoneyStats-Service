@@ -13,7 +13,11 @@ public enum AuthException implements ExceptionCode {
   ERR_AUTH_MSS_004(
       "CHECK_LOGIN_FAIL",
       HttpStatus.UNAUTHORIZED,
-      "Error on checking the current user, Login again!");
+      "Error on checking the current user, Login again!"),
+  ERR_AUTH_MSS_005(
+      "INVALID_REGISTER_TOKEN",
+      HttpStatus.UNAUTHORIZED,
+      "Error on checking the current token provided, wrong token, try again!");
 
   private final HttpStatus status;
   private final String message;
