@@ -1,10 +1,18 @@
 package com.giova.service.moneystats.authentication;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.Response;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,11 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-@SpringBootTest
+@SpringBootTest()
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AuthServiceTest {
 
@@ -110,5 +114,35 @@ public class AuthServiceTest {
     ResponseEntity<Response> checkLogin =
         authService.checkLoginFE(userAc.getAuthToken().getAccessToken());
     assertEquals(HttpStatus.OK, checkLogin.getStatusCode());
+  }
+
+  @Test
+  public void testForgotPassword() throws Exception {
+    WireMockServer wireMockServer= new WireMockServer(8086);
+    wireMockServer.start();
+    WireMock.configureFor(wireMockServer.port());
+    User register =
+            objectMapper.readValue(
+                    new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+    String token = "token";
+
+    ResponseEntity<Response> actualR = authService.register(register, token);
+    User userAc = objectMapper.convertValue(actualR.getBody().getData(), User.class);
+
+    wireMockServer.stubFor(
+            WireMock.post(WireMock.urlEqualTo("/v1/send-email?htmlText=true"))
+                    .willReturn(
+                            WireMock.aResponse()
+                                    .withHeader("Content-Type", "application/json")
+                                    .withBody(objectMapper.writeValueAsString(userAc))));
+
+    EmailResponse emailResponse = new EmailResponse();
+    emailResponse.setToken(token);
+
+    ResponseEntity<Response> response = authService.forgotPassword(userAc.getEmail());
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Email Sent! Check your email address!", response.getBody().getMessage());
+    wireMockServer.stop();
   }
 }
