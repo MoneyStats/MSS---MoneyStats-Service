@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>0.9.14</version>
+    <version>0.9.15</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
@@ -159,6 +159,14 @@
             <artifactId>resteasy-client</artifactId>
             <version>3.11.3.Final</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.16.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 
