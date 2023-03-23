@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /moneystats-service
 spring:
   datasource:
     url: jdbc:h2:mem:mydb
@@ -21,7 +24,7 @@ rest:
       sendEmailUrl: /v1/send-email
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
-  time: 3600000
+  time: 3600
 app:
   invitationCode: ${TOKEN_INVITE}
   fe:

@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /prod-moneystats-service
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver

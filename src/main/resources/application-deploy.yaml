@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: ${CONTEXT_PATH}
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
