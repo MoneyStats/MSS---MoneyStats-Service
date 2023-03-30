@@ -29,7 +29,7 @@ rest:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://prod-email-sender.up.railway.app
+      url: http://email-sender:8080
       sendEmailUrl: /v1/send-email
 
 jwt:
@@ -38,4 +38,4 @@ jwt:
 app:
   invitationCode: ${TOKEN_INVITE}
   fe:
-    url: http://localhost:8080
+    url: http://stg-angular-moneystats:8080
