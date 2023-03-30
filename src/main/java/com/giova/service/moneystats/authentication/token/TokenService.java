@@ -12,19 +12,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.util.Date;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
-import java.util.Date;
-
 @Logged
 @Service
 public class TokenService {
-
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   private static final String FIRSTNAME = "firstName";
   private static final String LASTNAME = "lastName";
@@ -32,7 +29,7 @@ public class TokenService {
   private static final String CURRENCY = "currency";
   private static final String EMAIL = "email";
   private static final String ROLE = "role";
-
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Value(value = "${jwt.secret}")
   private String secret;
 
@@ -46,7 +43,7 @@ public class TokenService {
     claims.put(LASTNAME, user.getSurname());
     claims.put(EMAIL, user.getEmail());
     claims.put(ROLE, user.getRole());
-    claims.put(PROFILE_PHOTO, user.getProfilePhoto());
+    //claims.put(PROFILE_PHOTO, user.getProfilePhoto());
     claims.put(CURRENCY, user.getCurrency());
     long dateExp = Long.parseLong(expirationTime);
     Date exp = new Date(System.currentTimeMillis() + dateExp);
@@ -75,7 +72,7 @@ public class TokenService {
         (@NotNull String) body.get(EMAIL),
         body.getSubject(),
         UserRole.valueOf((@NotNull String) body.get(ROLE)),
-        (@NotNull String) body.get(PROFILE_PHOTO),
+        //(@NotNull String) body.get(PROFILE_PHOTO),
         (@NotNull String) body.get(CURRENCY));
   }
 }

@@ -22,6 +22,7 @@ public class User extends GenericDTO {
   @NotNull private String password;
   private UserRole role;
   @NotNull private String profilePhoto;
+  private String imgName;
   @NotNull private String currency;
   private String githubUser;
 
@@ -34,14 +35,12 @@ public class User extends GenericDTO {
       String email,
       String username,
       UserRole role,
-      String profilePhoto,
       String currency) {
     this.name = name;
     this.surname = surname;
     this.email = email;
     this.username = username;
     this.role = role;
-    this.profilePhoto = profilePhoto;
     this.currency = currency;
   }
 }
