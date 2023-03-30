@@ -38,4 +38,4 @@ jwt:
 app:
   invitationCode: ${TOKEN_INVITE}
   fe:
-    url: http://stg-angular-moneystats:8080/stg-moneystats
+    url: ${FE_URL}
