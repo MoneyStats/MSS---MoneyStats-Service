@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.authentication.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.giova.service.moneystats.app.attachments.entity.ImageEntity;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.generic.GenericEntity;
 import javax.persistence.*;
@@ -42,8 +43,13 @@ public class UserEntity extends GenericEntity {
   @Column(name = "ROLE", nullable = false)
   private UserRole role;
 
+  @Lob
   @Column(name = "PROFILE_PHOTO", nullable = false)
   private String profilePhoto;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "IMAGE_ID")
+  private ImageEntity uploadedImage;
 
   // @Enumerated(EnumType.STRING)
   @Column(name = "CURRENCY", nullable = false)

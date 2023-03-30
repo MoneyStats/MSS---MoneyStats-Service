@@ -13,6 +13,10 @@ spring:
   sql:
     init:
       mode: always
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 rest:
   client:
@@ -24,7 +28,7 @@ rest:
       sendEmailUrl: /v1/send-email
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
-  time: 3600
+  time: 360000
 app:
   invitationCode: ${TOKEN_INVITE}
   fe:
