@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.app.wallet.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.app.attachments.entity.ImageEntity;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.GenericEntity;
@@ -39,10 +38,6 @@ public class WalletEntity extends GenericEntity {
   @Lob
   @Column(name = "IMG")
   private String img;
-
-  @OneToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "IMAGE_ID")
-  private ImageEntity uploadedImage;
 
   @Column(name = "ALL_TIME_HIGH")
   private Double allTimeHigh;

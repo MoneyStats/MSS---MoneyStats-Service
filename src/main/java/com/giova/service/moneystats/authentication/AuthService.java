@@ -5,7 +5,6 @@ import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.app.attachments.entity.ImageEntity;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -37,10 +36,13 @@ public class AuthService {
   final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final UserEntity user;
+
   @Value(value = "${app.invitationCode}")
   private String registerToken;
+
   @Value(value = "${app.fe.url}")
   private String feUrl;
+
   @Autowired private IAuthDAO iAuthDAO;
   @Autowired private AuthMapper authMapper;
   @Autowired private TokenService tokenService;
@@ -237,20 +239,11 @@ public class AuthService {
       LOG.info("Building attachment with filename {}", userToUpdate.getImgName());
       Image image = imageService.getAttachment(userToUpdate.getImgName());
       imageService.removeAttachment(userToUpdate.getImgName());
-      userEntity.setUploadedImage(
-              ImageEntity.builder()
-                      .name(image.getName())
-                      .fileName(image.getFileName())
-                      .contentType(image.getContentType())
-                      .body(image.getBody())
-                      .build());
-      if (userToUpdate.getId() != null){
-        Optional<UserEntity> checkUser = iAuthDAO.findById(userToUpdate.getId());
-        if (checkUser.isPresent() && checkUser.get().getUploadedImage() != null){
-          long imageId = checkUser.get().getUploadedImage().getId();
-          userEntity.getUploadedImage().setId(imageId);
-        }
-      }
+      userEntity.setProfilePhoto(
+              "data:"
+                      + image.getContentType()
+                      + ";base64,"
+                      + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
     UserEntity saved = iAuthDAO.save(userEntity);
