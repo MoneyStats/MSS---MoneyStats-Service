@@ -2,7 +2,6 @@ package com.giova.service.moneystats.app.wallet;
 
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.app.attachments.entity.ImageEntity;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
@@ -13,8 +12,8 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -42,25 +41,16 @@ public class WalletService {
     // UserEntity user = authService.checkLogin(authToken);
 
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
-
+  
     if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
       LOG.info("Building attachment with filename {}", wallet.getImgName());
       Image image = imageService.getAttachment(wallet.getImgName());
       imageService.removeAttachment(wallet.getImgName());
-      walletEntity.setUploadedImage(
-          ImageEntity.builder()
-              .name(image.getName())
-              .fileName(image.getFileName())
-              .contentType(image.getContentType())
-              .body(image.getBody())
-              .build());
-      if (wallet.getId() != null){
-        Optional<WalletEntity> checkWallet = iWalletDAO.findById(wallet.getId());
-        if (checkWallet.isPresent() && checkWallet.get().getUploadedImage() != null){
-          long imageId = checkWallet.get().getUploadedImage().getId();
-          walletEntity.getUploadedImage().setId(imageId);
-        }
-      }
+      walletEntity.setImg(
+          "data:"
+              + image.getContentType()
+              + ";base64,"
+              + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
     WalletEntity saved = iWalletDAO.save(walletEntity);

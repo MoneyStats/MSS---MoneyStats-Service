@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
 import com.giova.service.moneystats.app.attachments.ImageMapper;
-import com.giova.service.moneystats.app.attachments.entity.ImageEntity;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
@@ -10,15 +9,11 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class WalletMapper {
@@ -61,21 +56,6 @@ public class WalletMapper {
                   })
               .collect(Collectors.toList()));
     }
-    if (walletEntity.getUploadedImage() != null) {
-      wallet.setImg(
-          "data:"
-              + walletEntity.getUploadedImage().getContentType()
-              + ";base64,"
-              + Base64.getEncoder().encodeToString(walletEntity.getUploadedImage().getBody()));
-    }
-    /*if (walletEntity.getUploadedImage() != null) {
-      try {
-        wallet.setFileImage(convertImageToMultipartFile(walletEntity.getUploadedImage()));
-      } catch (IOException e) {
-        throw new UtilsException(
-            WalletException.ERR_WAL_MSS_001, WalletException.ERR_WAL_MSS_001.getMessage());
-      }
-    }*/
     return wallet;
   }
 
@@ -97,28 +77,9 @@ public class WalletMapper {
                             })
                         .collect(Collectors.toList()));
               }
-              if (walletEntity.getUploadedImage() != null) {
-                wallet.setImg(
-                    "data:"
-                        + walletEntity.getUploadedImage().getContentType()
-                        + ";base64,"
-                        + Base64.getEncoder()
-                            .encodeToString(walletEntity.getUploadedImage().getBody()));
-              }
-              /*if (walletEntity.getUploadedImage() != null) {
-                try {
-                  wallet.setFileImage(convertImageToMultipartFile(walletEntity.getUploadedImage()));
-                } catch (IOException e) {
-                  throw new RuntimeException(e);
-                }
-              }*/
+
               return wallet;
             }))
         .collect(Collectors.toList());
-  }
-
-  public MultipartFile convertImageToMultipartFile(ImageEntity image) throws IOException {
-    return new MockMultipartFile(
-        image.getName(), image.getFileName(), image.getContentType(), image.getBody());
   }
 }
