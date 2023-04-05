@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.app.stats.StatsService;
@@ -37,7 +38,7 @@ public class WalletService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet, String authToken)
-      throws UtilsException {
+      throws UtilsException, JsonProcessingException {
     // UserEntity user = authService.checkLogin(authToken);
 
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);

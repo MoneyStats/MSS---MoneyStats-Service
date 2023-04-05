@@ -66,6 +66,10 @@ public class WalletEntity extends GenericEntity {
   @Column(name = "DATE_LAST_STATS")
   private LocalDate dateLastStats;
 
+  @Lob
+  @Column(name = "INFO")
+  private String info;
+
   @ManyToOne
   @JoinColumn(name = "USER_ID", nullable = false)
   private UserEntity user;

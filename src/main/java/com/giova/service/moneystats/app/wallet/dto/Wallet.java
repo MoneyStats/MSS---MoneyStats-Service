@@ -5,6 +5,7 @@ import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.generic.GenericDTO;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +33,8 @@ public class Wallet extends GenericDTO {
     private Double performanceLastStats;
     private Double differenceLastStats;
     private LocalDate dateLastStats;
+    private Map<String, String> info;
+    private String infoString;
     @NotNull
     private String category;
     private List<Stats> history;
