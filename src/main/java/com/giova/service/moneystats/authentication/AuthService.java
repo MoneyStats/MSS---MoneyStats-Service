@@ -3,6 +3,8 @@ package com.giova.service.moneystats.authentication;
 import com.giova.service.moneystats.api.emailSender.EmailSenderService;
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
+import com.giova.service.moneystats.app.attachments.ImageService;
+import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -15,10 +17,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,25 +33,21 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
+  final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final UserEntity user;
+
   @Value(value = "${app.invitationCode}")
   private String registerToken;
 
   @Value(value = "${app.fe.url}")
   private String feUrl;
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
   @Autowired private IAuthDAO iAuthDAO;
-
   @Autowired private AuthMapper authMapper;
-
   @Autowired private TokenService tokenService;
-
   @Autowired private EmailSenderService emailSenderService;
-
-  final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-
-  private final UserEntity user;
+  @Autowired private ImageService imageService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
@@ -238,6 +233,17 @@ public class AuthService {
       userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
     } else {
       userEntity.setPassword(user.getPassword());
+    }
+
+    if (userToUpdate.getImgName() != null && !userToUpdate.getImgName().isEmpty()) {
+      LOG.info("Building attachment with filename {}", userToUpdate.getImgName());
+      Image image = imageService.getAttachment(userToUpdate.getImgName());
+      imageService.removeAttachment(userToUpdate.getImgName());
+      userEntity.setProfilePhoto(
+              "data:"
+                      + image.getContentType()
+                      + ";base64,"
+                      + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
     UserEntity saved = iAuthDAO.save(userEntity);

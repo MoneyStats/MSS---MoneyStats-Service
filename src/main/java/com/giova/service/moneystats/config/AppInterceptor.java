@@ -35,9 +35,8 @@ public class AppInterceptor extends OncePerRequestFilter {
       new ObjectMapper()
           .registerModule(new JavaTimeModule())
           .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-  @Autowired private AuthService authService;
-
   private final UserEntity user;
+  @Autowired private AuthService authService;
 
   private static boolean isEmpty(String value) {
     return value == null || value.isBlank();
@@ -90,7 +89,8 @@ public class AppInterceptor extends OncePerRequestFilter {
             "/v1/auth/forgot-password",
             "/v1/auth/reset-password",
             "/v1/app/report/bug",
-            "/v1/app/contact");
+            "/v1/app/contact",
+            "/v1/upload/attachment");
     return notFiltering.contains(path);
   }
 

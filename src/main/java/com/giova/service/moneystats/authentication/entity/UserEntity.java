@@ -42,6 +42,7 @@ public class UserEntity extends GenericEntity {
   @Column(name = "ROLE", nullable = false)
   private UserRole role;
 
+  @Lob
   @Column(name = "PROFILE_PHOTO", nullable = false)
   private String profilePhoto;
 

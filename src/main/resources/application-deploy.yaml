@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: ${CONTEXT_PATH}
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -15,6 +18,10 @@ spring:
   sql:
     init:
       mode: always
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
 
 rest:
   client:
@@ -22,7 +29,7 @@ rest:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://prod-email-sender.up.railway.app
+      url: http://email-sender:8080/email-sender
       sendEmailUrl: /v1/send-email
 
 jwt:
@@ -31,4 +38,4 @@ jwt:
 app:
   invitationCode: ${TOKEN_INVITE}
   fe:
-    url: http://localhost:8080
+    url: ${FE_URL}

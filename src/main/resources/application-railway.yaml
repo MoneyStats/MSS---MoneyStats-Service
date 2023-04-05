@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /prod-moneystats-service
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -15,6 +18,10 @@ spring:
   sql:
     init:
       mode: always
+  servlet:
+    multipart:
+      max-file-size: 700KB
+      max-request-size: 700KB
 
 rest:
   client:
