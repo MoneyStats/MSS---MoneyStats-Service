@@ -44,20 +44,14 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class AppService {
 
-  @Autowired private WalletService walletService;
-
-  @Autowired private CategoryService categoryService;
-
-  @Autowired private StatsService statsService;
-
   private final UserEntity user;
-
+  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  @Autowired private WalletService walletService;
+  @Autowired private CategoryService categoryService;
+  @Autowired private StatsService statsService;
   @Autowired private GithubClient githubClient;
   @Autowired private EmailSenderService emailSenderService;
-
-  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> reportBug(GithubIssues githubIssues)
@@ -157,10 +151,10 @@ public class AppService {
                 objectMapper.convertValue(
                     walletService.insertOrUpdateWallet(wallet, authToken).getBody().getData(),
                     Wallet.class);
-              } catch (UtilsException e) {
+              } catch (UtilsException | JsonProcessingException e) {
                 throw new RuntimeException(e);
               }
-              List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
+                List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
               wallet.setHistory(statsList);
             })
         .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -31,7 +32,7 @@ public class WalletController {
   public ResponseEntity<Response> insertOrUpdateWallet(
       @RequestBody @Valid Wallet wallet,
       @RequestHeader("authToken") String authToken)
-      throws UtilsException {
+      throws UtilsException, JsonProcessingException {
     return walletService.insertOrUpdateWallet(wallet, authToken);
   }
 
