@@ -77,7 +77,32 @@ public class AppController {
   @Operation(description = "API to contact us", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> contactUs( // @RequestHeader("authToken") String authToken,
-      @RequestBody @Valid Support support)throws UtilsException {
+      @RequestBody @Valid Support support) throws UtilsException {
     return appService.contactSupport(support);
+  }
+
+  @GetMapping(
+      value = "/backup",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "App", description = "API to Backup Wallet and Stats")
+  @Operation(description = "API to Backup Wallet and Stats", tags = "App")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> backupData(@RequestHeader("authToken") String authToken)
+      throws UtilsException {
+    return appService.backupData();
+  }
+
+  @PostMapping(
+      value = "/restore",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "App", description = "API to restore Wallets and Stats")
+  @Operation(description = "API to restore Wallets and Stats", tags = "App")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> restoreData(
+      @RequestBody @Valid List<Wallet> wallets,
+      @RequestHeader("authToken") String authToken) {
+    return appService.restoreData(wallets);
   }
 }

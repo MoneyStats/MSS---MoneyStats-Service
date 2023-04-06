@@ -36,7 +36,7 @@ public class WalletMapper {
     if (wallet.getInfo() != null) {
       walletEntity.setInfo(convertWithStream(wallet.getInfo()));
     }
-    if (walletEntity.getHistory() != null) {
+    if (wallet.getHistory() != null) {
       walletEntity.setHistory(
           wallet.getHistory().stream()
               .map(
@@ -97,6 +97,33 @@ public class WalletMapper {
                         .map(
                             statsEntity -> {
                               Stats stats = new Stats();
+                              BeanUtils.copyProperties(statsEntity, stats);
+                              return stats;
+                            })
+                        .collect(Collectors.toList()));
+              }
+
+              return wallet;
+            }))
+        .collect(Collectors.toList());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
+    return wallets.stream()
+        .map(
+            (walletToEdit -> {
+              Wallet wallet = new Wallet();
+              walletToEdit.setId(null);
+              BeanUtils.copyProperties(walletToEdit, wallet);
+
+              if (walletToEdit.getHistory() != null) {
+                wallet.setHistory(
+                    walletToEdit.getHistory().stream()
+                        .map(
+                            statsEntity -> {
+                              Stats stats = new Stats();
+                              statsEntity.setId(null);
                               BeanUtils.copyProperties(statsEntity, stats);
                               return stats;
                             })

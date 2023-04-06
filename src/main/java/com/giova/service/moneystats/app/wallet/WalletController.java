@@ -30,10 +30,9 @@ public class WalletController {
   @Operation(description = "API to insert a wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> insertOrUpdateWallet(
-      @RequestBody @Valid Wallet wallet,
-      @RequestHeader("authToken") String authToken)
+      @RequestBody @Valid Wallet wallet, @RequestHeader("authToken") String authToken)
       throws UtilsException, JsonProcessingException {
-    return walletService.insertOrUpdateWallet(wallet, authToken);
+    return walletService.insertOrUpdateWallet(wallet);
   }
 
   @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -42,6 +41,6 @@ public class WalletController {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> listWallet(@RequestHeader("authToken") String authToken)
       throws UtilsException {
-    return walletService.getWallets(authToken);
+    return walletService.getWallets();
   }
 }

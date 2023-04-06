@@ -15,6 +15,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -37,12 +38,12 @@ public class WalletService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet, String authToken)
+  public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
     // UserEntity user = authService.checkLogin(authToken);
 
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
-  
+
     if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
       LOG.info("Building attachment with filename {}", wallet.getImgName());
       Image image = imageService.getAttachment(wallet.getImgName());
@@ -70,7 +71,7 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> getWallets(String authToken) throws UtilsException {
+  public ResponseEntity<Response> getWallets() throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
 
     List<WalletEntity> walletEntity = iWalletDAO.findAllByUserId(user.getId());
@@ -88,5 +89,48 @@ public class WalletService {
         new Response(
             HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
     return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
+    return walletMapper.deleteWalletIds(wallets);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
+
+    List<WalletEntity> walletEntities = wallets.stream().map(wallet -> {
+      WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
+
+      if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
+        LOG.info("Building attachment with filename {}", wallet.getImgName());
+        Image image = imageService.getAttachment(wallet.getImgName());
+        imageService.removeAttachment(wallet.getImgName());
+        walletEntity.setImg(
+                "data:"
+                        + image.getContentType()
+                        + ";base64,"
+                        + Base64.getEncoder().encodeToString(image.getBody()));
+      }
+      return walletEntity;
+    }).collect(Collectors.toList());
+
+    List<WalletEntity> saved = iWalletDAO.saveAll(walletEntities);
+
+    return saved.stream().map(walletEntity -> {
+      Wallet wallet = new Wallet();
+      try {
+        walletMapper.fromWalletEntityToWallet(walletEntity);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+      
+      return wallet;
+    }).collect(Collectors.toList());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public void deleteWalletEntities() {
+    iWalletDAO.deleteAllByUserId(user.getId());
   }
 }
