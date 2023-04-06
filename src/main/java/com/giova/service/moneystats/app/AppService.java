@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +93,7 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets(authToken).getBody().getData(),
-              new TypeReference<List<Wallet>>() {});
+              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -126,8 +126,7 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets(authToken).getBody().getData(),
-              new TypeReference<List<Wallet>>() {});
+              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -149,12 +148,12 @@ public class AppService {
             wallet -> {
               try {
                 objectMapper.convertValue(
-                    walletService.insertOrUpdateWallet(wallet, authToken).getBody().getData(),
+                    walletService.insertOrUpdateWallet(wallet).getBody().getData(),
                     Wallet.class);
               } catch (UtilsException | JsonProcessingException e) {
                 throw new RuntimeException(e);
               }
-                List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
+              List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
               wallet.setHistory(statsList);
             })
         .collect(Collectors.toList());
@@ -192,6 +191,44 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> backupData() throws UtilsException {
+
+    ResponseEntity<Response> getWallets = walletService.getWallets();
+
+    List<Wallet> wallets =
+        objectMapper.convertValue(
+            getWallets.getBody().getData(), new TypeReference<List<Wallet>>() {});
+
+    String message = "Backup data completed!";
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message,
+            CorrelationIdUtils.getCorrelationId(),
+            walletService.deleteWalletIds(wallets));
+
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> restoreData(List<Wallet> walletEntities) {
+
+    walletService.deleteWalletEntities();
+
+    List<Wallet> restoreWallets = walletService.saveWalletEntities(walletEntities);
+
+    String message = "Data successfully restored!";
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), restoreWallets);
+
+    return ResponseEntity.ok(response);
+  }
+
   private Map<String, Dashboard> mapDashBoard(List<LocalDate> dates, String authToken)
       throws UtilsException {
     Map<String, Dashboard> response = new HashMap<>();
@@ -208,8 +245,7 @@ public class AppService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getWallets(authToken).getBody().getData(),
-            new TypeReference<List<Wallet>>() {});
+            walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()
