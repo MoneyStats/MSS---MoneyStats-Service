@@ -4,7 +4,7 @@ RUN mvn clean package
 
 FROM openjdk:11
 EXPOSE 8080
-WORKDIR /
+#WORKDIR /
 COPY --from=build /target/moneystats-service.jar moneystats-service.jar
 
 ENTRYPOINT ["java","-jar","moneystats-service.jar"]
