@@ -3,7 +3,6 @@ package com.giova.service.moneystats.app.wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -33,7 +32,6 @@ public class WalletService {
   private final UserEntity user;
   @Autowired private IWalletDAO iWalletDAO;
   @Autowired private WalletMapper walletMapper;
-  @Autowired private StatsService statsService;
   @Autowired private ImageService imageService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -58,9 +56,9 @@ public class WalletService {
     WalletEntity saved = iWalletDAO.save(walletEntity);
 
     Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
-    if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
-      walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
-    }
+    //if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
+    //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
+    //}
 
     String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
