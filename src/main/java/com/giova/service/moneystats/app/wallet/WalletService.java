@@ -58,9 +58,9 @@ public class WalletService {
     WalletEntity saved = iWalletDAO.save(walletEntity);
 
     Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
-    if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
-      walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
-    }
+    // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
+    //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
+    // }
 
     String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
@@ -99,34 +99,41 @@ public class WalletService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
 
-    List<WalletEntity> walletEntities = wallets.stream().map(wallet -> {
-      WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
+    List<WalletEntity> walletEntities =
+        wallets.stream()
+            .map(
+                wallet -> {
+                  WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
 
-      if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
-        LOG.info("Building attachment with filename {}", wallet.getImgName());
-        Image image = imageService.getAttachment(wallet.getImgName());
-        imageService.removeAttachment(wallet.getImgName());
-        walletEntity.setImg(
-                "data:"
-                        + image.getContentType()
-                        + ";base64,"
-                        + Base64.getEncoder().encodeToString(image.getBody()));
-      }
-      return walletEntity;
-    }).collect(Collectors.toList());
+                  if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
+                    LOG.info("Building attachment with filename {}", wallet.getImgName());
+                    Image image = imageService.getAttachment(wallet.getImgName());
+                    imageService.removeAttachment(wallet.getImgName());
+                    walletEntity.setImg(
+                        "data:"
+                            + image.getContentType()
+                            + ";base64,"
+                            + Base64.getEncoder().encodeToString(image.getBody()));
+                  }
+                  return walletEntity;
+                })
+            .collect(Collectors.toList());
 
     List<WalletEntity> saved = iWalletDAO.saveAll(walletEntities);
 
-    return saved.stream().map(walletEntity -> {
-      Wallet wallet = new Wallet();
-      try {
-        walletMapper.fromWalletEntityToWallet(walletEntity);
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-      
-      return wallet;
-    }).collect(Collectors.toList());
+    return saved.stream()
+        .map(
+            walletEntity -> {
+              Wallet wallet = new Wallet();
+              try {
+                walletMapper.fromWalletEntityToWallet(walletEntity);
+              } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+              }
+
+              return wallet;
+            })
+        .collect(Collectors.toList());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
