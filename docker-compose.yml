@@ -1,6 +1,7 @@
 version: '3.1'
 services:
   backend-service:
+    container_name: ${CONTAINER_NAME}
     image: ${DOCKER_REPOSITORY}:latest
     ports:
       - "8000:8080"
@@ -19,3 +20,7 @@ services:
       - FE_URL=${FE_URL}
     networks:
       - docker-network
+
+networks:
+  docker-network:
+    external: true
