@@ -3,6 +3,7 @@ services:
   backend-service:
     container_name: ${CONTAINER_NAME}
     image: ${DOCKER_REPOSITORY}:latest
+    hostname: ${HOSTNAME}
     ports:
       - "8000:8080"
     environment:
