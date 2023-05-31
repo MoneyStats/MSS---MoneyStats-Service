@@ -5,7 +5,7 @@ services:
     image: ${DOCKER_REPOSITORY}:latest
     hostname: ${HOSTNAME}
     ports:
-      - "8000:8080"
+      - "8001:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - DATABASE_NAME=${DATABASE_NAME}
