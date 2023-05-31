@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+  backend-service:
+    container_name: ${CONTAINER_NAME}
+    image: ${DOCKER_REPOSITORY}:latest
+    hostname: ${HOSTNAME}
+    ports:
+      - "8001:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - LOGTAIL_LOGS=${LOGTAIL_LOGS}
+      - LOGTAIL_APP_NAME=${LOGTAIL_APP_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
+      - TOKEN_INVITE=${TOKEN_INVITE}
+      - JWT_TIME=${JWT_TIME}
+      - CONTEXT_PATH=${CONTEXT_PATH}
+      - FE_URL=${FE_URL}
+    networks:
+      - docker-network
+
+networks:
+  docker-network:
+    external: true
