@@ -1,11 +1,11 @@
 version: '3.1'
 services:
   backend-service:
-    container_name: prod-moneystats-service
+    container_name: stg-moneystats-service
     image: ${DOCKER_REPOSITORY}:latest
-    hostname: prod.moneystats.service
+    hostname: stg.moneystats.service
     ports:
-      - "8005:8080"
+      - "8001:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - DATABASE_NAME=${DATABASE_NAME}
@@ -22,7 +22,7 @@ services:
     networks:
       docker-network:
         aliases:
-          - prod.moneystats.service
+          - stg.moneystats.service
 
 networks:
   docker-network:
