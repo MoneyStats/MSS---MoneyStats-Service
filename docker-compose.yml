@@ -20,7 +20,9 @@ services:
       - CONTEXT_PATH=${CONTEXT_PATH}
       - FE_URL=${FE_URL}
     networks:
-      - docker-network
+      docker-network:
+        aliases:
+          - ${HOSTNAME}
 
 networks:
   docker-network:

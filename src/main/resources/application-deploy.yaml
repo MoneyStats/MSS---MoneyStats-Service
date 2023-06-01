@@ -20,8 +20,8 @@ spring:
       mode: always
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 2MB
+      max-file-size: 1MB
+      max-request-size: 1MB
 
 rest:
   client:
@@ -29,7 +29,7 @@ rest:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: http://email-sender:8080/email-sender
+      url: http://email.sender:8080/email-sender
       sendEmailUrl: /v1/send-email
 
 jwt:
