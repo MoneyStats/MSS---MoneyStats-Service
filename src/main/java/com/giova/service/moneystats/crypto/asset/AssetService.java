@@ -34,6 +34,7 @@ public class AssetService {
 
   @Autowired private WalletService walletService;
   @Autowired private IAssetDAO assetDAO;
+  @Autowired private AssetMapper assetMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -61,23 +62,18 @@ public class AssetService {
     // UserEntity user = authService.checkLogin(authToken);
 
     List<AssetEntity> assetEntities = assetDAO.findAllByUserId(user.getId());
+    List<Asset> assets = new ArrayList<>();
 
     String message = "";
     if (assetEntities.isEmpty()) {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
-      message = "Found " + assetEntities.size() + " Wallets";
+      assets = assetMapper.mapAssetList(assetEntities);
+      message = "Found " + assets.size() + " Wallets";
     }
-
-    List<Asset> assets = mapAssetList(assetEntities);
 
     Response response =
         new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), assets);
     return ResponseEntity.ok(response);
-  }
-
-  private List<Asset> mapAssetList(List<AssetEntity> assetEntities) {
-    List<Asset> response = new ArrayList<>();
-    return response;
   }
 }

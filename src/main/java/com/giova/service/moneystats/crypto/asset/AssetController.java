@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Logged
 @RestController
-@RequestMapping("/v1/asset")
+@RequestMapping("/v1/crypto/asset")
 @CrossOrigin(origins = "*")
 public class AssetController {
   @Autowired private AssetService assetService;
@@ -30,5 +30,14 @@ public class AssetController {
       @RequestHeader("authToken") String authToken, @RequestBody @Valid Wallet wallet)
       throws UtilsException, JsonProcessingException {
     return assetService.insertOrUpdateAsset(wallet);
+  }
+
+  @GetMapping(value = "/getAll", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "Asset", description = "API to get Crypto Asset")
+  @Operation(description = "API to get Crypto Asset", tags = "Asset")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> getAllAssets(@RequestHeader("authToken") String authToken)
+      throws UtilsException {
+    return assetService.getAssets();
   }
 }
