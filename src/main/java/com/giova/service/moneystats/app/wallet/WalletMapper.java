@@ -9,6 +9,8 @@ import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
@@ -49,6 +51,19 @@ public class WalletMapper {
                   })
               .collect(Collectors.toList()));
     }
+    if (wallet.getAssets() != null) {
+      walletEntity.setAssets(
+          wallet.getAssets().stream()
+              .map(
+                  asset -> {
+                    AssetEntity assetEntity = new AssetEntity();
+                    BeanUtils.copyProperties(asset, assetEntity);
+                    assetEntity.setUser(userEntity);
+                    assetEntity.setWallet(walletEntity);
+                    return assetEntity;
+                  })
+              .collect(Collectors.toList()));
+    }
     return walletEntity;
   }
 
@@ -69,6 +84,17 @@ public class WalletMapper {
                     Stats stats = new Stats();
                     BeanUtils.copyProperties(statsEntity, stats);
                     return stats;
+                  })
+              .collect(Collectors.toList()));
+    }
+    if (walletEntity.getAssets() != null) {
+      wallet.setAssets(
+          walletEntity.getAssets().stream()
+              .map(
+                  assetEntity -> {
+                    Asset asset = new Asset();
+                    BeanUtils.copyProperties(assetEntity, asset);
+                    return asset;
                   })
               .collect(Collectors.toList()));
     }
@@ -102,6 +128,17 @@ public class WalletMapper {
                             })
                         .collect(Collectors.toList()));
               }
+              if (walletEntity.getAssets() != null) {
+                wallet.setAssets(
+                    walletEntity.getAssets().stream()
+                        .map(
+                            assetEntity -> {
+                              Asset asset = new Asset();
+                              BeanUtils.copyProperties(assetEntity, asset);
+                              return asset;
+                            })
+                        .collect(Collectors.toList()));
+              }
 
               return wallet;
             }))
@@ -126,6 +163,18 @@ public class WalletMapper {
                               statsEntity.setId(null);
                               BeanUtils.copyProperties(statsEntity, stats);
                               return stats;
+                            })
+                        .collect(Collectors.toList()));
+              }
+              if (walletToEdit.getAssets() != null) {
+                wallet.setAssets(
+                    walletToEdit.getAssets().stream()
+                        .map(
+                            assetMap -> {
+                              Asset asset = new Asset();
+                              assetMap.setId(null);
+                              BeanUtils.copyProperties(assetMap, asset);
+                              return asset;
                             })
                         .collect(Collectors.toList()));
               }
