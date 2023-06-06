@@ -31,5 +31,7 @@ public class Asset extends GenericDTO {
   private LocalDate lastUpdate;
   private Double performance;
   private Double trend;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Stats> history;
 }

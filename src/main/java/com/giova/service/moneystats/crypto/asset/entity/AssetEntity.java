@@ -65,6 +65,6 @@ public class AssetEntity extends GenericEntity {
   private WalletEntity wallet;
 
   @OrderBy(value = "date")
-  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
   private List<StatsEntity> history;
 }

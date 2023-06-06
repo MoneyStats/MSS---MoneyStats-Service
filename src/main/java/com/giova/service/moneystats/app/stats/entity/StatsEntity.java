@@ -3,14 +3,14 @@ package com.giova.service.moneystats.app.stats.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.generic.GenericEntity;
+import java.time.LocalDate;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-import java.time.LocalDate;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -43,6 +43,10 @@ public class StatsEntity extends GenericEntity {
   private UserEntity user;
 
   @ManyToOne
-  @JoinColumn(name = "WALLET_ID", nullable = false)
+  @JoinColumn(name = "ASSET_ID")
+  private AssetEntity asset;
+
+  @ManyToOne
+  @JoinColumn(name = "WALLET_ID")
   private WalletEntity wallet;
 }

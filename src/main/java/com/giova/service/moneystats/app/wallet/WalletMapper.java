@@ -58,6 +58,19 @@ public class WalletMapper {
                   asset -> {
                     AssetEntity assetEntity = new AssetEntity();
                     BeanUtils.copyProperties(asset, assetEntity);
+                    if (asset.getHistory() != null) {
+                      assetEntity.setHistory(
+                          asset.getHistory().stream()
+                              .map(
+                                  statsEntity -> {
+                                    StatsEntity stats = new StatsEntity();
+                                    BeanUtils.copyProperties(statsEntity, stats);
+                                      stats.setUser(userEntity);
+                                      stats.setAsset(assetEntity);
+                                    return stats;
+                                  })
+                              .collect(Collectors.toList()));
+                    }
                     assetEntity.setUser(userEntity);
                     assetEntity.setWallet(walletEntity);
                     return assetEntity;
@@ -94,6 +107,17 @@ public class WalletMapper {
                   assetEntity -> {
                     Asset asset = new Asset();
                     BeanUtils.copyProperties(assetEntity, asset);
+                    if (assetEntity.getHistory() != null) {
+                      asset.setHistory(
+                          assetEntity.getHistory().stream()
+                              .map(
+                                  statsEntity -> {
+                                    Stats stats = new Stats();
+                                    BeanUtils.copyProperties(statsEntity, stats);
+                                    return stats;
+                                  })
+                              .collect(Collectors.toList()));
+                    }
                     return asset;
                   })
               .collect(Collectors.toList()));
@@ -135,6 +159,17 @@ public class WalletMapper {
                             assetEntity -> {
                               Asset asset = new Asset();
                               BeanUtils.copyProperties(assetEntity, asset);
+                              if (assetEntity.getHistory() != null) {
+                                asset.setHistory(
+                                    assetEntity.getHistory().stream()
+                                        .map(
+                                            statsEntity -> {
+                                              Stats stats = new Stats();
+                                              BeanUtils.copyProperties(statsEntity, stats);
+                                              return stats;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
                               return asset;
                             })
                         .collect(Collectors.toList()));
@@ -174,6 +209,18 @@ public class WalletMapper {
                               Asset asset = new Asset();
                               assetMap.setId(null);
                               BeanUtils.copyProperties(assetMap, asset);
+                              if (assetMap.getHistory() != null) {
+                                asset.setHistory(
+                                    assetMap.getHistory().stream()
+                                        .map(
+                                            statsEntity -> {
+                                              Stats stats = new Stats();
+                                              statsEntity.setId(null);
+                                              BeanUtils.copyProperties(statsEntity, stats);
+                                              return stats;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
                               return asset;
                             })
                         .collect(Collectors.toList()));

@@ -4,12 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -29,6 +33,7 @@ public class AssetService {
   private final UserEntity user;
 
   @Autowired private WalletService walletService;
+  @Autowired private IAssetDAO assetDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -49,5 +54,30 @@ public class AssetService {
             CorrelationIdUtils.getCorrelationId(),
             Objects.requireNonNull(saveWallet.getBody()).getData());
     return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> getAssets() throws UtilsException {
+    // UserEntity user = authService.checkLogin(authToken);
+
+    List<AssetEntity> assetEntities = assetDAO.findAllByUserId(user.getId());
+
+    String message = "";
+    if (assetEntities.isEmpty()) {
+      message = "Asset Empty, insert new Asset to get it!";
+    } else {
+      message = "Found " + assetEntities.size() + " Wallets";
+    }
+
+    List<Asset> assets = mapAssetList(assetEntities);
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), assets);
+    return ResponseEntity.ok(response);
+  }
+
+  private List<Asset> mapAssetList(List<AssetEntity> assetEntities) {
+    List<Asset> response = new ArrayList<>();
+    return response;
   }
 }
