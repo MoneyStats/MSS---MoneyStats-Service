@@ -10,6 +10,7 @@ import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -55,8 +56,8 @@ public class AuthService {
 
     if (!registerToken.equalsIgnoreCase(invitationCode)) {
       LOG.error("Invitation code: {}, is wrong", invitationCode);
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
     }
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(user);
@@ -87,14 +88,14 @@ public class AuthService {
     UserEntity userEntity = iAuthDAO.findUserEntityByUsernameOrEmail(username, email);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
     }
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
     }
 
     User user = authMapper.mapUserEntityToUser(userEntity);
@@ -114,8 +115,8 @@ public class AuthService {
     UserEntity userEntity = iAuthDAO.findUserEntityByEmail(email);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_006, AuthException.ERR_AUTH_MSS_006.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_006, ExceptionMap.ERR_AUTH_MSS_006.getMessage());
     }
     String token = UUID.randomUUID().toString();
     userEntity.setTokenReset(token);
@@ -149,13 +150,13 @@ public class AuthService {
     UserEntity userEntity = iAuthDAO.findUserEntityByTokenReset(token);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
     }
     if (userEntity.getUpdateDate().plusDays(1).isBefore(LocalDateTime.now())) {
       LOG.error("Token Expired");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
     }
     userEntity.setPassword(bCryptPasswordEncoder.encode(password));
     userEntity.setTokenReset(null);
@@ -198,7 +199,7 @@ public class AuthService {
     try {
       user = tokenService.parseToken(token);
     } catch (UtilsException e) {
-      throw new UtilsException(AuthException.ERR_AUTH_MSS_004, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
     }
     UserEntity userEntity =
         iAuthDAO.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
@@ -206,8 +207,8 @@ public class AuthService {
 
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
     }
     return userEntity;
   }
@@ -219,8 +220,8 @@ public class AuthService {
 
     if (authToken == null) {
       LOG.error("Token not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
     }
     return authToken;
   }
@@ -240,10 +241,10 @@ public class AuthService {
       Image image = imageService.getAttachment(userToUpdate.getImgName());
       imageService.removeAttachment(userToUpdate.getImgName());
       userEntity.setProfilePhoto(
-              "data:"
-                      + image.getContentType()
-                      + ";base64,"
-                      + Base64.getEncoder().encodeToString(image.getBody()));
+          "data:"
+              + image.getContentType()
+              + ";base64,"
+              + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
     UserEntity saved = iAuthDAO.save(userEntity);

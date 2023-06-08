@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -29,6 +30,15 @@ public class EmailSenderService {
 
   @Autowired private ResourceLoader resourceLoader;
 
+  public static String asString(Resource resource) throws UtilsException {
+    try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+      return FileCopyUtils.copyToString(reader);
+    } catch (IOException e) {
+      throw new EmailException(
+          ExceptionMap.ERR_EMAIL_SEND_002, ExceptionMap.ERR_EMAIL_SEND_002.getMessage());
+    }
+  }
+
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public EmailResponse sendEmail(
       String templatePath, Map<String, String> params, EmailContent emailContent)
@@ -43,21 +53,11 @@ public class EmailSenderService {
     EmailResponse responseEm = emailSenderClient.sendEmail(emailContent).getBody();
     if (responseEm == null) {
       LOG.error("Error on sending email");
-      throw new UtilsException(
-          EmailException.ERR_EMAIL_SEND_001,
-          EmailException.ERR_EMAIL_SEND_001.getMessage()
+      throw new EmailException(
+          ExceptionMap.ERR_EMAIL_SEND_001.getMessage()
               + "Error on sending email for "
               + emailContent.getFrom());
     }
     return responseEm;
-  }
-
-  public static String asString(Resource resource) throws UtilsException {
-    try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
-      return FileCopyUtils.copyToString(reader);
-    } catch (IOException e) {
-      throw new UtilsException(
-          EmailException.ERR_EMAIL_SEND_002, EmailException.ERR_EMAIL_SEND_002.getMessage());
-    }
   }
 }

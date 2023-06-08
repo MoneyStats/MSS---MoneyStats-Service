@@ -265,11 +265,6 @@ public class AppService {
               AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
               AtomicInteger indexWallet = new AtomicInteger(0);
 
-              // Filtro Wallet cancellati da anni che non hanno stats
-              Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
-              getAllWallet.removeIf(walletRemovedInThePast);
-
               List<Wallet> filterWallet =
                   getAllWallet.stream()
                       .map(
@@ -296,6 +291,11 @@ public class AppService {
                             return wallet1;
                           })
                       .collect(Collectors.toList());
+
+                // Filtro Wallet cancellati da anni che non hanno stats
+                Predicate<Wallet> walletRemovedInThePast =
+                        wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+                filterWallet.removeIf(walletRemovedInThePast);
 
               // Mi serve per mappare il passato
               if (index.get() > 0) {
