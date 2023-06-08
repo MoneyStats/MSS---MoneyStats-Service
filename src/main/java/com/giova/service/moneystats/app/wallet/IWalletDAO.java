@@ -8,5 +8,7 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
 
     List<WalletEntity> findAllByUserId(Long userId);
 
+    List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
+
     void deleteAllByUserId(Long userId);
 }

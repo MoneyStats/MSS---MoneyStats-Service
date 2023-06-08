@@ -2,6 +2,7 @@ package com.giova.service.moneystats.crypto.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -18,18 +19,15 @@ public class CryptoDashboard {
   private Double btcBalance;
   private LocalDate lastUpdate;
   private LocalDate performanceSince;
-
-  // TODO: To check
-  private String value;
-  private Double performance;
-  private Double performanceValue;
-
-  private LocalDate performanceLastDate;
-  private Double lastStatsPerformance;
-  private Double lastStatsBalanceDifference;
+  private DashboardInfo holdingLong;
+  private DashboardInfo trading;
+  private DashboardInfo performance;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<LocalDate> statsAssetsDays;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private List<Asset> assets;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Wallet> wallets;

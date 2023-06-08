@@ -92,6 +92,28 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> getCryptoWallets() throws UtilsException {
+    // UserEntity user = authService.checkLogin(authToken);
+    String CRYPTO = "Crypto";
+
+    List<WalletEntity> walletEntity = iWalletDAO.findAllByUserIdAndCategory(user.getId(), CRYPTO);
+
+    String message = "";
+    if (walletEntity.isEmpty()) {
+      message = "Crypto Wallet Empty, insert new Crypto Wallet to get it!";
+    } else {
+      message = "Found " + walletEntity.size() + " Crypto Wallets";
+    }
+
+    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
+
+    Response response =
+            new Response(
+                    HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
     return walletMapper.deleteWalletIds(wallets);
   }

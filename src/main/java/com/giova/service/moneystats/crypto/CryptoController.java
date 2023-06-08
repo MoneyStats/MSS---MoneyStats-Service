@@ -28,4 +28,13 @@ public class CryptoController {
       throws UtilsException {
     return appService.getCryptoDashboardData();
   }
+
+  @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "Crypto", description = "API to get Crypto Resume")
+  @Operation(description = "API to get Crypto Resume", tags = "Crypto")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> getCryptoResume(@RequestHeader("authToken") String authToken)
+          throws UtilsException {
+    return appService.getCryptoResumeData();
+  }
 }

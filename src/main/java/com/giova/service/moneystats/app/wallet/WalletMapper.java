@@ -9,8 +9,8 @@ import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
-import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
@@ -25,6 +25,7 @@ public class WalletMapper {
 
   private final ObjectMapper mapper = new ObjectMapper();
   @Autowired ImageMapper imageMapper;
+  @Autowired private AssetMapper assetMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
@@ -53,29 +54,7 @@ public class WalletMapper {
     }
     if (wallet.getAssets() != null) {
       walletEntity.setAssets(
-          wallet.getAssets().stream()
-              .map(
-                  asset -> {
-                    AssetEntity assetEntity = new AssetEntity();
-                    BeanUtils.copyProperties(asset, assetEntity);
-                    if (asset.getHistory() != null) {
-                      assetEntity.setHistory(
-                          asset.getHistory().stream()
-                              .map(
-                                  statsEntity -> {
-                                    StatsEntity stats = new StatsEntity();
-                                    BeanUtils.copyProperties(statsEntity, stats);
-                                      stats.setUser(userEntity);
-                                      stats.setAsset(assetEntity);
-                                    return stats;
-                                  })
-                              .collect(Collectors.toList()));
-                    }
-                    assetEntity.setUser(userEntity);
-                    assetEntity.setWallet(walletEntity);
-                    return assetEntity;
-                  })
-              .collect(Collectors.toList()));
+          assetMapper.fromAssetToAssetsEntities(wallet.getAssets(), userEntity, walletEntity));
     }
     return walletEntity;
   }
@@ -101,26 +80,7 @@ public class WalletMapper {
               .collect(Collectors.toList()));
     }
     if (walletEntity.getAssets() != null) {
-      wallet.setAssets(
-          walletEntity.getAssets().stream()
-              .map(
-                  assetEntity -> {
-                    Asset asset = new Asset();
-                    BeanUtils.copyProperties(assetEntity, asset);
-                    if (assetEntity.getHistory() != null) {
-                      asset.setHistory(
-                          assetEntity.getHistory().stream()
-                              .map(
-                                  statsEntity -> {
-                                    Stats stats = new Stats();
-                                    BeanUtils.copyProperties(statsEntity, stats);
-                                    return stats;
-                                  })
-                              .collect(Collectors.toList()));
-                    }
-                    return asset;
-                  })
-              .collect(Collectors.toList()));
+      wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets()));
     }
     return wallet;
   }
@@ -153,26 +113,7 @@ public class WalletMapper {
                         .collect(Collectors.toList()));
               }
               if (walletEntity.getAssets() != null) {
-                wallet.setAssets(
-                    walletEntity.getAssets().stream()
-                        .map(
-                            assetEntity -> {
-                              Asset asset = new Asset();
-                              BeanUtils.copyProperties(assetEntity, asset);
-                              if (assetEntity.getHistory() != null) {
-                                asset.setHistory(
-                                    assetEntity.getHistory().stream()
-                                        .map(
-                                            statsEntity -> {
-                                              Stats stats = new Stats();
-                                              BeanUtils.copyProperties(statsEntity, stats);
-                                              return stats;
-                                            })
-                                        .collect(Collectors.toList()));
-                              }
-                              return asset;
-                            })
-                        .collect(Collectors.toList()));
+                wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets()));
               }
 
               return wallet;

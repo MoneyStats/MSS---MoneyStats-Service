@@ -68,7 +68,7 @@ public class AssetService {
     if (assetEntities.isEmpty()) {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
-      assets = assetMapper.mapAssetList(assetEntities);
+      assets = assetMapper.mapAssetList(assetMapper.fromAssetEntitiesToAssets(assetEntities));
       message = "Found " + assets.size() + " Wallets";
     }
 

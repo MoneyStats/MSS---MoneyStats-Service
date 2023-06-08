@@ -43,4 +43,13 @@ public class WalletController {
       throws UtilsException {
     return walletService.getWallets();
   }
+
+  @GetMapping(value = "/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "Wallet", description = "API to get all Crypto wallet")
+  @Operation(description = "API to get all Crypto wallet", tags = "Wallet")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> listCryptoWallet(@RequestHeader("authToken") String authToken)
+          throws UtilsException {
+    return walletService.getCryptoWallets();
+  }
 }

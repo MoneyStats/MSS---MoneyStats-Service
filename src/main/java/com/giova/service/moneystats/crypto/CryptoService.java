@@ -2,14 +2,13 @@ package com.giova.service.moneystats.crypto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.api.emailSender.EmailSenderService;
-import com.giova.service.moneystats.api.github.GithubClient;
-import com.giova.service.moneystats.app.category.CategoryService;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -17,7 +16,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
-import io.github.giovannilamarmora.utils.math.MathService;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,20 +36,19 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class CryptoService {
 
+  private static final Double BTC_VALUE = 28564.50;
   private final UserEntity user;
-
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private WalletService walletService;
-  @Autowired private CategoryService categoryService;
   @Autowired private StatsService statsService;
-  @Autowired private GithubClient githubClient;
-  @Autowired private EmailSenderService emailSenderService;
+  @Autowired private CryptoMapper cryptoMapper;
+  @Autowired private AssetMapper assetMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() throws UtilsException {
 
-    List<LocalDate> getAllDates = statsService.getDistinctDates(user);
+    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
     List<LocalDate> filter = new ArrayList<>();
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = 0;
@@ -63,15 +60,17 @@ public class CryptoService {
       thisYear = currentYear;
       getData = mapDashBoard(filter);
     } else {
-      CryptoDashboard dashboard = new CryptoDashboard();
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
-      dashboard.setWallets(getAllWallet);
+              walletService.getCryptoWallets().getBody().getData(),
+              new TypeReference<List<Wallet>>() {});
+      CryptoDashboard dashboard =
+          cryptoMapper.mapCryptoDashboardWithoutStats(
+              user.getCryptoCurrency(), getAllWallet, getCryptoAsset(getAllWallet), BTC_VALUE);
       getData.put(String.valueOf(thisYear), dashboard);
     }
 
-    String message = "Data for Dashboard!";
+    String message = "Data for Crypto Dashboard!";
 
     Response response =
         new Response(
@@ -79,6 +78,33 @@ public class CryptoService {
             message,
             CorrelationIdUtils.getCorrelationId(),
             getData.get(String.valueOf(thisYear)));
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> getCryptoResumeData() throws UtilsException {
+    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+    Map<String, CryptoDashboard> getData = new HashMap<>();
+    int thisYear = LocalDate.now().getYear();
+    if (!getAllDates.isEmpty()) {
+      getData = mapDashBoard(getAllDates);
+    } else {
+
+      List<Wallet> getAllWallet =
+          objectMapper.convertValue(
+              walletService.getCryptoWallets().getBody().getData(),
+              new TypeReference<List<Wallet>>() {});
+      CryptoDashboard dashboard =
+          cryptoMapper.mapCryptoDashboardWithoutStats(
+              user.getCryptoCurrency(), getAllWallet, getCryptoAsset(getAllWallet), BTC_VALUE);
+      getData.put(String.valueOf(thisYear), dashboard);
+    }
+
+    String message = "Data for Crypto Resume!";
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), getData);
     return ResponseEntity.ok(response);
   }
 
@@ -91,7 +117,8 @@ public class CryptoService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+            walletService.getCryptoWallets().getBody().getData(),
+            new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()
@@ -105,135 +132,70 @@ public class CryptoService {
               CryptoDashboard dashboard = new CryptoDashboard();
               dashboard.setLastUpdate(filterDateByYear.get(filterDateByYear.size() - 1));
               dashboard.setStatsAssetsDays(filterDateByYear);
+              dashboard.setCurrency(user.getCryptoCurrency());
               dashboard.setPerformanceSince(filterDateByYear.get(0));
 
               AtomicReference<Double> balance = new AtomicReference<>(0D);
               AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
               AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
-              
+              AtomicReference<Double> holdingBalance = new AtomicReference<>(0D);
+              AtomicReference<Double> holdingLastBalance = new AtomicReference<>(0D);
+
               AtomicInteger indexWallet = new AtomicInteger(0);
+
+              // Filtro Wallet cancellati da anni che non hanno stats
+              Predicate<Wallet> walletRemovedInThePast =
+                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+              getAllWallet.removeIf(walletRemovedInThePast);
+
               List<Wallet> filterWallet =
                   getAllWallet.stream()
                       .map(
                           wallet -> {
                             Wallet wallet1 = new Wallet();
                             BeanUtils.copyProperties(wallet, wallet1);
+                            wallet1.setHistory(null);
+                            wallet1.setAssets(
+                                wallet.getAssets().stream()
+                                    .map(
+                                        asset -> {
+                                          Asset asset1 = new Asset();
+                                          BeanUtils.copyProperties(asset, asset1);
+                                          List<Stats> listFilter =
+                                              asset.getHistory().stream()
+                                                  .filter(h -> h.getDate().getYear() == year)
+                                                  .collect(Collectors.toList());
 
-                            List<Stats> listFilter =
-                                wallet.getHistory().stream()
-                                    .filter(h -> h.getDate().getYear() == year)
-                                    .collect(Collectors.toList());
-                            wallet1.setHistory(listFilter);
+                                          asset1.setHistory(listFilter);
+                                          // asset1.setValue(asset.getInvested() * BTC_VALUE);
+                                          balance.updateAndGet(v -> v + asset1.getValue());
+                                          if (wallet.getType().equalsIgnoreCase("Holding"))
+                                            holdingBalance.updateAndGet(v -> v + asset1.getValue());
 
-                            if (!listFilter.isEmpty()) {
-                              Double balanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate()
-                                                          .isEqual(
-                                                              filterDateByYear.get(
-                                                                  filterDateByYear.size() - 1)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF ->
-                                                  lF.getDate()
-                                                      .isEqual(
-                                                          filterDateByYear.get(
-                                                              filterDateByYear.size() - 1)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              balance.updateAndGet(v -> v + balanceFilter);
-                              // balance.updateAndGet(v -> v + listFilter.get(listFilter.size() -
-                              // 1).getBalance());
-                              Double initialBalanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate().isEqual(filterDateByYear.get(0)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              initialBalance.updateAndGet(v -> v + initialBalanceFilter);
-                              // initialBalance.updateAndGet(v -> v +
-                              // listFilter.get(0).getBalance());
-                              // if (listFilter.size() > 1) {
-                              Double lastBalanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate()
-                                                          .isEqual(
-                                                              filterDateByYear.get(
-                                                                  filterDateByYear.size() > 1
-                                                                      ? filterDateByYear.size() - 2
-                                                                      : 0)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF ->
-                                                  lF.getDate()
-                                                      .isEqual(
-                                                          filterDateByYear.get(
-                                                              filterDateByYear.size() > 1
-                                                                  ? filterDateByYear.size() - 2
-                                                                  : 0)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              // Double lastBalanceFilter = listFilter.stream().filter(lF ->
-                              // lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() -
-                              // 2))).collect(Collectors.toList()).size() != 0 ?
-                              //        listFilter.stream().filter(lF ->
-                              // lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() -
-                              // 2))).collect(Collectors.toList()).get(0).getBalance() : 0;
-                              lastBalance.updateAndGet(v -> v + lastBalanceFilter);
-                              // lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size()
-                              // - 2).getBalance());
-                              // } else lastBalance.updateAndGet(v -> v + 0.01D);
-                            }
+                                          if (!listFilter.isEmpty()) {
 
-                            // Mi serve per mappare il passato
-                            if (index.get() > 0 && !listFilter.isEmpty()) {
-                              // Se gli stats all'ultima posizione ha la stessa data dell'ultima
-                              // data della lista dell'anno, il wallet non era cancellato
-                              if (listFilter
-                                  .get(listFilter.size() - 1)
-                                  .getDate()
-                                  .isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
-                                wallet1.setDeletedDate(null);
-                              }
-                              try {
-                                mapWalletInThePast(wallet1);
-                              } catch (UtilsException e) {
-                                throw new RuntimeException(e);
-                              }
-                            }
+                                            cryptoMapper.updateInitialBalance(
+                                                listFilter, filterDateByYear, initialBalance);
+
+                                            cryptoMapper.updateLastBalance(
+                                                listFilter,
+                                                filterDateByYear,
+                                                lastBalance,
+                                                holdingLastBalance,
+                                                wallet.getType().equalsIgnoreCase("Holding"));
+                                          }
+
+                                          checkAndMapWalletInThePast(
+                                              index, listFilter, filterDateByYear, wallet1);
+                                          return asset1;
+                                        })
+                                    .collect(Collectors.toList()));
                             indexWallet.incrementAndGet();
                             return wallet1;
                           })
                       .collect(Collectors.toList());
 
-              // Filtro Wallet cancellati da anni che non hanno stats
-              Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
-              filterWallet.removeIf(walletRemovedInThePast);
-
+              dashboard.setAssets(getCryptoAsset(filterWallet));
               // Mi serve per mappare il passato
               if (index.get() > 0) {
                 // Remove wallet that haven't any stats
@@ -241,24 +203,10 @@ public class CryptoService {
                 filterWallet.removeIf(hasEmptyStats);
               }
 
-              dashboard.setWallets(filterWallet);
               try {
-                dashboard.setPerformanceValue(
-                    MathService.round(balance.get() - initialBalance.get(), 2));
-                dashboard.setLastStatsBalanceDifference(
-                    MathService.round(balance.get() - lastBalance.get(), 2));
-                dashboard.setBalance(MathService.round(balance.get(), 2));
-                dashboard.setPerformance(
-                    balance.get() == 0 && initialBalance.get() == 0
-                        ? 0D
-                        : MathService.round(
-                            ((balance.get() - initialBalance.get()) / initialBalance.get()) * 100,
-                            2));
-                dashboard.setLastStatsPerformance(
-                    balance.get() == 0 && lastBalance.get() == 0
-                        ? 0D
-                        : MathService.round(
-                            ((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+                dashboard.setWallets(filterWallet);
+                cryptoMapper.mapDashboardBalanceAndPerformance(
+                    dashboard, balance, lastBalance, holdingBalance, holdingLastBalance, BTC_VALUE);
               } catch (UtilsException e) {
                 throw new RuntimeException(e);
               }
@@ -270,33 +218,53 @@ public class CryptoService {
     return response;
   }
 
-  private void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
-    AtomicReference<Double> balance = new AtomicReference<>(0D);
-    AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
-    AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
-    Stats highPrice =
-        wallet.getHistory().stream()
-            .max(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
-    Stats lowPrice =
-        wallet.getHistory().stream()
-            .min(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
-    List<Stats> getStats = wallet.getHistory();
-    wallet.setHighPrice(highPrice.getBalance());
-    wallet.setHighPriceDate(highPrice.getDate());
-    wallet.setLowPrice(lowPrice.getBalance());
-    wallet.setLowPriceDate(lowPrice.getDate());
+  private void checkAndMapWalletInThePast(
+      AtomicInteger index,
+      List<Stats> listFilter,
+      List<LocalDate> filterDateByYear,
+      Wallet wallet1) {
+    // Mi serve per mappare il passato
+    if (index.get() > 0 && !listFilter.isEmpty()) {
+      // Se lo stats all'ultima posizione ha la stessa data
+      // dell'ultima
+      // data della lista dell'anno, il wallet non era ancora
+      // cancellato
+      if (listFilter
+          .get(listFilter.size() - 1)
+          .getDate()
+          .isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
+        wallet1.setDeletedDate(null);
+      }
+      try {
+        cryptoMapper.mapWalletInThePast(wallet1);
+      } catch (UtilsException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
-    balance.updateAndGet(
-        v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
-    lastBalance.updateAndGet(
-        v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
-    wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
-    wallet.setDifferenceLastStats(MathService.round(balance.get() - lastBalance.get(), 2));
-    wallet.setBalance(MathService.round(balance.get(), 2));
-
-    wallet.setPerformanceLastStats(
-        MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+  private List<Asset> getCryptoAsset(List<Wallet> filterWallet) {
+    List<Asset> assets = new ArrayList<>();
+    filterWallet.stream()
+        .peek(
+            wallet -> {
+              if (wallet.getAssets() != null && !wallet.getAssets().isEmpty())
+                assets.addAll(wallet.getAssets());
+            })
+        .collect(Collectors.toList());
+    List<Asset> filterAsset =
+        assets.stream()
+            .map(
+                asset -> {
+                  Asset newAsset = new Asset();
+                  BeanUtils.copyProperties(asset, newAsset);
+                  if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+                    Stats stats = asset.getHistory().get(asset.getHistory().size() - 1);
+                    newAsset.setHistory(List.of(stats));
+                  }
+                  return newAsset;
+                })
+            .collect(Collectors.toList());
+    return assetMapper.mapAssetList(filterAsset);
   }
 }

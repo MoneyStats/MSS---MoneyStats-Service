@@ -1,6 +1,9 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import com.giova.service.moneystats.app.stats.dto.Stats;
+import com.giova.service.moneystats.app.stats.entity.StatsEntity;
+import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import java.util.ArrayList;
@@ -12,12 +15,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class AssetMapper {
 
+  private static final Double BTC_VALUE = 28564.50;
+
   public List<Asset> fromAssetEntitiesToAssets(List<AssetEntity> assetEntityList) {
     return assetEntityList.stream()
         .map(
             assetEntity -> {
               Asset asset = new Asset();
               BeanUtils.copyProperties(assetEntity, asset);
+              asset.setValue(asset.getBalance() * BTC_VALUE);
               if (assetEntity.getHistory() != null) {
                 asset.setHistory(
                     assetEntity.getHistory().stream()
@@ -34,10 +40,36 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  public List<Asset> mapAssetList(List<AssetEntity> assetEntities) {
-    List<Asset> mapAsset = fromAssetEntitiesToAssets(assetEntities);
+  public List<AssetEntity> fromAssetToAssetsEntities(
+      List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
+    return assetList.stream()
+        .map(
+            asset -> {
+              AssetEntity assetEntity = new AssetEntity();
+              BeanUtils.copyProperties(asset, assetEntity);
+              if (asset.getHistory() != null) {
+                assetEntity.setHistory(
+                    asset.getHistory().stream()
+                        .map(
+                            statsEntity -> {
+                              StatsEntity stats = new StatsEntity();
+                              BeanUtils.copyProperties(statsEntity, stats);
+                              stats.setUser(userEntity);
+                              stats.setAsset(assetEntity);
+                              return stats;
+                            })
+                        .collect(Collectors.toList()));
+              }
+              assetEntity.setUser(userEntity);
+              assetEntity.setWallet(walletEntity);
+              return assetEntity;
+            })
+        .collect(Collectors.toList());
+  }
+
+  public List<Asset> mapAssetList(List<Asset> assetList) {
     List<Asset> response = new ArrayList<>();
-    mapAsset.stream()
+    assetList.stream()
         .peek(
             asset -> {
               if (!response.stream()
@@ -58,7 +90,7 @@ public class AssetMapper {
                 if (mapResponse.getTrend() != null)
                   mapResponse.setTrend(mapResponse.getTrend() + asset.getTrend());
                 mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
-
+                mapResponse.setValue(mapResponse.getValue() + asset.getValue());
                 if (asset.getHistory() != null) {
                   asset.getHistory().stream()
                       .peek(
@@ -80,7 +112,10 @@ public class AssetMapper {
                           })
                       .collect(Collectors.toList());
                 }
-              } else response.add(asset);
+              } else {
+                asset.setValue(asset.getBalance() * BTC_VALUE);
+                response.add(asset);
+              }
             })
         .collect(Collectors.toList());
     return response;
