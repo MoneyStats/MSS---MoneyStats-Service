@@ -37,6 +37,6 @@ public class CoinGeckoMarketData {
     private Double atl;
     private Double atl_change_percentage;
     private LocalDateTime atl_date;
-    private Double roi;
+    private Roi roi;
     private LocalDateTime last_updated;
 }

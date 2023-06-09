@@ -1,7 +1,10 @@
 package com.giova.service.moneystats.api.coingecko;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -13,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CoinGeckoClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
+  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   @Value(value = "${rest.client.coinGecko.url}")
   private String coinGeckoUrl;
@@ -20,7 +24,7 @@ public class CoinGeckoClient {
   @Value(value = "${rest.client.coinGecko.marketDataUrl}")
   private String marketDataUrl;
 
-  public ResponseEntity<CoinGeckoMarketData> getMarketData(String currency) {
+  public ResponseEntity<List<CoinGeckoMarketData>> getMarketData(String currency) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     HttpEntity<?> request = new HttpEntity<>(headers);
@@ -34,9 +38,11 @@ public class CoinGeckoClient {
             .queryParam("locale", "it")
             .encode()
             .toUriString();
-    ResponseEntity<CoinGeckoMarketData> response =
-        restTemplate.exchange(urlTemplate, HttpMethod.GET, request, CoinGeckoMarketData.class);
+    ResponseEntity<Object> response =
+        restTemplate.exchange(urlTemplate, HttpMethod.GET, request, Object.class);
+    List<CoinGeckoMarketData> list =
+        mapper.convertValue(response.getBody(), new TypeReference<List<CoinGeckoMarketData>>() {});
 
-    return response;
+    return ResponseEntity.ok(list);
   }
 }

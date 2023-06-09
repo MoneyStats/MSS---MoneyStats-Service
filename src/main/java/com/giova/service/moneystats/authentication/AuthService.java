@@ -257,4 +257,10 @@ public class AuthService {
 
     return ResponseEntity.ok(response);
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public List<String> getCryptoFiatUsersCurrency(){
+    LOG.info("Getting Crypto Fiat Currency");
+    return iAuthDAO.selectDistinctCryptoFiatCurrency();
+  }
 }
