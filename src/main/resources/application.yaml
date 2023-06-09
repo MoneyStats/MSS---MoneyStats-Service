@@ -25,8 +25,8 @@ rest:
     marketData:
       delay:
         start: 60000
-        #end: 10000
-        end: 3600000
+        end: 60000
+        #end: 3600000
   client:
     github:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
@@ -36,7 +36,7 @@ rest:
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com
-      marketDataUrl: /api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&locale=it
+      marketDataUrl: /api/v3/coins/markets
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000

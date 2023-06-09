@@ -24,6 +24,11 @@ spring:
       max-request-size: 1MB
 
 rest:
+  scheduled:
+    marketData:
+      delay:
+        start: 60000
+        end: 3600000
   client:
     github:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
@@ -31,6 +36,9 @@ rest:
     emailSender:
       url: http://email.sender:8080/email-sender
       sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
 
 jwt:
   secret: ${JWT_SECRET}
