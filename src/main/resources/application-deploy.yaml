@@ -15,6 +15,7 @@ spring:
     generate-ddl: true
     show-sql: true
     defer-datasource-initialization: true
+    database-platform: org.hibernate.dialect.MySQLDialect
   sql:
     init:
       mode: always
