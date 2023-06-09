@@ -3,10 +3,10 @@ package com.giova.service.moneystats.app.wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -33,14 +33,13 @@ public class WalletService {
   private final UserEntity user;
   @Autowired private IWalletDAO iWalletDAO;
   @Autowired private WalletMapper walletMapper;
-  @Autowired private StatsService statsService;
   @Autowired private ImageService imageService;
+  @Autowired private MarketDataService marketDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
-    // UserEntity user = authService.checkLogin(authToken);
 
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
 
@@ -88,6 +87,28 @@ public class WalletService {
     Response response =
         new Response(
             HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> getCryptoWallets() throws UtilsException {
+    // UserEntity user = authService.checkLogin(authToken);
+    String CRYPTO = "Crypto";
+
+    List<WalletEntity> walletEntity = iWalletDAO.findAllByUserIdAndCategory(user.getId(), CRYPTO);
+
+    String message = "";
+    if (walletEntity.isEmpty()) {
+      message = "Crypto Wallet Empty, insert new Crypto Wallet to get it!";
+    } else {
+      message = "Found " + walletEntity.size() + " Crypto Wallets";
+    }
+
+    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
+
+    Response response =
+            new Response(
+                    HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
     return ResponseEntity.ok(response);
   }
 

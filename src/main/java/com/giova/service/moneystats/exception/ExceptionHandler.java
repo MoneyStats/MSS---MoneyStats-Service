@@ -1,7 +1,5 @@
-package com.giova.service.moneystats.config;
+package com.giova.service.moneystats.exception;
 
-import com.giova.service.moneystats.app.attachments.ImageException;
-import com.giova.service.moneystats.authentication.AuthException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import java.util.Arrays;
@@ -26,13 +24,13 @@ public class ExceptionHandler extends UtilsException {
         e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response =
-        getExceptionResponse(e, request, AuthException.ERR_AUTH_MSS_001, status);
+        getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_001, status);
     String value = "";
     if (response.getError().getExceptionMessage().contains("constraint")) {
       value = Objects.requireNonNull(e.getMessage()).split(";")[2];
     } else {
       value =
-          AuthException.ERR_AUTH_MSS_001.getMessage()
+          ExceptionMap.ERR_AUTH_MSS_001.getMessage()
               + e.getCause()
                   .getMessage()
                   .split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
@@ -54,8 +52,8 @@ public class ExceptionHandler extends UtilsException {
         e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response =
-        getExceptionResponse(e, request, ImageException.ERR_IMG_MSS_002, status);
-    response.getError().setMessage(ImageException.ERR_IMG_MSS_002.getMessage());
+        getExceptionResponse(e, request, ExceptionMap.ERR_IMG_MSS_002, status);
+    response.getError().setMessage(ExceptionMap.ERR_IMG_MSS_002.getMessage());
     if (e.getStackTrace().length != 0) {
       response.getError().setStackTrace(Arrays.toString(e.getStackTrace()));
     }

@@ -7,14 +7,13 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Logged
 @Service
@@ -24,8 +23,13 @@ public class StatsService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<LocalDate> getDistinctDates(UserEntity user) {
-    return iStatsDAO.selectDistinctDate(user.getId());
+    return iStatsDAO.selectAppDistinctDate(user.getId());
   }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+    public List<LocalDate> getCryptoDistinctDates(UserEntity user) {
+        return iStatsDAO.selectCryptoDistinctDate(user.getId());
+    }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {

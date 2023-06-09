@@ -23,7 +23,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
-import io.github.giovannilamarmora.utils.math.MathService;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,6 +52,7 @@ public class AppService {
   @Autowired private StatsService statsService;
   @Autowired private GithubClient githubClient;
   @Autowired private EmailSenderService emailSenderService;
+  @Autowired private AppMapper appMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> reportBug(GithubIssues githubIssues)
@@ -148,8 +148,7 @@ public class AppService {
             wallet -> {
               try {
                 objectMapper.convertValue(
-                    walletService.insertOrUpdateWallet(wallet).getBody().getData(),
-                    Wallet.class);
+                    walletService.insertOrUpdateWallet(wallet).getBody().getData(), Wallet.class);
               } catch (UtilsException | JsonProcessingException e) {
                 throw new RuntimeException(e);
               }
@@ -265,6 +264,7 @@ public class AppService {
               AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
               AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
               AtomicInteger indexWallet = new AtomicInteger(0);
+
               List<Wallet> filterWallet =
                   getAllWallet.stream()
                       .map(
@@ -278,113 +278,24 @@ public class AppService {
                             wallet1.setHistory(listFilter);
 
                             if (!listFilter.isEmpty()) {
-                              Double balanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate()
-                                                          .isEqual(
-                                                              filterDateByYear.get(
-                                                                  filterDateByYear.size() - 1)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF ->
-                                                  lF.getDate()
-                                                      .isEqual(
-                                                          filterDateByYear.get(
-                                                              filterDateByYear.size() - 1)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              balance.updateAndGet(v -> v + balanceFilter);
-                              // balance.updateAndGet(v -> v + listFilter.get(listFilter.size() -
-                              // 1).getBalance());
-                              Double initialBalanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate().isEqual(filterDateByYear.get(0)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              initialBalance.updateAndGet(v -> v + initialBalanceFilter);
-                              // initialBalance.updateAndGet(v -> v +
-                              // listFilter.get(0).getBalance());
-                              // if (listFilter.size() > 1) {
-                              Double lastBalanceFilter =
-                                  listFilter.stream()
-                                              .filter(
-                                                  lF ->
-                                                      lF.getDate()
-                                                          .isEqual(
-                                                              filterDateByYear.get(
-                                                                  filterDateByYear.size() > 1
-                                                                      ? filterDateByYear.size() - 2
-                                                                      : 0)))
-                                              .collect(Collectors.toList())
-                                              .size()
-                                          != 0
-                                      ? listFilter.stream()
-                                          .filter(
-                                              lF ->
-                                                  lF.getDate()
-                                                      .isEqual(
-                                                          filterDateByYear.get(
-                                                              filterDateByYear.size() > 1
-                                                                  ? filterDateByYear.size() - 2
-                                                                  : 0)))
-                                          .collect(Collectors.toList())
-                                          .get(0)
-                                          .getBalance()
-                                      : 0;
-                              // Double lastBalanceFilter = listFilter.stream().filter(lF ->
-                              // lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() -
-                              // 2))).collect(Collectors.toList()).size() != 0 ?
-                              //        listFilter.stream().filter(lF ->
-                              // lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() -
-                              // 2))).collect(Collectors.toList()).get(0).getBalance() : 0;
-                              lastBalance.updateAndGet(v -> v + lastBalanceFilter);
-                              // lastBalance.updateAndGet(v -> v + listFilter.get(listFilter.size()
-                              // - 2).getBalance());
-                              // } else lastBalance.updateAndGet(v -> v + 0.01D);
+                              appMapper.updateBalance(listFilter, filterDateByYear, balance);
+                              appMapper.updateInitialBalance(
+                                  listFilter, filterDateByYear, initialBalance);
+                              appMapper.updateLastBalance(
+                                  listFilter, filterDateByYear, lastBalance);
                             }
 
-                            // Mi serve per mappare il passato
-                            if (index.get() > 0 && !listFilter.isEmpty()) {
-                              // Se gli stats all'ultima posizione ha la stessa data dell'ultima
-                              // data della lista dell'anno, il wallet non era cancellato
-                              if (listFilter
-                                  .get(listFilter.size() - 1)
-                                  .getDate()
-                                  .isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
-                                wallet1.setDeletedDate(null);
-                              }
-                              try {
-                                mapWalletInThePast(wallet1);
-                              } catch (UtilsException e) {
-                                throw new RuntimeException(e);
-                              }
-                            }
+                            checkAndMapWalletInThePast(
+                                index, listFilter, filterDateByYear, wallet1);
                             indexWallet.incrementAndGet();
                             return wallet1;
                           })
                       .collect(Collectors.toList());
 
-              // Filtro Wallet cancellati da anni che non hanno stats
-              Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
-              filterWallet.removeIf(walletRemovedInThePast);
+                // Filtro Wallet cancellati da anni che non hanno stats
+                Predicate<Wallet> walletRemovedInThePast =
+                        wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+                filterWallet.removeIf(walletRemovedInThePast);
 
               // Mi serve per mappare il passato
               if (index.get() > 0) {
@@ -395,22 +306,8 @@ public class AppService {
 
               dashboard.setWallets(filterWallet);
               try {
-                dashboard.setPerformanceValue(
-                    MathService.round(balance.get() - initialBalance.get(), 2));
-                dashboard.setLastStatsBalanceDifference(
-                    MathService.round(balance.get() - lastBalance.get(), 2));
-                dashboard.setBalance(MathService.round(balance.get(), 2));
-                dashboard.setPerformance(
-                    balance.get() == 0 && initialBalance.get() == 0
-                        ? 0D
-                        : MathService.round(
-                            ((balance.get() - initialBalance.get()) / initialBalance.get()) * 100,
-                            2));
-                dashboard.setLastStatsPerformance(
-                    balance.get() == 0 && lastBalance.get() == 0
-                        ? 0D
-                        : MathService.round(
-                            ((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+                appMapper.mapDashboardBalanceAndPerformance(
+                    dashboard, balance, lastBalance, initialBalance);
               } catch (UtilsException e) {
                 throw new RuntimeException(e);
               }
@@ -422,33 +319,28 @@ public class AppService {
     return response;
   }
 
-  private void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
-    AtomicReference<Double> balance = new AtomicReference<>(0D);
-    AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
-    AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
-    Stats highPrice =
-        wallet.getHistory().stream()
-            .max(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
-    Stats lowPrice =
-        wallet.getHistory().stream()
-            .min(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
-    List<Stats> getStats = wallet.getHistory();
-    wallet.setHighPrice(highPrice.getBalance());
-    wallet.setHighPriceDate(highPrice.getDate());
-    wallet.setLowPrice(lowPrice.getBalance());
-    wallet.setLowPriceDate(lowPrice.getDate());
-
-    balance.updateAndGet(
-        v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
-    lastBalance.updateAndGet(
-        v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
-    wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
-    wallet.setDifferenceLastStats(MathService.round(balance.get() - lastBalance.get(), 2));
-    wallet.setBalance(MathService.round(balance.get(), 2));
-
-    wallet.setPerformanceLastStats(
-        MathService.round(((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+  private void checkAndMapWalletInThePast(
+      AtomicInteger index,
+      List<Stats> listFilter,
+      List<LocalDate> filterDateByYear,
+      Wallet wallet1) {
+    // Mi serve per mappare il passato
+    if (index.get() > 0 && !listFilter.isEmpty()) {
+      // Se lo stats all'ultima posizione ha la stessa data
+      // dell'ultima
+      // data della lista dell'anno, il wallet non era ancora
+      // cancellato
+      if (listFilter
+          .get(listFilter.size() - 1)
+          .getDate()
+          .isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
+        wallet1.setDeletedDate(null);
+      }
+      try {
+        appMapper.mapWalletInThePast(wallet1);
+      } catch (UtilsException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

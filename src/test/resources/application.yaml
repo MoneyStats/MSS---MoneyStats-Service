@@ -14,6 +14,11 @@ springdoc:
   packagesToScan: com.giova.service.moneystats
 
 rest:
+  scheduled:
+    marketData:
+      delay:
+        start: 60000
+        end: 60000
   client:
     github:
       issuesUrl: https://api.github.com/repos/MoneyStats/MoneyStats-Service-Application/issues
@@ -21,6 +26,9 @@ rest:
     emailSender:
       url: http://localhost:8086
       sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
 
 jwt:
   secret: B710834ECC17FAAC9977FE2980C4604E9AAA59

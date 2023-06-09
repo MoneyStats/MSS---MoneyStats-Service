@@ -50,6 +50,9 @@ public class UserEntity extends GenericEntity {
   @Column(name = "CURRENCY", nullable = false)
   private String currency;
 
+  @Column(name = "CRYPTO_CURRENCY")
+  private String cryptoCurrency;
+
   @Lob
   @Column(name = "GITHUB_USER")
   private String githubUser;

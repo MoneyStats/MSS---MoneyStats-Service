@@ -3,6 +3,7 @@ package com.giova.service.moneystats.app.wallet.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.generic.GenericEntity;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +32,9 @@ public class WalletEntity extends GenericEntity {
 
   @Column(name = "CATEGORY", nullable = false)
   private String category;
+
+  @Column(name = "TYPE")
+  private String type;
 
   @Column(name = "BALANCE")
   private Double balance;
@@ -73,6 +77,10 @@ public class WalletEntity extends GenericEntity {
   @ManyToOne
   @JoinColumn(name = "USER_ID", nullable = false)
   private UserEntity user;
+
+  @OrderBy(value = "rank")
+  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  private List<AssetEntity> assets;
 
   @OrderBy(value = "date")
   @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)

@@ -4,6 +4,7 @@ import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -63,7 +64,7 @@ public class TokenService {
       body = Jwts.parser().setSigningKey(secret).parseClaimsJws(token.getAccessToken()).getBody();
     } catch (JwtException e) {
       LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
-      throw new UtilsException(AuthException.ERR_AUTH_MSS_002, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
     }
 
     return new User(

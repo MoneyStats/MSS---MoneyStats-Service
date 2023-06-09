@@ -32,7 +32,7 @@ public class StatsServiceTest {
     LocalDate date2 = LocalDate.of(2022, 1, 2);
     List<LocalDate> dates = Arrays.asList(date1, date2);
 
-    when(iStatsDAO.selectDistinctDate(user.getId())).thenReturn(dates);
+    when(iStatsDAO.selectAppDistinctDate(user.getId())).thenReturn(dates);
 
     List<LocalDate> distinctDates = statsService.getDistinctDates(user);
 

@@ -8,7 +8,9 @@ spring:
     password:
     driverClassName: org.h2.Driver
   jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: true
   sql:
     init:
@@ -19,6 +21,12 @@ spring:
       max-request-size: 2MB
 
 rest:
+  scheduled:
+    marketData:
+      delay:
+        start: 60000
+        end: 60000
+        #end: 3600000
   client:
     github:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
@@ -26,6 +34,9 @@ rest:
     emailSender:
       url: https://prod-email-sender.up.railway.app
       sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000

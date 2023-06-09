@@ -9,20 +9,29 @@ import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WalletMapper {
 
+  private final UserEntity user;
   private final ObjectMapper mapper = new ObjectMapper();
   @Autowired ImageMapper imageMapper;
+  @Autowired private AssetMapper assetMapper;
+  @Autowired private MarketDataService marketDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
@@ -49,6 +58,10 @@ public class WalletMapper {
                   })
               .collect(Collectors.toList()));
     }
+    if (wallet.getAssets() != null) {
+      walletEntity.setAssets(
+          assetMapper.fromAssetToAssetsEntities(wallet.getAssets(), userEntity, walletEntity));
+    }
     return walletEntity;
   }
 
@@ -71,6 +84,10 @@ public class WalletMapper {
                     return stats;
                   })
               .collect(Collectors.toList()));
+    }
+    if (walletEntity.getAssets() != null) {
+      List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+      wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
     }
     return wallet;
   }
@@ -102,6 +119,12 @@ public class WalletMapper {
                             })
                         .collect(Collectors.toList()));
               }
+              if (walletEntity.getAssets() != null) {
+                List<MarketData> marketData =
+                    marketDataService.getMarketData(user.getCryptoCurrency());
+                wallet.setAssets(
+                    assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
+              }
 
               return wallet;
             }))
@@ -126,6 +149,30 @@ public class WalletMapper {
                               statsEntity.setId(null);
                               BeanUtils.copyProperties(statsEntity, stats);
                               return stats;
+                            })
+                        .collect(Collectors.toList()));
+              }
+              if (walletToEdit.getAssets() != null) {
+                wallet.setAssets(
+                    walletToEdit.getAssets().stream()
+                        .map(
+                            assetMap -> {
+                              Asset asset = new Asset();
+                              assetMap.setId(null);
+                              BeanUtils.copyProperties(assetMap, asset);
+                              if (assetMap.getHistory() != null) {
+                                asset.setHistory(
+                                    assetMap.getHistory().stream()
+                                        .map(
+                                            statsEntity -> {
+                                              Stats stats = new Stats();
+                                              statsEntity.setId(null);
+                                              BeanUtils.copyProperties(statsEntity, stats);
+                                              return stats;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
+                              return asset;
                             })
                         .collect(Collectors.toList()));
               }

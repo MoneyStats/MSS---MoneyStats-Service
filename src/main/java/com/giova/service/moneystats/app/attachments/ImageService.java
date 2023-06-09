@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.app.attachments;
 
 import com.giova.service.moneystats.app.attachments.dto.Image;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -32,17 +33,15 @@ public class ImageService {
     Image attachment;
     if (file == null || file.isEmpty()) {
       LOG.error("The file you have been passed is invalid");
-      throw new UtilsException(
-          ImageException.ERR_IMG_MSS_001,
+      throw new ImageException(
           "The file you have been passed is invalid",
-          ImageException.ERR_IMG_MSS_001.getMessage());
+          ExceptionMap.ERR_IMG_MSS_001.getMessage());
     }
     try {
       attachment = mapper.fromPartToDto(file);
     } catch (UtilsException e) {
       LOG.error("Error on mapping attachment");
-      throw new UtilsException(
-          ImageException.ERR_IMG_MSS_001, "Error on mapping attachment", e.getMessage());
+      throw new ImageException("Error on mapping attachment", e.getMessage());
     }
     attachmentMap.put(attachment.getFileName(), attachment);
 
