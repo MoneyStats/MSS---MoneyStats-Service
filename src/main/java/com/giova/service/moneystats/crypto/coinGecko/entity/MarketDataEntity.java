@@ -41,7 +41,7 @@ public class MarketDataEntity extends GenericEntity {
   private Double market_cap;
 
   @Column(name = "MARKET_CAP_RANK", nullable = false)
-  private Double rank;
+  private Long rank;
 
   @Column(name = "TOTAL_VOLUME")
   private Double total_volume;

@@ -182,7 +182,7 @@ public class CryptoMapper {
                     .peek(
                         asset -> {
                           // TODO: Modica 2 con Asset Price anche giù nel mapDashboard
-                          asset.setValue(asset.getBalance() * BTC_VALUE);
+                          //asset.setValue(asset.getBalance() * BTC_VALUE);
                           balance.updateAndGet(v -> v + asset.getValue());
                           if (wallet.getType().equalsIgnoreCase("Holding"))
                             holdingBalance.updateAndGet(v -> v + asset.getValue());

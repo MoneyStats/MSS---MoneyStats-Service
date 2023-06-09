@@ -1,19 +1,18 @@
 package com.giova.service.moneystats.crypto.coinGecko.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.giova.service.moneystats.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MarketData {
+public class MarketData extends GenericDTO {
   private String identifier;
   @UpperCase private String symbol;
   @UpperCamelCase private String name;
@@ -21,7 +20,7 @@ public class MarketData {
   @UpperCase private String currency;
   private Double current_price;
   private Double market_cap;
-  private Double rank;
+  private Long rank;
   private Double total_volume;
   private Double high_24h;
   private Double low_24h;

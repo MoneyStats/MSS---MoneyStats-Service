@@ -25,6 +25,7 @@ rest:
     marketData:
       delay:
         start: 60000
+        #end: 10000
         end: 3600000
   client:
     github:

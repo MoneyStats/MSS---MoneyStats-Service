@@ -26,17 +26,26 @@ public class CronMarketData {
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
     // Ottenengo la lista di currency per cui fare il salvataggio a DB
-    List<String> fiatCurrencies = authService.getCryptoFiatUsersCurrency();
+    // List<String> fiatCurrencies = authService.getCryptoFiatUsersCurrency();
+    List<String> fiatCurrencies = List.of("USD", "EUR", "GBP");
 
     if (fiatCurrencies.isEmpty()) {
       LOG.info("No Currency found on Database, Stopping Scheduler");
       return;
     }
 
-    fiatCurrencies.stream().peek(fiatCurrency -> {
-      LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
-      List<MarketData> getMarketData = marketDataService.getMarketData(fiatCurrency);
-      marketDataService.saveMarketData(getMarketData, fiatCurrency);
-    }).collect(Collectors.toList());
+    // Cancello tutti i dati dalla tabella MarketData
+    marketDataService.deleteMarketData();
+
+    fiatCurrencies.stream()
+        .peek(
+            fiatCurrency -> {
+              LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
+              List<MarketData> getMarketData =
+                  marketDataService.getCoinGeckoMarketData(fiatCurrency);
+              marketDataService.saveMarketData(getMarketData, fiatCurrency);
+            })
+        .collect(Collectors.toList());
+    LOG.info("Scheduler Finished at {}", LocalDateTime.now());
   }
 }

@@ -11,21 +11,27 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WalletMapper {
 
+  private final UserEntity user;
   private final ObjectMapper mapper = new ObjectMapper();
   @Autowired ImageMapper imageMapper;
   @Autowired private AssetMapper assetMapper;
+  @Autowired private MarketDataService marketDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
@@ -80,7 +86,8 @@ public class WalletMapper {
               .collect(Collectors.toList()));
     }
     if (walletEntity.getAssets() != null) {
-      wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets()));
+      List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+      wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
     }
     return wallet;
   }
@@ -113,7 +120,10 @@ public class WalletMapper {
                         .collect(Collectors.toList()));
               }
               if (walletEntity.getAssets() != null) {
-                wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets()));
+                List<MarketData> marketData =
+                    marketDataService.getMarketData(user.getCryptoCurrency());
+                wallet.setAssets(
+                    assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
               }
 
               return wallet;

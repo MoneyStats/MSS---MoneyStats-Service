@@ -19,7 +19,7 @@ public class CoinGeckoMarketData {
     private String image;
     private Double current_price;
     private Double market_cap;
-    private Double market_cap_rank;
+    private Long market_cap_rank;
     private Double fully_diluted_valuation;
     private Double total_volume;
     private Double high_24h;

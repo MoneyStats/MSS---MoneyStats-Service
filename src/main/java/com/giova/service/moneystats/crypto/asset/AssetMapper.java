@@ -6,6 +6,7 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,15 +16,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class AssetMapper {
 
-  private static final Double BTC_VALUE = 28564.50;
-
-  public List<Asset> fromAssetEntitiesToAssets(List<AssetEntity> assetEntityList) {
+  public List<Asset> fromAssetEntitiesToAssets(
+      List<AssetEntity> assetEntityList, List<MarketData> marketData) {
     return assetEntityList.stream()
         .map(
             assetEntity -> {
               Asset asset = new Asset();
               BeanUtils.copyProperties(assetEntity, asset);
-              asset.setValue(asset.getBalance() * BTC_VALUE);
+              asset.setValue(asset.getBalance() * getAssetValue(marketData, asset));
               if (assetEntity.getHistory() != null) {
                 asset.setHistory(
                     assetEntity.getHistory().stream()
@@ -67,7 +67,7 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  public List<Asset> mapAssetList(List<Asset> assetList) {
+  public List<Asset> mapAssetList(List<Asset> assetList, List<MarketData> marketData) {
     List<Asset> response = new ArrayList<>();
     assetList.stream()
         .peek(
@@ -113,11 +113,21 @@ public class AssetMapper {
                       .collect(Collectors.toList());
                 }
               } else {
-                asset.setValue(asset.getBalance() * BTC_VALUE);
+
+                asset.setValue(asset.getBalance() * getAssetValue(marketData, asset));
+
                 response.add(asset);
               }
             })
         .collect(Collectors.toList());
     return response;
+  }
+
+  private Double getAssetValue(List<MarketData> marketData, Asset asset) {
+    return marketData.stream()
+        .filter(marketData1 -> marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
+        .findFirst()
+        .get()
+        .getCurrent_price();
   }
 }

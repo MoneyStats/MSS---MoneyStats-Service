@@ -6,6 +6,8 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -35,6 +37,7 @@ public class AssetService {
   @Autowired private WalletService walletService;
   @Autowired private IAssetDAO assetDAO;
   @Autowired private AssetMapper assetMapper;
+  @Autowired private MarketDataService marketDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -58,8 +61,7 @@ public class AssetService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> getAssets() throws UtilsException {
-    // UserEntity user = authService.checkLogin(authToken);
+  public ResponseEntity<Response> getAssets() {
 
     List<AssetEntity> assetEntities = assetDAO.findAllByUserId(user.getId());
     List<Asset> assets = new ArrayList<>();
@@ -68,8 +70,11 @@ public class AssetService {
     if (assetEntities.isEmpty()) {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
-      assets = assetMapper.mapAssetList(assetMapper.fromAssetEntitiesToAssets(assetEntities));
-      message = "Found " + assets.size() + " Wallets";
+      List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+      assets =
+          assetMapper.mapAssetList(
+              assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData), marketData);
+      message = "Found " + assets.size() + " Assets";
     }
 
     Response response =
