@@ -1,0 +1,53 @@
+server:
+  servlet:
+    context-path: /moneystats-service
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/moneystats
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      #hbm2ddl:
+      #  auto: update
+      ddl-auto: update
+      #ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    generate-ddl: true
+    show-sql: true
+    defer-datasource-initialization: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+
+rest:
+  scheduled:
+    marketData:
+      delay:
+        start: 60000
+        end: 3600000
+  client:
+    github:
+      issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
+      authToken: ${GITHUB_AUTH_TOKEN}
+    emailSender:
+      url: http://email.sender:8080/email-sender
+      sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
+
+jwt:
+  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
+  time: 360000
+app:
+  invitationCode: ${TOKEN_INVITE}
+  fe:
+    url: http://localhost:4200
