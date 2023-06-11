@@ -26,10 +26,10 @@ public class StatsService {
     return iStatsDAO.selectAppDistinctDate(user.getId());
   }
 
-    @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-    public List<LocalDate> getCryptoDistinctDates(UserEntity user) {
-        return iStatsDAO.selectCryptoDistinctDate(user.getId());
-    }
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public List<LocalDate> getCryptoDistinctDates(UserEntity user) {
+    return iStatsDAO.selectCryptoDistinctDate(user.getId());
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {

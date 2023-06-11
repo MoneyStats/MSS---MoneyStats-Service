@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
 
   /**
@@ -26,8 +28,8 @@ public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
    * @return a List od unique and not duplicate date
    */
   @Query(
-          value =
-                  "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId and STATS.wallet.id is not null order by STATS.date")
+      value =
+          "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId and STATS.wallet.id is not null order by STATS.date")
   List<LocalDate> selectAppDistinctDate(Long userId);
 
   /**

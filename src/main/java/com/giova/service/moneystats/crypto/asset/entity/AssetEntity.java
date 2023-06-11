@@ -32,10 +32,10 @@ public class AssetEntity extends GenericEntity {
   @Column(name = "NAME")
   private String name;
 
-  @Column(name = "SYMBOL")
+  @Column(name = "SYMBOL", length = 10)
   private String symbol;
 
-  @Column(name = "RANK")
+  @Column(name = "CRYPTO_RANK")
   private Long rank;
 
   @Column(name = "ICON")
