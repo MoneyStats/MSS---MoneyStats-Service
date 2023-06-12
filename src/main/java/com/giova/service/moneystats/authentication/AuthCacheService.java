@@ -33,7 +33,7 @@ public class AuthCacheService {
   @Caching(
       cacheable = {
         @Cacheable(value = USER_CACHE, key = "#username", condition = "#username!=null"),
-        @Cacheable(value = "User", key = "#email", condition = "#email!=null")
+        @Cacheable(value = USER_CACHE, key = "#email", condition = "#email!=null")
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public UserEntity findUserEntityByUsernameOrEmail(String username, String email) {
