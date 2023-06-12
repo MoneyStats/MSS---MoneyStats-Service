@@ -27,9 +27,13 @@ spring:
 rest:
   scheduled:
     marketData:
+      active: true
       delay:
         start: 60000
         end: 3600000
+    caching:
+      active: true
+      cron: 0 0 1 * * MON
   client:
     github:
       issuesUrl: https://api.github.com/repos/MoneyStats/App/issues

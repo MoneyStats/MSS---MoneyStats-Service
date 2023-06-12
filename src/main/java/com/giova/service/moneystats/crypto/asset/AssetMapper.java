@@ -124,10 +124,15 @@ public class AssetMapper {
   }
 
   private Double getAssetValue(List<MarketData> marketData, Asset asset) {
-    return marketData.stream()
-        .filter(marketData1 -> marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
-        .findFirst()
-        .get()
-        .getCurrent_price();
+    if (marketData.isEmpty()) {
+      return 1D;
+    } else {
+      return marketData.stream()
+          .filter(
+              marketData1 -> marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
+          .findFirst()
+          .get()
+          .getCurrent_price();
+    }
   }
 }

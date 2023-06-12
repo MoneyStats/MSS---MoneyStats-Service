@@ -33,10 +33,10 @@ public class CoinGeckoMarketData {
     private Double max_supply;
     private Double ath;
     private Double ath_change_percentage;
-    private LocalDateTime ath_date;
+    private String ath_date;
     private Double atl;
     private Double atl_change_percentage;
-    private LocalDateTime atl_date;
+    private String atl_date;
     private Roi roi;
     private LocalDateTime last_updated;
 }
