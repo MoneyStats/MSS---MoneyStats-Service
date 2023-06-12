@@ -311,8 +311,8 @@ public class CryptoService {
   }
 
   private Double getAssetValue(List<MarketData> marketData, String symbol) {
-      if (marketData.isEmpty() || symbol == null) {
-          return 1D;
+    if (marketData.isEmpty() || symbol == null) {
+      return 1D;
     } else {
       return marketData.stream()
           .filter(marketData1 -> marketData1.getSymbol().equalsIgnoreCase(symbol))
