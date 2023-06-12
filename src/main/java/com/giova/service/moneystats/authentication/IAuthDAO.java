@@ -9,19 +9,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IAuthDAO extends JpaRepository<UserEntity, Long> {
 
-    UserEntity findUserEntityByUsernameOrEmail(String username, String email);
+  UserEntity findUserEntityByUsernameOrEmail(String username, String email);
 
-    UserEntity findUserEntityByEmail(String email);
+  UserEntity findUserEntityByEmail(String email);
 
-    UserEntity findUserEntityByTokenReset(String token);
+  UserEntity findUserEntityByTokenReset(String token);
 
-
-    /**
-     *  Select the Crypto Fiat Currency to be used to import the currency
-     * @return
-     */
-    @Query(
-            value =
-                    "select distinct USER.cryptoCurrency from UserEntity USER")
-    List<String> selectDistinctCryptoFiatCurrency();
+  /**
+   * Select the Crypto Fiat Currency to be used to import the currency
+   *
+   * @return
+   */
+  @Query(value = "select distinct USER.cryptoCurrency from UserEntity USER")
+  List<String> selectDistinctCryptoFiatCurrency();
 }

@@ -44,7 +44,7 @@ public class AuthService {
   @Value(value = "${app.fe.url}")
   private String feUrl;
 
-  @Autowired private IAuthDAO iAuthDAO;
+  @Autowired private AuthCacheService authCacheService;
   @Autowired private AuthMapper authMapper;
   @Autowired private TokenService tokenService;
   @Autowired private EmailSenderService emailSenderService;
@@ -64,7 +64,7 @@ public class AuthService {
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     user.setPassword(null);
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     saved.setPassword(null);
 
     String message = "User: " + user.getUsername() + " Successfully registered!";
@@ -85,7 +85,7 @@ public class AuthService {
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
 
-    UserEntity userEntity = iAuthDAO.findUserEntityByUsernameOrEmail(username, email);
+    UserEntity userEntity = authCacheService.findUserEntityByUsernameOrEmail(username, email);
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
@@ -112,7 +112,7 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
-    UserEntity userEntity = iAuthDAO.findUserEntityByEmail(email);
+    UserEntity userEntity = authCacheService.findUserEntityByEmail(email);
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
@@ -120,7 +120,7 @@ public class AuthService {
     }
     String token = UUID.randomUUID().toString();
     userEntity.setTokenReset(token);
-    iAuthDAO.save(userEntity);
+    authCacheService.save(userEntity);
 
     // Send Email
     EmailContent emailContent =
@@ -147,7 +147,7 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> resetPassword(String password, String token)
       throws UtilsException {
-    UserEntity userEntity = iAuthDAO.findUserEntityByTokenReset(token);
+    UserEntity userEntity = authCacheService.findUserEntityByTokenReset(token);
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
@@ -161,7 +161,7 @@ public class AuthService {
     userEntity.setPassword(bCryptPasswordEncoder.encode(password));
     userEntity.setTokenReset(null);
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     userEntity.setPassword(null);
 
     String message = "Password Updated!";
@@ -202,7 +202,7 @@ public class AuthService {
       throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
     }
     UserEntity userEntity =
-        iAuthDAO.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
+        authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
     // userEntity.setPassword(null);
 
     if (userEntity == null) {
@@ -247,7 +247,7 @@ public class AuthService {
               + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     saved.setPassword(null);
 
     String message = "User updated!";
@@ -259,8 +259,8 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public List<String> getCryptoFiatUsersCurrency(){
+  public List<String> getCryptoFiatUsersCurrency() {
     LOG.info("Getting Crypto Fiat Currency");
-    return iAuthDAO.selectDistinctCryptoFiatCurrency();
+    return authCacheService.selectDistinctCryptoFiatCurrency();
   }
 }
