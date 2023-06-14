@@ -23,7 +23,7 @@ public class Asset extends GenericDTO {
   @UpperCamelCase private String name;
   @UpperCase private String symbol;
   private Long rank;
-  private Integer current_price;
+  private Double current_price;
   private Double value; // Is the current balance in USD
   private String icon;
   private Double balance;

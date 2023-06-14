@@ -23,7 +23,9 @@ public class AssetMapper {
             assetEntity -> {
               Asset asset = new Asset();
               BeanUtils.copyProperties(assetEntity, asset);
-              asset.setValue(asset.getBalance() * getAssetValue(marketData, asset));
+              asset.setCurrent_price(getAssetValue(marketData, asset));
+              asset.setValue(asset.getBalance() * asset.getCurrent_price());
+
               if (assetEntity.getHistory() != null) {
                 asset.setHistory(
                     assetEntity.getHistory().stream()
@@ -113,8 +115,8 @@ public class AssetMapper {
                       .collect(Collectors.toList());
                 }
               } else {
-
-                asset.setValue(asset.getBalance() * getAssetValue(marketData, asset));
+                asset.setCurrent_price(getAssetValue(marketData, asset));
+                asset.setValue(asset.getBalance() * asset.getCurrent_price());
 
                 response.add(asset);
               }
