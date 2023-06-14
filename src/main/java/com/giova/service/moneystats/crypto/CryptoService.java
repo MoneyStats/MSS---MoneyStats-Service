@@ -171,8 +171,7 @@ public class CryptoService {
               dashboard.setAssets(getCryptoAsset(filterWallet, marketData));
 
               // Filtro Wallet cancellati da anni che non hanno stats
-              Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+              Predicate<Wallet> walletRemovedInThePast = wallet -> wallet.getDeletedDate() != null;
               filterWallet.removeIf(walletRemovedInThePast);
 
               // Mi serve per mappare il passato
@@ -219,41 +218,45 @@ public class CryptoService {
               Wallet wallet1 = new Wallet();
               BeanUtils.copyProperties(wallet, wallet1);
               wallet1.setHistory(null);
-              wallet1.setAssets(
-                  wallet.getAssets().stream()
-                      .map(
-                          asset -> {
-                            Asset asset1 = new Asset();
-                            BeanUtils.copyProperties(asset, asset1);
-                            List<Stats> listFilter =
-                                asset.getHistory().stream()
-                                    .filter(h -> h.getDate().getYear() == year)
-                                    .collect(Collectors.toList());
+              if (wallet.getAssets() != null)
+                wallet1.setAssets(
+                    wallet.getAssets().stream()
+                        .map(
+                            asset -> {
+                              Asset asset1 = new Asset();
+                              BeanUtils.copyProperties(asset, asset1);
+                              List<Stats> listFilter = new ArrayList<>();
+                              if (asset.getHistory() != null) {
+                                listFilter =
+                                    asset.getHistory().stream()
+                                        .filter(h -> h.getDate().getYear() == year)
+                                        .collect(Collectors.toList());
 
-                            asset1.setHistory(listFilter);
-                            // asset1.setValue(asset.getInvested() * BTC_VALUE);
-                            balance.updateAndGet(v -> v + asset1.getValue());
-                            if (wallet.getType().equalsIgnoreCase("Holding"))
-                              holdingBalance.updateAndGet(v -> v + asset1.getValue());
+                                asset1.setHistory(listFilter);
+                              }
+                              // asset1.setValue(asset.getInvested() * BTC_VALUE);
+                              balance.updateAndGet(v -> v + asset1.getValue());
+                              if (wallet.getType().equalsIgnoreCase("Holding"))
+                                holdingBalance.updateAndGet(v -> v + asset1.getValue());
 
-                            if (!listFilter.isEmpty()) {
+                              if (!listFilter.isEmpty()) {
 
-                              cryptoMapper.updateInitialBalance(
-                                  listFilter, filterDateByYear, initialBalance);
+                                cryptoMapper.updateInitialBalance(
+                                    listFilter, filterDateByYear, initialBalance);
 
-                              cryptoMapper.updateLastBalance(
-                                  listFilter,
-                                  filterDateByYear,
-                                  lastBalance,
-                                  holdingLastBalance,
-                                  wallet.getType().equalsIgnoreCase("Holding"));
-                            }
+                                cryptoMapper.updateLastBalance(
+                                    listFilter,
+                                    filterDateByYear,
+                                    lastBalance,
+                                    holdingLastBalance,
+                                    wallet.getType().equalsIgnoreCase("Holding"));
+                              }
 
-                            checkAndMapWalletInThePast(
-                                index, listFilter, filterDateByYear, wallet1);
-                            return asset1;
-                          })
-                      .collect(Collectors.toList()));
+                              checkAndMapWalletInThePast(
+                                  index, listFilter, filterDateByYear, wallet1);
+                              return asset1;
+                            })
+                        .collect(Collectors.toList()));
               indexWallet.incrementAndGet();
               return wallet1;
             })
