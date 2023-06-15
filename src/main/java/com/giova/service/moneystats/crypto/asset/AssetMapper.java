@@ -117,6 +117,7 @@ public class AssetMapper {
               } else {
                 asset.setCurrent_price(getAssetValue(marketData, asset));
                 asset.setValue(asset.getBalance() * asset.getCurrent_price());
+                asset.setId(null);
 
                 response.add(asset);
               }

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
@@ -73,13 +73,13 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>0.2.20</version>
+            <version>0.2.21</version>
         </dependency>
         <!--<dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
             <scope>system</scope>
-            <version>0.2.8</version>
+            <version>0.2.20</version>
             <systemPath>C:/Users/giola/Documents/Personal Project/Utils/target/utils-code-0.2.8.jar</systemPath>
         </dependency>-->
         <dependency>

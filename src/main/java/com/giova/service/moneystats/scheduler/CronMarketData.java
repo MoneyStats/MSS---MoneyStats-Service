@@ -2,6 +2,8 @@ package com.giova.service.moneystats.scheduler;
 
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class CronMarketData {
       fixedDelayString = "${rest.scheduled.marketData.delay.end}",
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
   void scheduleAllCryptoAsset() {
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
