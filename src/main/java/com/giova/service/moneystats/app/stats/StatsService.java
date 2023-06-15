@@ -10,8 +10,6 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class StatsService {
 
   @Autowired private IStatsDAO iStatsDAO;
+  @Autowired private StatsMapper statsMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<LocalDate> getDistinctDates(UserEntity user) {
@@ -33,30 +32,11 @@ public class StatsService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {
-    List<StatsEntity> statsEntities =
-        stats.stream()
-            .map(
-                stats1 -> {
-                  StatsEntity statsEntity = new StatsEntity();
-                  BeanUtils.copyProperties(stats1, statsEntity);
-                  statsEntity.setWallet(wallet);
-                  statsEntity.setUser(user);
-                  return statsEntity;
-                })
-            .collect(Collectors.toList());
+    List<StatsEntity> statsEntities = statsMapper.fromStatsToEntity(stats, wallet, user);
 
     List<StatsEntity> saved = iStatsDAO.saveAll(statsEntities);
 
-    List<Stats> response =
-        saved.stream()
-            .map(
-                statsEntity -> {
-                  Stats stats2 = new Stats();
-                  BeanUtils.copyProperties(statsEntity, stats2);
-                  return stats2;
-                })
-            .collect(Collectors.toList());
-    return response;
+    return statsMapper.fromEntityToStats(saved);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -65,15 +45,7 @@ public class StatsService {
     List<StatsEntity> stats = iStatsDAO.findStatsEntitiesByWalletId(walletId);
     List<Stats> response = new ArrayList<>();
     if (!stats.isEmpty()) {
-      response =
-          stats.stream()
-              .map(
-                  statsEntity -> {
-                    Stats stats2 = new Stats();
-                    BeanUtils.copyProperties(statsEntity, stats2);
-                    return stats2;
-                  })
-              .collect(Collectors.toList());
+      response = statsMapper.fromEntityToStats(stats);
     }
 
     return response;

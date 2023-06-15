@@ -3,6 +3,8 @@ package com.giova.service.moneystats.scheduler;
 import com.giova.service.moneystats.app.wallet.WalletCacheService;
 import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ public class CronCachingReset {
   @Autowired private WalletCacheService walletCacheService;
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
   void scheduleCleanCache() {
     LOG.info("[Clean-Cache] Scheduler Started at {}", LocalDateTime.now());
 

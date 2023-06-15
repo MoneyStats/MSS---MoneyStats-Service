@@ -24,21 +24,21 @@ public class WalletCacheService {
   @Autowired private IWalletDAO walletDAO;
 
   @Caching(cacheable = @Cacheable(value = WALLET_CACHE, key = "#userId"))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public List<WalletEntity> findAllByUserId(Long userId) {
     LOG.info("[Caching] WalletEntity into Database by userId {}", userId);
     return walletDAO.findAllByUserId(userId);
   }
 
   @Caching(cacheable = @Cacheable(value = CRYPTO_WALLET_CACHE, key = "#userId"))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
     LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
     return walletDAO.findAllByUserIdAndCategory(userId, category);
   }
 
   @Caching(evict = {@CacheEvict(value = WALLET_CACHE), @CacheEvict(value = CRYPTO_WALLET_CACHE)})
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public void deleteWalletsCache() {
     LOG.info("[Caching] Deleting cache for {} and {}", WALLET_CACHE, CRYPTO_WALLET_CACHE);
     Objects.requireNonNull(cacheManager.getCache(WALLET_CACHE)).clear();

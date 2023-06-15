@@ -24,7 +24,7 @@ public class AuthCacheService {
   @Autowired private IAuthDAO authDAO;
 
   @Cacheable(value = USER_CACHE, key = "#email", condition = "#email!=null")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public UserEntity findUserEntityByEmail(String email) {
     LOG.info("[Caching] UserEntity into Database by email {}", email);
     return authDAO.findUserEntityByEmail(email);
@@ -35,14 +35,14 @@ public class AuthCacheService {
         @Cacheable(value = USER_CACHE, key = "#username", condition = "#username!=null"),
         @Cacheable(value = USER_CACHE, key = "#email", condition = "#email!=null")
       })
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public UserEntity findUserEntityByUsernameOrEmail(String username, String email) {
     LOG.info("[Caching] UserEntity into Database by username {} and email {}", username, email);
     return authDAO.findUserEntityByUsernameOrEmail(username, email);
   }
 
   @Caching(evict = @CacheEvict(value = USER_CACHE))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public void deleteUserCache() {
     LOG.info("[Caching] Deleting cache for {}", USER_CACHE);
     Objects.requireNonNull(cacheManager.getCache(USER_CACHE)).clear();

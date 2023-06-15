@@ -38,6 +38,7 @@ public class ExceptionHandler extends UtilsException {
     response.getError().setMessage(value);
     if (e.getStackTrace().length != 0) {
       response.getError().setStackTrace(Arrays.toString(e.getStackTrace()));
+      LOG.error(Arrays.toString(e.getStackTrace()));
     }
     return new ResponseEntity<>(response, status);
   }

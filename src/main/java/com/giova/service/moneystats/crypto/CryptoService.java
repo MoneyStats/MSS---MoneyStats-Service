@@ -62,7 +62,7 @@ public class CryptoService {
           getAllDates.stream().filter(d -> d.getYear() == currentYear).collect(Collectors.toList());
 
       thisYear = currentYear;
-      getData = mapDashBoard(filter, marketData);
+      getData = mapDashBoard(filter, marketData, false);
     } else {
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
@@ -72,7 +72,7 @@ public class CryptoService {
           cryptoMapper.mapCryptoDashboardWithoutStats(
               user.getCryptoCurrency(),
               getAllWallet,
-              getCryptoAsset(getAllWallet, marketData),
+              getCryptoAsset(getAllWallet, marketData, false),
               getAssetValue(marketData, BTC_SYMBOL));
       getData.put(String.valueOf(thisYear), dashboard);
     }
@@ -95,7 +95,7 @@ public class CryptoService {
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = LocalDate.now().getYear();
     if (!getAllDates.isEmpty()) {
-      getData = mapDashBoard(getAllDates, marketData);
+      getData = mapDashBoard(getAllDates, marketData, true);
     } else {
 
       List<Wallet> getAllWallet =
@@ -106,7 +106,7 @@ public class CryptoService {
           cryptoMapper.mapCryptoDashboardWithoutStats(
               user.getCryptoCurrency(),
               getAllWallet,
-              getCryptoAsset(getAllWallet, marketData),
+              getCryptoAsset(getAllWallet, marketData, true),
               getAssetValue(marketData, BTC_SYMBOL));
       getData.put(String.valueOf(thisYear), dashboard);
     }
@@ -120,7 +120,7 @@ public class CryptoService {
   }
 
   private Map<String, CryptoDashboard> mapDashBoard(
-      List<LocalDate> dates, List<MarketData> marketData) throws UtilsException {
+      List<LocalDate> dates, List<MarketData> marketData, Boolean isResume) throws UtilsException {
     Map<String, CryptoDashboard> response = new HashMap<>();
 
     List<Integer> distinctDatesByYear =
@@ -168,7 +168,7 @@ public class CryptoService {
                       filterDateByYear,
                       year);
 
-              dashboard.setAssets(getCryptoAsset(filterWallet, marketData));
+              dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
 
               // Filtro Wallet cancellati da anni che non hanno stats
               Predicate<Wallet> walletRemovedInThePast = wallet -> wallet.getDeletedDate() != null;
@@ -288,7 +288,8 @@ public class CryptoService {
     }
   }
 
-  private List<Asset> getCryptoAsset(List<Wallet> filterWallet, List<MarketData> marketData) {
+  private List<Asset> getCryptoAsset(
+      List<Wallet> filterWallet, List<MarketData> marketData, Boolean isResume) {
     List<Asset> assets = new ArrayList<>();
     filterWallet.stream()
         .peek(
@@ -303,7 +304,7 @@ public class CryptoService {
                 asset -> {
                   Asset newAsset = new Asset();
                   BeanUtils.copyProperties(asset, newAsset);
-                  if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+                  if (asset.getHistory() != null && !asset.getHistory().isEmpty() && !isResume) {
                     Stats stats = asset.getHistory().get(asset.getHistory().size() - 1);
                     newAsset.setHistory(List.of(stats));
                   }
