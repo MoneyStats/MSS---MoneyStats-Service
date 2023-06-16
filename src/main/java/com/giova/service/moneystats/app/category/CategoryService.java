@@ -7,24 +7,23 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Logged
 @Service
 public class CategoryService {
 
-  @Autowired private ICategoryDAO iCategoryDAO;
+  @Autowired private CategoryCacheService categoryCacheService;
 
   @Autowired private CategoryMapper categoryMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getAllCategories() {
-    List<CategoryEntity> categoryEntity = iCategoryDAO.findAll();
+    List<CategoryEntity> categoryEntity = categoryCacheService.findAll();
     List<Category> categories = categoryMapper.mapCategoryEntityToCategory(categoryEntity);
 
     String message = "List of category!";

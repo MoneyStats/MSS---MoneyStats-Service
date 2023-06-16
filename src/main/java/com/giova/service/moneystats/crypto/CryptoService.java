@@ -18,6 +18,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import io.github.giovannilamarmora.utils.math.MathService;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -318,11 +319,13 @@ public class CryptoService {
     if (marketData.isEmpty() || symbol == null) {
       return 1D;
     } else {
-      return marketData.stream()
-          .filter(marketData1 -> marketData1.getSymbol().equalsIgnoreCase(symbol))
-          .findFirst()
-          .get()
-          .getCurrent_price();
+      return MathService.round(
+          marketData.stream()
+              .filter(marketData1 -> marketData1.getSymbol().equalsIgnoreCase(symbol))
+              .findFirst()
+              .get()
+              .getCurrent_price(),
+          2);
     }
   }
 }
