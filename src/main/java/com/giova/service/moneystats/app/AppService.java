@@ -17,6 +17,7 @@ import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -141,6 +142,7 @@ public class AppService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> addStats(List<Wallet> wallets, String authToken) {
 
     wallets.stream()
@@ -149,8 +151,9 @@ public class AppService {
               try {
                 objectMapper.convertValue(
                     walletService.insertOrUpdateWallet(wallet).getBody().getData(), Wallet.class);
-              } catch (UtilsException | JsonProcessingException e) {
-                throw new RuntimeException(e);
+              } catch (JsonProcessingException e) {
+                throw new UtilsException(
+                    ExceptionMap.ERR_JSON_FOR_001, ExceptionMap.ERR_JSON_FOR_001.getMessage());
               }
               List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
               wallet.setHistory(statsList);
@@ -292,10 +295,10 @@ public class AppService {
                           })
                       .collect(Collectors.toList());
 
-                // Filtro Wallet cancellati da anni che non hanno stats
-                Predicate<Wallet> walletRemovedInThePast =
-                        wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
-                filterWallet.removeIf(walletRemovedInThePast);
+              // Filtro Wallet cancellati da anni che non hanno stats
+              Predicate<Wallet> walletRemovedInThePast =
+                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+              filterWallet.removeIf(walletRemovedInThePast);
 
               // Mi serve per mappare il passato
               if (index.get() > 0) {

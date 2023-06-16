@@ -11,6 +11,7 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
+import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.FilterChain;
@@ -66,6 +67,7 @@ public class AppInterceptor extends OncePerRequestFilter {
           getExceptionResponse(e, request, e.getExceptionCode(), e.getExceptionCode().getStatus());
       // response.addHeader("EXCEPTION_RESPONSE",
       // objectMapper.writeValueAsString(exceptionResponse));
+      exceptionResponse.setCorrelationId(CorrelationIdUtils.getCorrelationId());
       response.setStatus(e.getExceptionCode().getStatus().value());
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.getWriter().write(convertObjectToJson(exceptionResponse));

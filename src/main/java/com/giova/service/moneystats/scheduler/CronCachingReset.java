@@ -28,7 +28,7 @@ public class CronCachingReset {
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
-  void scheduleCleanCache() {
+  public void scheduleCleanCache() {
     LOG.info("[Clean-Cache] Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {

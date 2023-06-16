@@ -30,7 +30,7 @@ public class CronMarketData {
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
-  void scheduleAllCryptoAsset() {
+  public void scheduleAllCryptoAsset() {
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {
@@ -56,6 +56,7 @@ public class CronMarketData {
               LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
               List<MarketData> getMarketData =
                   marketDataService.getCoinGeckoMarketData(fiatCurrency);
+              LOG.info("Found {} data of Market Data", getMarketData.size());
               marketDataService.saveMarketData(getMarketData, fiatCurrency);
             })
         .collect(Collectors.toList());
