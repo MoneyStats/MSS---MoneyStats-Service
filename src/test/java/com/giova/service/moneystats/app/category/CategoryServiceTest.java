@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 class CategoryServiceTest {
 
-    @Mock private ICategoryDAO iCategoryDAO;
+    @Mock private CategoryCacheService iCategoryDAO;
 
     @Mock private CategoryMapper categoryMapper;
 
