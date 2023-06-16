@@ -25,7 +25,7 @@ public class AssetMapper {
               Asset asset = new Asset();
               BeanUtils.copyProperties(assetEntity, asset);
               asset.setCurrent_price(getAssetValue(marketData, asset));
-              asset.setValue(asset.getBalance() * asset.getCurrent_price());
+              asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
               if (assetEntity.getHistory() != null) {
                 asset.setHistory(
