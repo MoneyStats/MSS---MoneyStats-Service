@@ -39,20 +39,20 @@ public class MarketDataCacheService {
     return marketDataDAO.findAllByCurrency(currency);
   }
 
-  @Transactional
+  @Transactional(Transactional.TxType.REQUIRES_NEW)
   @CacheEvict(value = MARKET_DATA_CACHE, key = "#currency", condition = "#currency!=null")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
-  //@Transactional(noRollbackFor = Exception.class)
+  // @Transactional(noRollbackFor = Exception.class)
   public void deleteAllByCurrency(String currency) {
     LOG.info("[Caching] Deleting MarketData into Database by currency {}", currency);
     marketDataDAO.deleteMarketDataEntitiesByCurrency(currency);
-    //try {
+    // try {
     //  LOG.info("Resetting MarketData IDs to 1 with MySQL Dialect");
     //  marketDataDAO.resetIdToOneMySQL();
-    //} catch (Exception e) {
+    // } catch (Exception e) {
     //  LOG.error("SQLGrammarException catch switch to H2 Dialect");
     //  marketDataDAO.resetIdToOneH2();
-    //}
+    // }
   }
 
   @Caching(evict = @CacheEvict(value = MARKET_DATA_CACHE))

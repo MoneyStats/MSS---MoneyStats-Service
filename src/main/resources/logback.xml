@@ -25,10 +25,10 @@
         </encoder>
     </appender>
 
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <!--<logger name="org.hibernate.SQL" level="DEBUG"/>-->
 
     <root level="INFO">
-        <!--<appender-ref ref="Logtail"/>-->
+        <appender-ref ref="Logtail"/>
         <appender-ref ref="Console"/>
     </root>
 

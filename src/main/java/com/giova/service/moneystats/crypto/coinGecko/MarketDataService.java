@@ -46,7 +46,7 @@ public class MarketDataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public List<MarketData> saveMarketData(List<MarketData> marketData, String currency) {
-    LOG.info("Saving MarketData for currency {}", currency);
+    LOG.info("Saving {} MarketData for currency {}", marketData.size(), currency);
     List<MarketDataEntity> marketDataEntities = mapper.fromMarketDataToEntity(marketData, currency);
 
     List<MarketDataEntity> saved =
