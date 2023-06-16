@@ -7,6 +7,7 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import io.github.giovannilamarmora.utils.math.MathService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -130,12 +131,15 @@ public class AssetMapper {
     if (marketData.isEmpty()) {
       return 1D;
     } else {
-      return marketData.stream()
-          .filter(
-              marketData1 -> marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
-          .findFirst()
-          .get()
-          .getCurrent_price();
+      return MathService.round(
+          marketData.stream()
+              .filter(
+                  marketData1 ->
+                      marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
+              .findFirst()
+              .get()
+              .getCurrent_price(),
+          2);
     }
   }
 }

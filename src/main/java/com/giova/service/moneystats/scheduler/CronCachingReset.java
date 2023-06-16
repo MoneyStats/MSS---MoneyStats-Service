@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.scheduler;
 
+import com.giova.service.moneystats.app.category.CategoryCacheService;
 import com.giova.service.moneystats.app.wallet.WalletCacheService;
 import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
@@ -25,6 +26,7 @@ public class CronCachingReset {
   @Autowired private MarketDataCacheService marketDataCacheService;
   @Autowired private AuthCacheService authCacheService;
   @Autowired private WalletCacheService walletCacheService;
+  @Autowired private CategoryCacheService categoryCacheService;
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
@@ -40,6 +42,7 @@ public class CronCachingReset {
     walletCacheService.deleteWalletsCache();
     authCacheService.deleteUserCache();
     marketDataCacheService.deleteAllMarketDataCache();
+    categoryCacheService.deleteWalletsCache();
 
     LOG.info("[Clean-Cache] Scheduler Finished at {}", LocalDateTime.now());
   }
