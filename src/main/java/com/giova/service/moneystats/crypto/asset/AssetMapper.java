@@ -37,7 +37,14 @@ public class AssetMapper {
                               return stats;
                             })
                         .collect(Collectors.toList()));
+                Double lastStatsPerformance =
+                    asset.getHistory().get(asset.getHistory().size() - 1).getBalance();
+                asset.setPerformance(
+                    MathService.round(
+                        ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance) * 100,
+                        2));
               }
+
               return asset;
             })
         .collect(Collectors.toList());
@@ -86,14 +93,17 @@ public class AssetMapper {
                             .findFirst()
                             .get());
                 Asset mapResponse = response.get(index);
-                mapResponse.setBalance(mapResponse.getBalance() + asset.getBalance());
+                mapResponse.setBalance(
+                    MathService.round(mapResponse.getBalance() + asset.getBalance(), 8));
                 if (mapResponse.getPerformance() != null)
                   mapResponse.setPerformance(
-                      (mapResponse.getPerformance() + asset.getPerformance()) / 2);
+                      MathService.round(
+                          ((mapResponse.getPerformance() + asset.getPerformance()) / 2), 2));
                 if (mapResponse.getTrend() != null)
                   mapResponse.setTrend(mapResponse.getTrend() + asset.getTrend());
                 mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
-                mapResponse.setValue(mapResponse.getValue() + asset.getValue());
+                mapResponse.setValue(
+                    MathService.round(mapResponse.getValue() + asset.getValue(), 2));
                 if (asset.getHistory() != null) {
                   asset.getHistory().stream()
                       .peek(
@@ -111,7 +121,8 @@ public class AssetMapper {
                             indexed.setBalance(indexed.getBalance() + stats.getBalance());
                             indexed.setTrend(indexed.getTrend() + stats.getTrend());
                             indexed.setPercentage(
-                                (indexed.getPercentage() + stats.getPercentage()) / 2);
+                                MathService.round(
+                                    ((indexed.getPercentage() + stats.getPercentage()) / 2), 2));
                           })
                       .collect(Collectors.toList());
                 }
