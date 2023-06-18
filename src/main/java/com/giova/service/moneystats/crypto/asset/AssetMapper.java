@@ -27,7 +27,7 @@ public class AssetMapper {
               asset.setCurrent_price(getAssetValue(marketData, asset));
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
-              if (assetEntity.getHistory() != null) {
+              if (assetEntity.getHistory() != null && !assetEntity.getHistory().isEmpty()) {
                 asset.setHistory(
                     assetEntity.getHistory().stream()
                         .map(
@@ -38,7 +38,7 @@ public class AssetMapper {
                             })
                         .collect(Collectors.toList()));
                 Double lastStatsPerformance =
-                    asset.getHistory().get(asset.getHistory().size() - 1).getBalance();
+                    assetEntity.getHistory().get(assetEntity.getHistory().size() - 1).getBalance();
                 asset.setPerformance(
                     MathService.round(
                         ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance) * 100,
@@ -104,7 +104,7 @@ public class AssetMapper {
                 mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
                 mapResponse.setValue(
                     MathService.round(mapResponse.getValue() + asset.getValue(), 2));
-                if (asset.getHistory() != null) {
+                if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
                   asset.getHistory().stream()
                       .peek(
                           stats -> {
