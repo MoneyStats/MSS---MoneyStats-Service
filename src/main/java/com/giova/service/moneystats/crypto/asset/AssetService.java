@@ -1,6 +1,8 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -33,7 +35,7 @@ public class AssetService {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final UserEntity user;
-
+  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private WalletService walletService;
   @Autowired private IAssetDAO assetDAO;
   @Autowired private AssetMapper assetMapper;
@@ -79,6 +81,29 @@ public class AssetService {
 
     Response response =
         new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), assets);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public ResponseEntity<Response> getAsset(String identifier) {
+
+    List<Asset> assets =
+        mapper.convertValue(getAssets().getBody().getData(), new TypeReference<List<Asset>>() {});
+    Asset asset =
+        assets.stream()
+            .filter(a -> a.getIdentifier().equalsIgnoreCase(identifier))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new AssetException(
+                        "An error happen during filtering assets, asset "
+                            + identifier
+                            + " was not found"));
+
+    String message = "Data for " + identifier;
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), asset);
     return ResponseEntity.ok(response);
   }
 }
