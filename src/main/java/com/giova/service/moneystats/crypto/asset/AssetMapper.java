@@ -82,6 +82,7 @@ public class AssetMapper {
     assetList.stream()
         .peek(
             asset -> {
+              Asset assetToReturn = new Asset();
               if (!response.stream()
                   .filter(a -> a.getName().equalsIgnoreCase(asset.getName()))
                   .findAny()
@@ -118,6 +119,7 @@ public class AssetMapper {
                                             .findFirst()
                                             .get());
                             Stats indexed = response.get(index).getHistory().get(indexH);
+                            indexed.setId(null);
                             indexed.setBalance(indexed.getBalance() + stats.getBalance());
                             indexed.setTrend(indexed.getTrend() + stats.getTrend());
                             indexed.setPercentage(
@@ -127,11 +129,26 @@ public class AssetMapper {
                       .collect(Collectors.toList());
                 }
               } else {
-                asset.setCurrent_price(getAssetValue(marketData, asset));
-                asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
-                asset.setId(null);
+                BeanUtils.copyProperties(asset, assetToReturn);
+                assetToReturn.setCurrent_price(getAssetValue(marketData, asset));
+                assetToReturn.setValue(
+                    MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
+                assetToReturn.setId(null);
 
-                response.add(asset);
+                if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+                  assetToReturn.setHistory(
+                      asset.getHistory().stream()
+                          .map(
+                              stats -> {
+                                Stats statsToReturn = new Stats();
+                                BeanUtils.copyProperties(stats, statsToReturn);
+                                statsToReturn.setId(null);
+                                return statsToReturn;
+                              })
+                          .collect(Collectors.toList()));
+                }
+
+                response.add(assetToReturn);
               }
             })
         .collect(Collectors.toList());

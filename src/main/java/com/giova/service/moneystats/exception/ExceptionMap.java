@@ -32,7 +32,8 @@ public enum ExceptionMap implements ExceptionCode {
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),
   ERR_EMAIL_SEND_002(
       "STRING_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on converting string for templates"),
-  ERR_JSON_FOR_001("JSON_FORMAT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on converting object");
+  ERR_JSON_FOR_001("JSON_FORMAT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on converting object"),
+  ERR_ASSET_001("ASSET_NOT_FOUND", HttpStatus.NOT_FOUND, "An error happen during filtering assets, asset not found!");
 
   private final HttpStatus status;
   private final String message;

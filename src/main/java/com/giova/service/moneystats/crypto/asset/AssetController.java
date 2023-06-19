@@ -40,4 +40,15 @@ public class AssetController {
       throws UtilsException {
     return assetService.getAssets();
   }
+
+  @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "Asset", description = "API to get Crypto Asset")
+  @Operation(description = "API to get Crypto Asset", tags = "Asset")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> getAsset(
+      @RequestHeader("authToken") String authToken,
+      @RequestParam(value = "identifier") String identifier)
+      throws UtilsException {
+    return assetService.getAsset(identifier);
+  }
 }
