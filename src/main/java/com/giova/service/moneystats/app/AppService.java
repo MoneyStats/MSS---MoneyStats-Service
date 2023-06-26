@@ -275,9 +275,11 @@ public class AppService {
                             Wallet wallet1 = new Wallet();
                             BeanUtils.copyProperties(wallet, wallet1);
                             List<Stats> listFilter =
-                                wallet.getHistory().stream()
-                                    .filter(h -> h.getDate().getYear() == year)
-                                    .collect(Collectors.toList());
+                                wallet.getHistory() != null
+                                    ? wallet.getHistory().stream()
+                                        .filter(h -> h.getDate().getYear() == year)
+                                        .collect(Collectors.toList())
+                                    : new ArrayList<>();
                             wallet1.setHistory(listFilter);
 
                             if (!listFilter.isEmpty()) {
