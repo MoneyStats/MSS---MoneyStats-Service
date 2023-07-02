@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.crypto.asset;
 
+import android.util.Base64;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
@@ -8,6 +9,10 @@ import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import io.github.giovannilamarmora.utils.math.MathService;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +29,7 @@ public class AssetMapper {
             assetEntity -> {
               Asset asset = new Asset();
               BeanUtils.copyProperties(assetEntity, asset);
+              asset.setIcon(getByteArrayFromImageURL(assetEntity.getIcon()));
               asset.setCurrent_price(getAssetValue(marketData, asset));
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
@@ -57,6 +63,7 @@ public class AssetMapper {
             asset -> {
               AssetEntity assetEntity = new AssetEntity();
               BeanUtils.copyProperties(asset, assetEntity);
+              assetEntity.setIcon(getByteArrayFromImageURL(asset.getIcon()));
               if (asset.getHistory() != null) {
                 assetEntity.setHistory(
                     asset.getHistory().stream()
@@ -169,5 +176,27 @@ public class AssetMapper {
               .getCurrent_price(),
           2);
     }
+  }
+
+  private String getByteArrayFromImageURL(String url) {
+    if (url.contains("https://")) {
+      try {
+        URL imageUrl = new URL(url);
+        URLConnection ucon = imageUrl.openConnection();
+        InputStream is = ucon.getInputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int read = 0;
+        while ((read = is.read(buffer, 0, buffer.length)) != -1) {
+          baos.write(buffer, 0, read);
+        }
+        baos.flush();
+        String encoded =
+            Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT).replaceAll("\n", "");
+        return "data:image/png;base64," + encoded;
+      } catch (Exception e) {
+        return url;
+      }
+    } else return url;
   }
 }

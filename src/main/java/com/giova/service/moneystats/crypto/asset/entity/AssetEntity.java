@@ -38,6 +38,7 @@ public class AssetEntity extends GenericEntity {
   @Column(name = "CRYPTO_RANK")
   private Long rank;
 
+  @Lob
   @Column(name = "ICON")
   private String icon;
 
