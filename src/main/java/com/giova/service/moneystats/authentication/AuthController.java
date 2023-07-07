@@ -42,7 +42,7 @@ public class AuthController {
   @Operation(description = "API to register an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> login(
-      @RequestParam String username, @RequestParam String password) throws UtilsException {
+          @RequestParam String username, @RequestParam String password) throws UtilsException {
     return authService.login(username, password);
   }
 

@@ -19,6 +19,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.time.LocalDateTime;
 import java.util.*;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ public class AuthService {
   @Autowired private TokenService tokenService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private ImageService imageService;
+  @Autowired private HttpServletRequest request;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
@@ -81,7 +83,7 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> login(String username, String password) throws UtilsException {
-
+    logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
 
@@ -193,6 +195,7 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public UserEntity checkLogin(String authToken) throws UtilsException {
+    logCurrentHostAddress();
     AuthToken token = new AuthToken();
     token.setAccessToken(authToken);
     User user = new User();
@@ -262,5 +265,23 @@ public class AuthService {
   public List<String> getCryptoFiatUsersCurrency() {
     LOG.info("Getting Crypto Fiat Currency");
     return authCacheService.selectDistinctCryptoFiatCurrency();
+  }
+
+  private void logCurrentHostAddress() {
+    String ORIGIN = "origin";
+    if (request.getHeader(ORIGIN) != null)
+      LOG.info(
+          "[ADDRESS] Getting Remote Host Address {}, with correlationID {}",
+          request.getHeader(ORIGIN),
+          CorrelationIdUtils.getCorrelationId() != null
+              ? CorrelationIdUtils.getCorrelationId()
+              : CorrelationIdUtils.generateCorrelationId());
+    else
+      LOG.info(
+          "[ADDRESS] Getting Remote IP Address {}, with correlationID {}",
+          request.getRemoteAddr(),
+          CorrelationIdUtils.getCorrelationId() != null
+              ? CorrelationIdUtils.getCorrelationId()
+              : CorrelationIdUtils.generateCorrelationId());
   }
 }
