@@ -2,6 +2,7 @@ package com.giova.service.moneystats.crypto.asset.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.dto.Stats;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import com.giova.service.moneystats.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
@@ -31,6 +32,9 @@ public class Asset extends GenericDTO {
   private LocalDate lastUpdate;
   private Double performance;
   private Double trend;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private List<Operations> operations;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Stats> history;

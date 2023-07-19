@@ -8,6 +8,7 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.operations.OperationsMapper;
 import io.github.giovannilamarmora.utils.math.MathService;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -17,10 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AssetMapper {
+
+  @Autowired private OperationsMapper operationsMapper;
 
   public List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData) {
@@ -50,6 +54,9 @@ public class AssetMapper {
                         ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance) * 100,
                         2));
               }
+              if (assetEntity.getOperations() != null && !assetEntity.getOperations().isEmpty())
+                asset.setOperations(
+                    operationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
 
               return asset;
             })
@@ -79,6 +86,10 @@ public class AssetMapper {
               }
               assetEntity.setUser(userEntity);
               assetEntity.setWallet(walletEntity);
+              if (asset.getOperations() != null && !asset.getOperations().isEmpty())
+                assetEntity.setOperations(
+                    operationsMapper.fromOperationDTOSToEntities(
+                        asset.getOperations(), userEntity, assetEntity));
               return assetEntity;
             })
         .collect(Collectors.toList());
