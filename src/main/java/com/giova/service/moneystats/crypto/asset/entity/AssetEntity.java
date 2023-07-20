@@ -58,7 +58,7 @@ public class AssetEntity extends GenericEntity {
   @Column(name = "TREND")
   private Double trend;
 
-  @OrderBy(value = "exitDate")
+  @OrderBy(value = "exitDate DESC")
   @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
   private List<OperationsEntity> operations;
 

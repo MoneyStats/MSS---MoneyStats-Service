@@ -65,7 +65,7 @@ public class AssetService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getAssets() {
 
-    List<AssetEntity> assetEntities = assetDAO.findAllByUserId(user.getId());
+    List<AssetEntity> assetEntities = assetDAO.findAllByUserIdOrderByRank(user.getId());
     List<Asset> assets = new ArrayList<>();
 
     String message = "";
