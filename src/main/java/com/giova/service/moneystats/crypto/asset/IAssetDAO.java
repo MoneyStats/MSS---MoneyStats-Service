@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IAssetDAO extends JpaRepository<AssetEntity, Long> {
 
-    List<AssetEntity> findAllByUserId(Long userId);
+    List<AssetEntity> findAllByUserIdOrderByRank(Long userId);
 }
