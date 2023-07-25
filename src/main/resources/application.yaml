@@ -33,10 +33,11 @@ rest:
       cron: 0 0 1 * * MON
   client:
     github:
-      issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
+      baseUrl: https://api.github.com
+      issuesUrl: /repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://prod-email-sender.up.railway.app
+      url: https://oraclewebserver.ddns.net/email-sender
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com
@@ -45,6 +46,8 @@ jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000
 app:
+  logTail:
+    active: false
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: http://localhost:4200

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <springProperty scope="context" name="logTailActive" source="app.logTail.active"/>
 
     <appender name="LogtailHttp" class="com.logtail.logback.LogtailAppender">
         <encoder>
@@ -26,10 +27,18 @@
     </appender>
 
     <!--<logger name="org.hibernate.SQL" level="DEBUG"/>-->
-
-    <root level="INFO">
-        <appender-ref ref="Logtail"/>
-        <appender-ref ref="Console"/>
-    </root>
+    <if condition='property("logTailActive").equalsIgnoreCase("true")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="Logtail"/>
+                <appender-ref ref="Console"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="Console"/>
+            </root>
+        </else>
+    </if>
 
 </configuration>
