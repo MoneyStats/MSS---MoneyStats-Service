@@ -36,7 +36,8 @@ rest:
       cron: 0 0 1 * * MON
   client:
     github:
-      issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
+      baseUrl: https://api.github.com
+      issuesUrl: /repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
       url: http://email.sender:8080/email-sender
@@ -49,6 +50,8 @@ jwt:
   secret: ${JWT_SECRET}
   time: ${JWT_TIME}
 app:
+  logTail:
+    active: true
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: ${FE_URL}
