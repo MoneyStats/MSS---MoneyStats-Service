@@ -7,13 +7,13 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class CronMarketData {
@@ -28,7 +28,7 @@ public class CronMarketData {
   @Scheduled(
       fixedDelayString = "${rest.scheduled.marketData.delay.end}",
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
   public void scheduleAllCryptoAsset() {
     LOG.info("Scheduler Started at {}", LocalDateTime.now());

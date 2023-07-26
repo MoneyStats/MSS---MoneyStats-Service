@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -25,13 +27,17 @@ import reactor.core.publisher.Mono;
 @Logged
 public class CoinGeckoClient {
 
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final RestTemplate restTemplate = new RestTemplate();
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   private final WebClientRest webClientRest = new WebClientRest();
+
   @Value(value = "${rest.client.coinGecko.url}")
   private String coinGeckoUrl;
+
   @Value(value = "${rest.client.coinGecko.marketDataUrl}")
   private String marketDataUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -80,6 +86,7 @@ public class CoinGeckoClient {
         webClientRest.perform(
             HttpMethod.GET,
             UtilsUriBuilder.toBuild().set(marketDataUrl, params),
+            null,
             headers,
             Object.class);
 
