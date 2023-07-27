@@ -42,12 +42,7 @@ public class GithubClient {
     webClientRest.init(builder);
   }
 
-  /**
-   * DEPRECATED
-   *
-   * @param githubIssues
-   * @return
-   */
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
   public ResponseEntity<Object> openGithubIssuesRest(GithubIssues githubIssues) {
     HttpHeaders headers = new HttpHeaders();

@@ -37,12 +37,7 @@ public class EmailSenderClient {
     webClientRest.init(builder);
   }
 
-  /**
-   * DEPRECATED
-   *
-   * @param emailContent
-   * @return
-   */
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
   public ResponseEntity<EmailResponse> sendEmailRest(EmailContent emailContent) {
     HttpHeaders headers = new HttpHeaders();

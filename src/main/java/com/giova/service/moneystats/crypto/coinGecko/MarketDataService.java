@@ -68,6 +68,18 @@ public class MarketDataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public List<MarketData> getAllMarketData() {
+    LOG.info("Getting All MarketData from Database");
+    List<MarketDataEntity> getMarketData = marketDataDAO.findAll();
+
+    if (getMarketData.isEmpty()) {
+      LOG.error("No MarketData found");
+      return new ArrayList<>();
+    }
+    return mapper.fromEntityToMarketData(getMarketData);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public void deleteMarketData() {
     LOG.info("Deleting MarketData from Database");
     List<String> currencies = marketDataDAO.selectDistinctCurrency();
