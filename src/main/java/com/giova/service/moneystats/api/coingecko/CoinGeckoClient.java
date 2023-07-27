@@ -46,6 +46,7 @@ public class CoinGeckoClient {
     webClientRest.init(builder);
   }
 
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
   public ResponseEntity<List<CoinGeckoMarketData>> getMarketDataRest(String currency) {
     HttpHeaders headers = new HttpHeaders();
