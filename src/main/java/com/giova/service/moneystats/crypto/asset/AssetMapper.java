@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
@@ -50,9 +51,12 @@ public class AssetMapper {
                 Double lastStatsPerformance =
                     assetEntity.getHistory().get(assetEntity.getHistory().size() - 1).getBalance();
                 asset.setPerformance(
-                    MathService.round(
-                        ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance) * 100,
-                        2));
+                    lastStatsPerformance != 0
+                        ? MathService.round(
+                            ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance)
+                                * 100,
+                            2)
+                        : 0.0);
               }
               if (assetEntity.getOperations() != null && !assetEntity.getOperations().isEmpty())
                 asset.setOperations(
@@ -171,7 +175,9 @@ public class AssetMapper {
               }
             })
         .collect(Collectors.toList());
-    return response;
+    return response.stream()
+        .sorted(Comparator.comparing(Asset::getRank))
+        .collect(Collectors.toList());
   }
 
   private Double getAssetValue(List<MarketData> marketData, Asset asset) {
