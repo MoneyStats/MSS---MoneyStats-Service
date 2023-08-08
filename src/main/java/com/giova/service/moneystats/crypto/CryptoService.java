@@ -19,12 +19,14 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.math.MathService;
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,8 +179,16 @@ public class CryptoService {
 
               // Mi serve per mappare il passato
               if (index.get() > 0) {
-                // Remove wallet that haven't any stats
-                Predicate<Wallet> hasEmptyStats = wallet -> wallet.getHistory().isEmpty();
+                // Remove wallet that haven't any Asset stats
+                Predicate<Wallet> hasEmptyStats =
+                    wallet ->
+                        wallet.getAssets() != null
+                            && wallet.getAssets().stream()
+                                .filter(
+                                    asset ->
+                                        asset.getHistory() == null || asset.getHistory().isEmpty())
+                                .collect(Collectors.toList())
+                                .isEmpty();
                 filterWallet.removeIf(hasEmptyStats);
               }
 
@@ -253,11 +263,18 @@ public class CryptoService {
                                     wallet.getType().equalsIgnoreCase("Holding"));
                               }
 
-                              checkAndMapWalletInThePast(
-                                  index, listFilter, filterDateByYear, wallet1);
+                              //checkAndMapWalletInThePast(
+                              //    index, listFilter, filterDateByYear, wallet1);
                               return asset1;
                             })
                         .collect(Collectors.toList()));
+              Predicate<Asset> hasEmptyStats =
+                  asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
+              List<Asset> filterAsset = wallet1.getAssets();
+              if (filterAsset != null && index.get() > 0) {
+                filterAsset.removeIf(hasEmptyStats);
+                wallet1.setAssets(filterAsset);
+              }
               indexWallet.incrementAndGet();
               return wallet1;
             })
@@ -312,6 +329,11 @@ public class CryptoService {
                   return newAsset;
                 })
             .collect(Collectors.toList());
+    if (isResume){
+        Predicate<Asset> hasEmptyStats =
+                asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
+        filterAsset.removeIf(hasEmptyStats);
+    }
     return assetMapper.mapAssetList(filterAsset, marketData);
   }
 
