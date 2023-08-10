@@ -99,19 +99,19 @@ public class CryptoMapper {
   public void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
-    Stats highPrice =
-        wallet.getHistory().stream()
-            .max(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
-    Stats lowPrice =
-        wallet.getHistory().stream()
-            .min(Comparator.comparing(Stats::getBalance))
-            .orElseThrow(UtilsException::new);
+    //Stats highPrice =
+    //    wallet.getHistory().stream()
+    //        .max(Comparator.comparing(Stats::getBalance))
+    //        .orElseThrow(UtilsException::new);
+    //Stats lowPrice =
+    //    wallet.getHistory().stream()
+    //        .min(Comparator.comparing(Stats::getBalance))
+    //        .orElseThrow(UtilsException::new);
     List<Stats> getStats = wallet.getHistory();
-    wallet.setHighPrice(highPrice.getBalance());
-    wallet.setHighPriceDate(highPrice.getDate());
-    wallet.setLowPrice(lowPrice.getBalance());
-    wallet.setLowPriceDate(lowPrice.getDate());
+    //wallet.setHighPrice(highPrice.getBalance());
+    //wallet.setHighPriceDate(highPrice.getDate());
+    //wallet.setLowPrice(lowPrice.getBalance());
+    //wallet.setLowPriceDate(lowPrice.getDate());
 
     balance.updateAndGet(
         v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());

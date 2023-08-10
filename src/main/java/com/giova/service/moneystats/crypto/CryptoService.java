@@ -2,8 +2,10 @@ package com.giova.service.moneystats.crypto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
+import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -49,6 +51,7 @@ public class CryptoService {
   @Autowired private StatsService statsService;
   @Autowired private CryptoMapper cryptoMapper;
   @Autowired private AssetMapper assetMapper;
+  @Autowired private StatsMapper statsMapper;
   @Autowired private MarketDataService marketDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -228,7 +231,8 @@ public class CryptoService {
             wallet -> {
               Wallet wallet1 = new Wallet();
               BeanUtils.copyProperties(wallet, wallet1);
-              wallet1.setHistory(null);
+              Stats history = wallet.getHistory().get(wallet.getHistory().size() - 1);
+              wallet1.setHistory(List.of(history));
               if (wallet.getAssets() != null)
                 wallet1.setAssets(
                     wallet.getAssets().stream()
@@ -246,12 +250,15 @@ public class CryptoService {
                                 asset1.setHistory(listFilter);
                               }
                               // asset1.setValue(asset.getInvested() * BTC_VALUE);
-                              balance.updateAndGet(v -> v + asset1.getValue());
+
                               if (wallet.getType().equalsIgnoreCase("Holding"))
                                 holdingBalance.updateAndGet(v -> v + asset1.getValue());
 
                               if (!listFilter.isEmpty()) {
-
+                                if (index.get() == 0)
+                                  balance.updateAndGet(v -> v + asset1.getValue());
+                                else
+                                  cryptoMapper.updateBalance(listFilter, filterDateByYear, balance);
                                 cryptoMapper.updateInitialBalance(
                                     listFilter, filterDateByYear, initialBalance);
 
@@ -263,8 +270,8 @@ public class CryptoService {
                                     wallet.getType().equalsIgnoreCase("Holding"));
                               }
 
-                              //checkAndMapWalletInThePast(
-                              //    index, listFilter, filterDateByYear, wallet1);
+                              checkAndMapWalletInThePast(
+                                  index, listFilter, filterDateByYear, wallet1);
                               return asset1;
                             })
                         .collect(Collectors.toList()));
@@ -329,10 +336,10 @@ public class CryptoService {
                   return newAsset;
                 })
             .collect(Collectors.toList());
-    if (isResume){
-        Predicate<Asset> hasEmptyStats =
-                asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
-        filterAsset.removeIf(hasEmptyStats);
+    if (isResume) {
+      Predicate<Asset> hasEmptyStats =
+          asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
+      filterAsset.removeIf(hasEmptyStats);
     }
     return assetMapper.mapAssetList(filterAsset, marketData);
   }
