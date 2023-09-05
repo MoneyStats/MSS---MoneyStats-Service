@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -132,16 +133,19 @@ public class AssetMapper {
                   asset.getHistory().stream()
                       .peek(
                           stats -> {
-                            int indexH =
-                                response
-                                    .get(index)
-                                    .getHistory()
-                                    .indexOf(
-                                        response.get(index).getHistory().stream()
-                                            .filter(h -> h.getDate().isEqual(stats.getDate()))
-                                            .findFirst()
-                                            .get());
-                            Stats indexed = response.get(index).getHistory().get(indexH);
+                            Stats indexed = stats;
+                            if (response.get(index) != null
+                                && response.get(index).getHistory() != null) {
+                              Stream<Stats> filter =
+                                  response.get(index).getHistory().stream()
+                                      .filter(h -> h.getDate().isEqual(stats.getDate()));
+                              int indexH =
+                                  response
+                                      .get(index)
+                                      .getHistory()
+                                      .indexOf(filter.findFirst().get());
+                              indexed = response.get(index).getHistory().get(indexH);
+                            }
                             indexed.setId(null);
                             indexed.setBalance(indexed.getBalance() + stats.getBalance());
                             indexed.setTrend(indexed.getTrend() + stats.getTrend());
