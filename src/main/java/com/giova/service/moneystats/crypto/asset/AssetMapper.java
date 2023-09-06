@@ -130,30 +130,35 @@ public class AssetMapper {
                 mapResponse.setValue(
                     MathService.round(mapResponse.getValue() + asset.getValue(), 2));
                 if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
-                  asset.getHistory().stream()
-                      .peek(
-                          stats -> {
-                            Stats indexed = stats;
-                            if (response.get(index) != null
-                                && response.get(index).getHistory() != null) {
-                              Stream<Stats> filter =
-                                  response.get(index).getHistory().stream()
-                                      .filter(h -> h.getDate().isEqual(stats.getDate()));
-                              int indexH =
-                                  response
-                                      .get(index)
-                                      .getHistory()
-                                      .indexOf(filter.findFirst().get());
-                              indexed = response.get(index).getHistory().get(indexH);
-                            }
-                            indexed.setId(null);
-                            indexed.setBalance(indexed.getBalance() + stats.getBalance());
-                            indexed.setTrend(indexed.getTrend() + stats.getTrend());
-                            indexed.setPercentage(
-                                MathService.round(
-                                    ((indexed.getPercentage() + stats.getPercentage()) / 2), 2));
-                          })
-                      .collect(Collectors.toList());
+                  mapResponse.setHistory(
+                      asset.getHistory().stream()
+                          .map(
+                              stats -> {
+                                if (response.get(index) == null
+                                    || response.get(index).getHistory() == null) {
+                                  stats.setId(null);
+                                  return stats;
+                                }
+                                Stream<Stats> filter =
+                                    response.get(index).getHistory().stream()
+                                        .filter(h -> h.getDate().isEqual(stats.getDate()));
+                                int indexH =
+                                    response
+                                        .get(index)
+                                        .getHistory()
+                                        .indexOf(filter.findFirst().get());
+                                Stats indexed = response.get(index).getHistory().get(indexH);
+
+                                indexed.setId(null);
+                                indexed.setBalance(indexed.getBalance() + stats.getBalance());
+                                indexed.setTrend(indexed.getTrend() + stats.getTrend());
+                                indexed.setPercentage(
+                                    MathService.round(
+                                        ((indexed.getPercentage() + stats.getPercentage()) / 2),
+                                        2));
+                                return indexed;
+                              })
+                          .collect(Collectors.toList()));
                 }
               } else {
                 BeanUtils.copyProperties(asset, assetToReturn);
