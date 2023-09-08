@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
-import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -21,14 +20,12 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.math.MathService;
-
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,8 +228,10 @@ public class CryptoService {
             wallet -> {
               Wallet wallet1 = new Wallet();
               BeanUtils.copyProperties(wallet, wallet1);
-              Stats history = wallet.getHistory().get(wallet.getHistory().size() - 1);
-              wallet1.setHistory(List.of(history));
+              if (wallet.getHistory() != null){
+                  Stats history = wallet.getHistory().get(wallet.getHistory().size() - 1);
+                  wallet1.setHistory(List.of(history));
+              }
               if (wallet.getAssets() != null)
                 wallet1.setAssets(
                     wallet.getAssets().stream()
