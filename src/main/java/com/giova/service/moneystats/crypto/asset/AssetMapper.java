@@ -75,6 +75,7 @@ public class AssetMapper {
             asset -> {
               AssetEntity assetEntity = new AssetEntity();
               asset.setBalance(MathService.round(asset.getBalance(), 8));
+              asset.setInvested(MathService.round(asset.getInvested(), 2));
               BeanUtils.copyProperties(asset, assetEntity);
               assetEntity.setIcon(getByteArrayFromImageURL(asset.getIcon()));
               if (asset.getHistory() != null) {
