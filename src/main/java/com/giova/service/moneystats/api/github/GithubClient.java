@@ -51,10 +51,7 @@ public class GithubClient {
     headers.add("X-GitHub-Api-Version", "2022-11-28");
     HttpEntity<GithubIssues> request = new HttpEntity<>(githubIssues, headers);
 
-    ResponseEntity<Object> response =
-        restTemplate.exchange(openGithubIssuesUrl, HttpMethod.POST, request, Object.class);
-
-    return response;
+    return restTemplate.exchange(openGithubIssuesUrl, HttpMethod.POST, request, Object.class);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
