@@ -19,6 +19,7 @@ public class MarketData extends GenericDTO {
   private String icon;
   @UpperCase private String currency;
   private Double current_price;
+  private String category;
   private Double market_cap;
   private Long rank;
   private Double total_volume;

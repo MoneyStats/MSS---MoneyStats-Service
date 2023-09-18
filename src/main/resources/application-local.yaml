@@ -27,9 +27,9 @@ spring:
 rest:
   scheduled:
     marketData:
-      active: false
+      active: true
       delay:
-        start: 60000
+        start: 5000
         end: 3600000
     caching:
       active: true
