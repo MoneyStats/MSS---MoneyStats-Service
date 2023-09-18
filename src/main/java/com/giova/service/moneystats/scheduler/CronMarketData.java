@@ -1,13 +1,16 @@
 package com.giova.service.moneystats.scheduler;
 
+import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.webClient.WebClientException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,7 @@ public class CronMarketData {
 
     // Cancello tutti i dati dalla tabella MarketData
     marketDataService.deleteMarketData();
+    AtomicInteger index = new AtomicInteger(0);
 
     fiatCurrencies.stream()
         .peek(
@@ -83,8 +87,21 @@ public class CronMarketData {
               }
               LOG.info("Found {} data of Market Data", getMarketData.size());
               marketDataService.saveMarketData(getMarketData, fiatCurrency);
+              if (index.getAndIncrement() != fiatCurrencies.size() - 1) threadSeep();
             })
         .collect(Collectors.toList());
     LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+  }
+
+  private void threadSeep() {
+    try {
+      LOG.info("Thread is sleeping for {} millisecond", 60000);
+      Thread.sleep(60000);
+    } catch (InterruptedException e) {
+      LOG.info("An error occurred during sleeping thread, MarketDataService:42");
+      throw new CoinGeckoException(
+          ExceptionMap.ERR_THREAD_001,
+          "An error occurred during sleeping thread, MarketDataService:42");
+    }
   }
 }

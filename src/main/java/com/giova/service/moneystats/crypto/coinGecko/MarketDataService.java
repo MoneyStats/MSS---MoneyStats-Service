@@ -6,7 +6,6 @@ import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.coinGecko.entity.MarketDataEntity;
-import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -39,15 +38,6 @@ public class MarketDataService {
     ResponseEntity<List<CoinGeckoMarketData>> getMarketData =
         coinGeckoClient.getMarketData(currency, false);
 
-    try {
-      LOG.info("Thread is sleeping for {} millisecond", 3000);
-      Thread.sleep(3000);
-    } catch (InterruptedException e) {
-      LOG.info("An error occurred during sleeping thread, MarketDataService:42");
-      throw new CoinGeckoException(
-          ExceptionMap.ERR_THREAD_001,
-          "An error occurred during sleeping thread, MarketDataService:42");
-    }
     ResponseEntity<List<CoinGeckoMarketData>> getStableData =
         coinGeckoClient.getMarketData(currency, true);
 
