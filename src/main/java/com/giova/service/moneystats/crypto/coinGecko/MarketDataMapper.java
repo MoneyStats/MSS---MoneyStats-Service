@@ -15,7 +15,7 @@ public class MarketDataMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public MarketData fromCoinGeckoMarketDataToCoinGeckoModel(
-      CoinGeckoMarketData coinGeckoMarketData) {
+      CoinGeckoMarketData coinGeckoMarketData, String category) {
     MarketData marketData = new MarketData();
     marketData.setIdentifier(coinGeckoMarketData.getId());
     marketData.setName(coinGeckoMarketData.getName());
@@ -32,14 +32,15 @@ public class MarketDataMapper {
     marketData.setMarket_cap_change_percentage_24h(
         coinGeckoMarketData.getMarket_cap_change_percentage_24h());
     marketData.setPrice_change_percentage_24h(coinGeckoMarketData.getPrice_change_percentage_24h());
+    marketData.setCategory(category);
     return marketData;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public List<MarketData> fromCoinGeckoMarketDataListToCoinGeckoList(
-      List<CoinGeckoMarketData> coinGeckoMarketData) {
+      List<CoinGeckoMarketData> coinGeckoMarketData, String category) {
     return coinGeckoMarketData.stream()
-        .map(this::fromCoinGeckoMarketDataToCoinGeckoModel)
+        .map(c -> fromCoinGeckoMarketDataToCoinGeckoModel(c, category))
         .collect(Collectors.toList());
   }
 
@@ -58,8 +59,7 @@ public class MarketDataMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public List<MarketData> fromEntityToMarketData(
-      List<MarketDataEntity> marketDataEntities) {
+  public List<MarketData> fromEntityToMarketData(List<MarketDataEntity> marketDataEntities) {
     return marketDataEntities.stream()
         .map(
             marketDataEntity -> {

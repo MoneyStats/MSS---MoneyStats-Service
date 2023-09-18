@@ -37,6 +37,9 @@ public class MarketDataEntity extends GenericEntity {
   @Column(name = "CURRENT_PRICE", nullable = false)
   private Double current_price;
 
+  @Column(name = "CATEGORY")
+  private String category;
+
   @Column(name = "MARKET_CAP")
   private Double market_cap;
 

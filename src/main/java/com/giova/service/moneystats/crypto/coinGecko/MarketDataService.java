@@ -1,16 +1,18 @@
 package com.giova.service.moneystats.crypto.coinGecko;
 
 import com.giova.service.moneystats.api.coingecko.CoinGeckoClient;
+import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.coinGecko.entity.MarketDataEntity;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -35,13 +37,38 @@ public class MarketDataService {
   public List<MarketData> getCoinGeckoMarketData(String currency) {
     LOG.info("Getting MarketData for {}", currency);
     ResponseEntity<List<CoinGeckoMarketData>> getMarketData =
-        coinGeckoClient.getMarketData(currency);
+        coinGeckoClient.getMarketData(currency, false);
 
-    if (!getMarketData.hasBody()) {
-      LOG.error("Error on fetching MarketData");
+    try {
+      LOG.info("Thread is sleeping for {} millisecond", 3000);
+      Thread.sleep(3000);
+    } catch (InterruptedException e) {
+      LOG.info("An error occurred during sleeping thread, MarketDataService:42");
+      throw new CoinGeckoException(
+          ExceptionMap.ERR_THREAD_001,
+          "An error occurred during sleeping thread, MarketDataService:42");
     }
-    return mapper.fromCoinGeckoMarketDataListToCoinGeckoList(
-        Objects.requireNonNull(getMarketData.getBody()));
+    ResponseEntity<List<CoinGeckoMarketData>> getStableData =
+        coinGeckoClient.getMarketData(currency, true);
+
+    if (getMarketData.getBody() == null || getStableData.getBody() == null) {
+      LOG.error("Error on fetching MarketData");
+      throw new CoinGeckoException("An error occurred during calling CoinGecko, empty body");
+    }
+
+    List<MarketData> cryptocurency =
+        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(
+            getMarketData.getBody(), "Cryptocurrency");
+    List<MarketData> stablecoin =
+        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(getStableData.getBody(), "StableCoin");
+
+    Predicate<MarketData> hasRankNull = md -> md.getRank() == null;
+    stablecoin.removeIf(hasRankNull);
+
+    cryptocurency.removeAll(stablecoin);
+    cryptocurency.addAll(stablecoin);
+
+    return cryptocurency;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -49,8 +76,7 @@ public class MarketDataService {
     LOG.info("Saving {} MarketData for currency {}", marketData.size(), currency);
     List<MarketDataEntity> marketDataEntities = mapper.fromMarketDataToEntity(marketData, currency);
 
-    List<MarketDataEntity> saved =
-        marketDataCacheService.saveAll(marketDataEntities, currency);
+    List<MarketDataEntity> saved = marketDataCacheService.saveAll(marketDataEntities, currency);
 
     return mapper.fromEntityToMarketData(saved);
   }
