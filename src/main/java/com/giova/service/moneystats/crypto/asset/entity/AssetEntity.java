@@ -33,6 +33,9 @@ public class AssetEntity extends GenericEntity {
   @Column(name = "NAME")
   private String name;
 
+  @Column(name = "CATEGORY")
+  private String category;
+
   @Column(name = "SYMBOL", length = 10)
   private String symbol;
 
