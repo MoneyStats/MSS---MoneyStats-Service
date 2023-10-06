@@ -44,24 +44,35 @@ public class CryptoController {
     return appService.getCryptoResumeData();
   }
 
-  @PatchMapping(value = "/MarketData/import", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping(value = "/marketData/import", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> importMarketData(@RequestHeader("authToken") String authToken) throws UtilsException {
+  public ResponseEntity<Response> importMarketData(@RequestHeader("authToken") String authToken)
+      throws UtilsException {
     cronMarketData.scheduleAllCryptoAsset();
-    Response response = new Response(HttpStatus.OK.value(), "MarketData Successfully imported", CorrelationIdUtils.getCorrelationId(), null);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "MarketData Successfully imported",
+            CorrelationIdUtils.getCorrelationId(),
+            null);
     return ResponseEntity.ok(response);
   }
 
-  @PatchMapping(value = "/Cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> cleanCache(@RequestHeader("authToken") String authToken)
-          throws UtilsException {
+      throws UtilsException {
     cronCachingReset.scheduleCleanCache();
-    Response response = new Response(HttpStatus.OK.value(), "Cache cleaned successfully", CorrelationIdUtils.getCorrelationId(), null);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Cache cleaned successfully",
+            CorrelationIdUtils.getCorrelationId(),
+            null);
     return ResponseEntity.ok(response);
   }
 }
