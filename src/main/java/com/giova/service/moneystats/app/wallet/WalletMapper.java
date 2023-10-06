@@ -13,6 +13,7 @@ import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
@@ -172,11 +173,22 @@ public class WalletMapper {
                                             })
                                         .collect(Collectors.toList()));
                               }
+                              if (assetMap.getOperations() != null) {
+                                asset.setOperations(
+                                    assetMap.getOperations().stream()
+                                        .map(
+                                            operationEntity -> {
+                                              Operations operations = new Operations();
+                                              operationEntity.setId(null);
+                                              BeanUtils.copyProperties(operationEntity, operations);
+                                              return operations;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
                               return asset;
                             })
                         .collect(Collectors.toList()));
               }
-
               return wallet;
             }))
         .collect(Collectors.toList());
