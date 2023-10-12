@@ -136,7 +136,11 @@ public class AssetMapper {
                           .map(
                               stats -> {
                                 if (response.get(index) == null
-                                    || response.get(index).getHistory() == null) {
+                                    || response.get(index).getHistory() == null
+                                    || response.get(index).getHistory().stream()
+                                        .filter(h -> h.getDate().isEqual(stats.getDate()))
+                                        .findFirst()
+                                        .isEmpty()) {
                                   stats.setId(null);
                                   return stats;
                                 }
@@ -160,6 +164,10 @@ public class AssetMapper {
                                 return indexed;
                               })
                           .collect(Collectors.toList()));
+                  if (asset.getOperations() != null && !asset.getOperations().isEmpty())
+                    if (mapResponse.getOperations() != null)
+                      mapResponse.getOperations().addAll(asset.getOperations());
+                    else mapResponse.setOperations(asset.getOperations());
                 }
               } else {
                 BeanUtils.copyProperties(asset, assetToReturn);

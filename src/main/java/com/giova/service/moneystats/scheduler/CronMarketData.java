@@ -70,20 +70,7 @@ public class CronMarketData {
                     fiatCurrency);
                 LOG.error("The exception message is {}", e.getMessage());
                 LOG.error("Cleaning MarketData Database");
-                marketDataService.deleteMarketData();
-                fiatCurrencies.stream()
-                    .peek(
-                        fc -> {
-                          LOG.info(
-                              "Found {} data of Market Data to RollBack", allMarketData.size());
-                          marketDataService.saveMarketData(
-                              allMarketData.stream()
-                                  .filter(
-                                      marketData -> marketData.getCurrency().equalsIgnoreCase(fc))
-                                  .collect(Collectors.toList()),
-                              fc);
-                        });
-                return;
+                rollBackMarketData(fiatCurrencies, allMarketData);
               }
               LOG.info("Found {} data of Market Data", getMarketData.size());
               marketDataService.saveMarketData(getMarketData, fiatCurrency);
@@ -91,6 +78,20 @@ public class CronMarketData {
             })
         .collect(Collectors.toList());
     LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+  }
+
+  private void rollBackMarketData(List<String> fiatCurrencies, List<MarketData> allMarketData) {
+    marketDataService.deleteMarketData();
+    fiatCurrencies.stream()
+        .peek(
+            fc -> {
+              LOG.info("Found {} data of Market Data to RollBack", allMarketData.size());
+              marketDataService.saveMarketData(
+                  allMarketData.stream()
+                      .filter(marketData -> marketData.getCurrency().equalsIgnoreCase(fc))
+                      .collect(Collectors.toList()),
+                  fc);
+            });
   }
 
   private void threadSeep() {
