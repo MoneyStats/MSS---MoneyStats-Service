@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -46,19 +47,25 @@ public class MarketDataService {
       throw new CoinGeckoException("An error occurred during calling CoinGecko, empty body");
     }
 
-    List<MarketData> cryptocurency =
-        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(
-            getMarketData.getBody(), "Cryptocurrency");
+    List<CoinGeckoMarketData> geckoCryptocurrencies = getMarketData.getBody();
+    List<CoinGeckoMarketData> geckoStablecoin = getStableData.getBody();
+
+    geckoCryptocurrencies.removeAll(geckoStablecoin);
+
+    List<MarketData> cryptocurrency =
+        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoCryptocurrencies, "Cryptocurrency");
     List<MarketData> stablecoin =
-        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(getStableData.getBody(), "Stablecoin");
+        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoStablecoin, "Stablecoin");
 
     Predicate<MarketData> hasRankNull = md -> md.getRank() == null;
     stablecoin.removeIf(hasRankNull);
 
-    cryptocurency.removeAll(stablecoin);
-    cryptocurency.addAll(stablecoin);
+    cryptocurrency.removeAll(stablecoin);
+    cryptocurrency.addAll(stablecoin);
 
-    return cryptocurency;
+    cryptocurrency.sort(Comparator.comparing(MarketData::getRank));
+
+    return cryptocurrency;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -80,7 +87,9 @@ public class MarketDataService {
       LOG.error("No MarketData found");
       return new ArrayList<>();
     }
-    return mapper.fromEntityToMarketData(getMarketData);
+    return mapper.fromEntityToMarketData(getMarketData).stream()
+        .sorted(Comparator.comparing(MarketData::getRank))
+        .collect(Collectors.toList());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
