@@ -13,6 +13,7 @@ import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import com.giova.service.moneystats.generic.Response;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -155,6 +156,8 @@ public class CryptoService {
               AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
               AtomicReference<Double> holdingBalance = new AtomicReference<>(0D);
               AtomicReference<Double> holdingLastBalance = new AtomicReference<>(0D);
+              AtomicReference<Double> tradingBalance = new AtomicReference<>(0D);
+              AtomicReference<Double> tradingLastBalance = new AtomicReference<>(0D);
 
               AtomicInteger indexWallet = new AtomicInteger(0);
 
@@ -169,7 +172,9 @@ public class CryptoService {
                       index,
                       indexWallet,
                       filterDateByYear,
-                      year);
+                      year,
+                      tradingBalance,
+                      tradingLastBalance);
 
               dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
 
@@ -200,6 +205,8 @@ public class CryptoService {
                     lastBalance,
                     holdingBalance,
                     holdingLastBalance,
+                    tradingBalance,
+                    tradingLastBalance,
                     getAssetValue(marketData, BTC_SYMBOL));
               } catch (UtilsException e) {
                 throw new RuntimeException(e);
@@ -222,16 +229,20 @@ public class CryptoService {
       AtomicInteger index,
       AtomicInteger indexWallet,
       List<LocalDate> filterDateByYear,
-      Integer year) {
+      Integer year,
+      AtomicReference<Double> tradingBalance,
+      AtomicReference<Double> tradingLastBalance) {
+    List<Operations> operations = new ArrayList<>();
     return getAllWallet.stream()
         .map(
             wallet -> {
               Wallet wallet1 = new Wallet();
               BeanUtils.copyProperties(wallet, wallet1);
-              if (wallet.getHistory() != null){
-                  Stats history = wallet.getHistory().get(wallet.getHistory().size() - 1);
-                  wallet1.setHistory(List.of(history));
+              if (wallet.getHistory() != null) {
+                Stats history = wallet.getHistory().get(wallet.getHistory().size() - 1);
+                wallet1.setHistory(List.of(history));
               }
+
               if (wallet.getAssets() != null)
                 wallet1.setAssets(
                     wallet.getAssets().stream()
@@ -252,6 +263,12 @@ public class CryptoService {
 
                               if (wallet.getType().equalsIgnoreCase("Holding"))
                                 holdingBalance.updateAndGet(v -> v + asset1.getValue());
+
+                              if (wallet.getType().equalsIgnoreCase("Trading")) {
+                                if (asset.getOperations() != null)
+                                  operations.addAll(asset.getOperations());
+                                tradingBalance.updateAndGet(v -> v + asset1.getValue());
+                              }
 
                               if (!listFilter.isEmpty()) {
                                 if (index.get() == 0)
@@ -274,6 +291,18 @@ public class CryptoService {
                               return asset1;
                             })
                         .collect(Collectors.toList()));
+              if (indexWallet.get() == getAllWallet.size() - 1
+                  && wallet.getType().equalsIgnoreCase("Trading")) {
+                Predicate<Operations> isNotTradingAndNotClosed =
+                    operations1 ->
+                        !operations1.getType().equalsIgnoreCase("Trading")
+                            || operations1.getExitDate() == null;
+                operations.removeIf(isNotTradingAndNotClosed);
+                Comparator<Operations> c = Comparator.comparing(Operations::getEntryDate);
+                operations.sort(c);
+
+                tradingLastBalance.updateAndGet(v -> operations.get(0).getPerformance());
+              }
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
               List<Asset> filterAsset = wallet1.getAssets();

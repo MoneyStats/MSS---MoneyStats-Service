@@ -10,7 +10,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -99,19 +98,19 @@ public class CryptoMapper {
   public void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
-    //Stats highPrice =
+    // Stats highPrice =
     //    wallet.getHistory().stream()
     //        .max(Comparator.comparing(Stats::getBalance))
     //        .orElseThrow(UtilsException::new);
-    //Stats lowPrice =
+    // Stats lowPrice =
     //    wallet.getHistory().stream()
     //        .min(Comparator.comparing(Stats::getBalance))
     //        .orElseThrow(UtilsException::new);
     List<Stats> getStats = wallet.getHistory();
-    //wallet.setHighPrice(highPrice.getBalance());
-    //wallet.setHighPriceDate(highPrice.getDate());
-    //wallet.setLowPrice(lowPrice.getBalance());
-    //wallet.setLowPriceDate(lowPrice.getDate());
+    // wallet.setHighPrice(highPrice.getBalance());
+    // wallet.setHighPriceDate(highPrice.getDate());
+    // wallet.setLowPrice(lowPrice.getBalance());
+    // wallet.setLowPriceDate(lowPrice.getDate());
 
     balance.updateAndGet(
         v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
@@ -132,6 +131,8 @@ public class CryptoMapper {
       AtomicReference<Double> lastBalance,
       AtomicReference<Double> holdingBalance,
       AtomicReference<Double> holdingLastBalance,
+      AtomicReference<Double> tradingBalance,
+      AtomicReference<Double> tradingLastBalance,
       Double BTC_VALUE)
       throws UtilsException {
     dashboard.setBalance(MathService.round(balance.get(), 2));
@@ -158,8 +159,10 @@ public class CryptoMapper {
     holding.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setHoldingLong(holding);
     DashboardInfo trading = new DashboardInfo();
-    trading.setPerformance(0D);
-    trading.setBalance(0D);
+    trading.setPerformance(tradingLastBalance.get());
+    trading.setBalance(MathService.round(tradingBalance.get(), 2));
+    // trading.setPerformance(0D);
+    // trading.setBalance(0D);
     trading.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setTrading(trading);
   }
@@ -182,7 +185,7 @@ public class CryptoMapper {
                     .peek(
                         asset -> {
                           // TODO: Modica 2 con Asset Price anche giù nel mapDashboard
-                          //asset.setValue(asset.getBalance() * BTC_VALUE);
+                          // asset.setValue(asset.getBalance() * BTC_VALUE);
                           balance.updateAndGet(v -> v + asset.getValue());
                           if (wallet.getType().equalsIgnoreCase("Holding"))
                             holdingBalance.updateAndGet(v -> v + asset.getValue());
