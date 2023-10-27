@@ -207,7 +207,8 @@ public class CryptoService {
                     holdingLastBalance,
                     tradingBalance,
                     tradingLastBalance,
-                    getAssetValue(marketData, BTC_SYMBOL));
+                    getAssetValue(marketData, BTC_SYMBOL),
+                    marketData);
               } catch (UtilsException e) {
                 throw new RuntimeException(e);
               }
@@ -269,12 +270,16 @@ public class CryptoService {
                                   operations.addAll(asset.getOperations());
                                 tradingBalance.updateAndGet(v -> v + asset1.getValue());
                               }
-
+                              if (index.get() == 0)
+                                balance.updateAndGet(v -> v + asset1.getValue());
                               if (!listFilter.isEmpty()) {
-                                if (index.get() == 0)
-                                  balance.updateAndGet(v -> v + asset1.getValue());
-                                else
+                                if (index.get() != 0)
                                   cryptoMapper.updateBalance(listFilter, filterDateByYear, balance);
+                                // if (index.get() == 0)
+                                //  balance.updateAndGet(v -> v + asset1.getValue());
+                                // else
+                                //  cryptoMapper.updateBalance(listFilter, filterDateByYear,
+                                // balance);
                                 cryptoMapper.updateInitialBalance(
                                     listFilter, filterDateByYear, initialBalance);
 
