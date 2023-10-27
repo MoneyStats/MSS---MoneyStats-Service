@@ -3,6 +3,7 @@ package com.giova.service.moneystats.crypto;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.crypto.model.DashboardInfo;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -133,7 +134,8 @@ public class CryptoMapper {
       AtomicReference<Double> holdingLastBalance,
       AtomicReference<Double> tradingBalance,
       AtomicReference<Double> tradingLastBalance,
-      Double BTC_VALUE)
+      Double BTC_VALUE,
+      List<MarketData> marketData)
       throws UtilsException {
     dashboard.setBalance(MathService.round(balance.get(), 2));
     dashboard.setBtcBalance(MathService.round(balance.get() / BTC_VALUE, 8));
@@ -165,6 +167,7 @@ public class CryptoMapper {
     // trading.setBalance(0D);
     trading.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setTrading(trading);
+    dashboard.setLastUpdate(marketData.get(0).getUpdateDate().toLocalDate());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
