@@ -274,6 +274,7 @@ public class AppService {
                           wallet -> {
                             Wallet wallet1 = new Wallet();
                             BeanUtils.copyProperties(wallet, wallet1);
+                            wallet1.setAssets(null);
                             List<Stats> listFilter =
                                 wallet.getHistory() != null
                                     ? wallet.getHistory().stream()
