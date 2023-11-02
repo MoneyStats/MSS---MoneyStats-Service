@@ -59,6 +59,7 @@ public class MarketDataService {
 
     Predicate<MarketData> hasRankOrCurrentPriceNull =
         md -> md.getRank() == null || md.getCurrent_price() == null;
+    cryptocurrency.removeIf(hasRankOrCurrentPriceNull);
     stablecoin.removeIf(hasRankOrCurrentPriceNull);
 
     cryptocurrency.removeAll(stablecoin);

@@ -5,6 +5,7 @@ import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
+import com.nimbusds.jose.*;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -31,6 +32,7 @@ public class TokenService {
   private static final String EMAIL = "email";
   private static final String ROLE = "role";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
   @Value(value = "${jwt.secret}")
   private String secret;
 
@@ -44,7 +46,7 @@ public class TokenService {
     claims.put(LASTNAME, user.getSurname());
     claims.put(EMAIL, user.getEmail());
     claims.put(ROLE, user.getRole());
-    //claims.put(PROFILE_PHOTO, user.getProfilePhoto());
+    // claims.put(PROFILE_PHOTO, user.getProfilePhoto());
     claims.put(CURRENCY, user.getCurrency());
     long dateExp = Long.parseLong(expirationTime);
     Date exp = new Date(System.currentTimeMillis() + dateExp);
@@ -73,7 +75,38 @@ public class TokenService {
         (@NotNull String) body.get(EMAIL),
         body.getSubject(),
         UserRole.valueOf((@NotNull String) body.get(ROLE)),
-        //(@NotNull String) body.get(PROFILE_PHOTO),
+        // (@NotNull String) body.get(PROFILE_PHOTO),
         (@NotNull String) body.get(CURRENCY));
   }
+/*
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public AuthToken generateToken(User user) throws JOSEException, ParseException {
+    // Crea un set di claims
+    JWTClaimsSet claimsSet =
+        new JWTClaimsSet.Builder()
+            .subject(user.getUsername())
+            .claim(FIRSTNAME, user.getName())
+            .claim(LASTNAME, user.getSurname())
+            .claim(EMAIL, user.getEmail())
+            .claim(ROLE, user.getRole())
+            .claim(CURRENCY, user.getCurrency())
+            .expirationTime(new Date(System.currentTimeMillis() + Long.parseLong(expirationTime)))
+            .build();
+
+    // Genera una chiave segreta per firmare il JWE
+    OctetSequenceKey jwk = new OctetSequenceKey.Builder(secret.getBytes()).build();
+
+    // Crea un oggetto JWE con il JWT firmato
+    JWEObject jweObject =
+        new JWEObject(
+            new JWEHeader.Builder(JWEAlgorithm.PBES2_HS256_A128KW, EncryptionMethod.A128CBC_HS256)
+                .contentType("JWT") // Il contenuto è un JWT
+                .build(),
+            new Payload(new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet)));
+
+    // Serializza il JWE in una stringa
+    String jweToken = jweObject.serialize();
+
+    return new AuthToken(jweToken);
+  }*/
 }
