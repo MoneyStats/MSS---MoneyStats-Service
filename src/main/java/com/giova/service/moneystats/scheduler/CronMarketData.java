@@ -6,7 +6,6 @@ import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.webClient.WebClientException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class CronMarketData {
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {
-      LOG.info("Scheduler Active status is {}, Stopping Scheduler", isSchedulerActive);
+      LOG.info("Scheduler Active status is NOT-ACTIVE, Stopping Scheduler");
       return;
     }
 
@@ -64,16 +63,18 @@ public class CronMarketData {
               List<MarketData> getMarketData = new ArrayList<>();
               try {
                 getMarketData = marketDataService.getCoinGeckoMarketData(fiatCurrency);
-              } catch (WebClientException e) {
+                LOG.info("Found {} data of Market Data", getMarketData.size());
+                marketDataService.saveMarketData(getMarketData, fiatCurrency);
+              } catch (Exception e) {
                 LOG.error(
                     "Transaction is rolling back cause an error happen during getting MarketData for currency {}",
                     fiatCurrency);
                 LOG.error("The exception message is {}", e.getMessage());
                 LOG.error("Cleaning MarketData Database");
                 rollBackMarketData(fiatCurrencies, allMarketData);
+                return;
               }
-              LOG.info("Found {} data of Market Data", getMarketData.size());
-              marketDataService.saveMarketData(getMarketData, fiatCurrency);
+
               if (index.getAndIncrement() != fiatCurrencies.size() - 1) threadSeep();
             })
         .collect(Collectors.toList());
@@ -91,7 +92,8 @@ public class CronMarketData {
                       .filter(marketData -> marketData.getCurrency().equalsIgnoreCase(fc))
                       .collect(Collectors.toList()),
                   fc);
-            });
+            })
+        .collect(Collectors.toList());
   }
 
   private void threadSeep() {

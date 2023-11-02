@@ -65,15 +65,10 @@ public class AppInterceptor extends OncePerRequestFilter {
           "Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
       exceptionResponse =
           getExceptionResponse(e, request, e.getExceptionCode(), e.getExceptionCode().getStatus());
-      // response.addHeader("EXCEPTION_RESPONSE",
-      // objectMapper.writeValueAsString(exceptionResponse));
       exceptionResponse.setCorrelationId(CorrelationIdUtils.getCorrelationId());
       response.setStatus(e.getExceptionCode().getStatus().value());
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.getWriter().write(convertObjectToJson(exceptionResponse));
-      // response.sendError(HttpStatus.UNAUTHORIZED.value(),
-      // convertObjectToJson(exceptionResponse));
-      // objectMapper.writeValue(response.getWriter(), exceptionResponse);
       return;
     }
     setUserInContext(checkUser);
