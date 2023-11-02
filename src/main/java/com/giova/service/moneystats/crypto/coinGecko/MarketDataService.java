@@ -57,8 +57,9 @@ public class MarketDataService {
     List<MarketData> stablecoin =
         mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoStablecoin, "Stablecoin");
 
-    Predicate<MarketData> hasRankNull = md -> md.getRank() == null;
-    stablecoin.removeIf(hasRankNull);
+    Predicate<MarketData> hasRankOrCurrentPriceNull =
+        md -> md.getRank() == null || md.getCurrent_price() == null;
+    stablecoin.removeIf(hasRankOrCurrentPriceNull);
 
     cryptocurrency.removeAll(stablecoin);
     cryptocurrency.addAll(stablecoin);

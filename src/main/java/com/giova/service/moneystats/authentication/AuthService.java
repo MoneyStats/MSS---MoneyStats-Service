@@ -230,6 +230,36 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public AuthToken refreshToken(String authToken) throws UtilsException {
+    AuthToken token = new AuthToken();
+    token.setAccessToken(authToken);
+    User user = new User();
+    try {
+      user = tokenService.parseToken(token);
+    } catch (UtilsException e) {
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
+    }
+    UserEntity userEntity =
+        authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
+    // userEntity.setPassword(null);
+
+    if (userEntity == null) {
+      LOG.error("User not found");
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+    }
+
+    AuthToken refreshToken = tokenService.generateToken(user);
+
+    if (authToken == null) {
+      LOG.error("Token not found");
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+    }
+    return refreshToken;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> updateUserData(String authToken, User userToUpdate) {
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(userToUpdate);
