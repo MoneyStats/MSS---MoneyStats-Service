@@ -114,8 +114,12 @@ public class CryptoMapper {
         balance.get() == 0 && lastBalance.get() == 0
             ? 0D
             : MathService.round(
-                ((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
-    performance.setBalance(MathService.round(balance.get() - lastBalance.get(), 2));
+                ((balance.get() - (lastBalance.get() + tradingBalance.get()))
+                        / (lastBalance.get() + tradingBalance.get()))
+                    * 100,
+                2));
+    performance.setBalance(
+        MathService.round(balance.get() - (lastBalance.get() + tradingBalance.get()), 2));
     performance.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setPerformance(performance);
 

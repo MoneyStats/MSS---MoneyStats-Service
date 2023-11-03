@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,8 @@ public class AppController {
   @Tag(name = "App", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> getDashboard(@RequestHeader("authToken") String authToken)
+  public ResponseEntity<Response> getDashboard(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
       throws UtilsException, JsonProcessingException {
     return appService.getDashboardData(authToken);
   }
@@ -39,8 +41,8 @@ public class AppController {
   @Tag(name = "App", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> getResume(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> getResume(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getResumeData(authToken);
   }
 
@@ -52,7 +54,8 @@ public class AppController {
   @Operation(description = "API to register an account", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> addStats(
-      @RequestBody @Valid List<Wallet> wallets, @RequestHeader("authToken") String authToken)
+      @RequestBody @Valid List<Wallet> wallets,
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
       throws UtilsException {
     return appService.addStats(wallets, authToken);
   }
@@ -88,8 +91,8 @@ public class AppController {
   @Tag(name = "App", description = "API to Backup Wallet and Stats")
   @Operation(description = "API to Backup Wallet and Stats", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> backupData(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> backupData(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.backupData();
   }
 
@@ -102,7 +105,7 @@ public class AppController {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> restoreData(
       @RequestBody @Valid List<Wallet> wallets,
-      @RequestHeader("authToken") String authToken) {
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) {
     return appService.restoreData(wallets);
   }
 }

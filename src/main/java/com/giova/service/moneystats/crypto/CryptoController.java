@@ -11,6 +11,7 @@ import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationI
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +31,8 @@ public class CryptoController {
   @Tag(name = "Crypto", description = "API to get Crypto Dashboard")
   @Operation(description = "API to get Crypto Dashboard", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> getCryptoDashboard(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> getCryptoDashboard(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getCryptoDashboardData();
   }
 
@@ -39,8 +40,8 @@ public class CryptoController {
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> getCryptoResume(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> getCryptoResume(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getCryptoResumeData();
   }
 
@@ -48,8 +49,8 @@ public class CryptoController {
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> importMarketData(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> importMarketData(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     cronMarketData.scheduleAllCryptoAsset();
     Response response =
         new Response(
@@ -64,8 +65,8 @@ public class CryptoController {
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> cleanCache(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> cleanCache(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     cronCachingReset.scheduleCleanCache();
     Response response =
         new Response(

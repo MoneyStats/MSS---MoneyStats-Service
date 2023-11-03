@@ -6,6 +6,16 @@ import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.DirectEncrypter;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
+import com.nimbusds.jose.proc.JWEKeySelector;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -14,6 +24,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.text.ParseException;
 import java.util.Date;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -40,7 +51,7 @@ public class TokenService {
   private String expirationTime;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public AuthToken generateToken(User user) {
+  public AuthToken generateJWTToken(User user) {
     Claims claims = Jwts.claims().setSubject(user.getUsername());
     claims.put(FIRSTNAME, user.getName());
     claims.put(LASTNAME, user.getSurname());
@@ -56,11 +67,11 @@ public class TokenService {
             .signWith(SignatureAlgorithm.HS512, secret)
             .setExpiration(exp)
             .compact();
-    return new AuthToken(dateExp, token);
+    return new AuthToken(dateExp, "Bearer", token);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public User parseToken(AuthToken token) throws UtilsException {
+  public User parseJWTToken(AuthToken token) throws UtilsException {
     Claims body;
     try {
       body = Jwts.parser().setSigningKey(secret).parseClaimsJws(token.getAccessToken()).getBody();
@@ -78,9 +89,9 @@ public class TokenService {
         // (@NotNull String) body.get(PROFILE_PHOTO),
         (@NotNull String) body.get(CURRENCY));
   }
-/*
+
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public AuthToken generateToken(User user) throws JOSEException, ParseException {
+  public AuthToken generateToken(User user) throws JOSEException {
     // Crea un set di claims
     JWTClaimsSet claimsSet =
         new JWTClaimsSet.Builder()
@@ -93,20 +104,43 @@ public class TokenService {
             .expirationTime(new Date(System.currentTimeMillis() + Long.parseLong(expirationTime)))
             .build();
 
-    // Genera una chiave segreta per firmare il JWE
-    OctetSequenceKey jwk = new OctetSequenceKey.Builder(secret.getBytes()).build();
+    Payload payload = new Payload(claimsSet.toJSONObject());
 
-    // Crea un oggetto JWE con il JWT firmato
-    JWEObject jweObject =
-        new JWEObject(
-            new JWEHeader.Builder(JWEAlgorithm.PBES2_HS256_A128KW, EncryptionMethod.A128CBC_HS256)
-                .contentType("JWT") // Il contenuto è un JWT
-                .build(),
-            new Payload(new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet)));
+    JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512);
 
-    // Serializza il JWE in una stringa
-    String jweToken = jweObject.serialize();
+    byte[] secretKey = secret.getBytes();
+    DirectEncrypter encrypted = new DirectEncrypter(secretKey);
 
-    return new AuthToken(jweToken);
-  }*/
+    JWEObject jweObject = new JWEObject(header, payload);
+    jweObject.encrypt(encrypted);
+    String token = jweObject.serialize();
+
+    return new AuthToken(claimsSet.getExpirationTime().getTime(), "Bearer", token);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  public User parseToken(AuthToken token) throws UtilsException {
+    try {
+      String tokenSplit = token.getAccessToken().split("Bearer ")[1];
+      ConfigurableJWTProcessor<SimpleSecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+      JWKSource<SimpleSecurityContext> jweKeySource = new ImmutableSecret<>(secret.getBytes());
+      JWEKeySelector<SimpleSecurityContext> jweKeySelector =
+          new JWEDecryptionKeySelector<>(
+              JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512, jweKeySource);
+      jwtProcessor.setJWEKeySelector(jweKeySelector);
+
+      JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
+
+      return new User(
+          (String) claimsSet.getClaim(FIRSTNAME),
+          (String) claimsSet.getClaim(LASTNAME),
+          (String) claimsSet.getClaim(EMAIL),
+          claimsSet.getSubject(),
+          UserRole.valueOf((String) claimsSet.getClaim(ROLE)),
+          (String) claimsSet.getClaim(CURRENCY));
+    } catch (JOSEException | ParseException | BadJOSEException e) {
+      LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
+    }
+  }
 }

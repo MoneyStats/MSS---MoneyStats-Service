@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class WalletController {
   @Operation(description = "API to insert a wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> insertOrUpdateWallet(
-      @RequestBody @Valid Wallet wallet, @RequestHeader("authToken") String authToken)
+      @RequestBody @Valid Wallet wallet, @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
       throws UtilsException, JsonProcessingException {
     return walletService.insertOrUpdateWallet(wallet);
   }
@@ -39,8 +40,8 @@ public class WalletController {
   @Tag(name = "Wallet", description = "API to get all wallet")
   @Operation(description = "API to get all wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> listWallet(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> listWallet(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return walletService.getWallets();
   }
 
@@ -48,8 +49,8 @@ public class WalletController {
   @Tag(name = "Wallet", description = "API to get all Crypto wallet")
   @Operation(description = "API to get all Crypto wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> listCryptoWallet(@RequestHeader("authToken") String authToken)
-          throws UtilsException {
+  public ResponseEntity<Response> listCryptoWallet(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return walletService.getCryptoWallets();
   }
 }
