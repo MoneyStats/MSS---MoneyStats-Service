@@ -92,7 +92,9 @@ public class AuthServiceTest {
 
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
 
-    UserEntity checkLogin = authService.checkLogin(userAc.getAuthToken().getAccessToken());
+    UserEntity checkLogin =
+        authService.checkLogin(
+            userAc.getAuthToken().getType() + " " + userAc.getAuthToken().getAccessToken());
     assertEquals(userAc.getName(), checkLogin.getName());
     assertEquals(userAc.getUsername(), checkLogin.getUsername());
   }
