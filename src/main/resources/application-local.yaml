@@ -1,6 +1,7 @@
 server:
   servlet:
-    context-path: /moneystats-service
+    #context-path: /moneystats-service
+    context-path:
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class AssetController {
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> saveOrUpdateCryptoAsset(
-      @RequestHeader("authToken") String authToken, @RequestBody @Valid Wallet wallet)
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestBody @Valid Wallet wallet)
       throws UtilsException, JsonProcessingException {
     return assetService.insertOrUpdateAsset(wallet);
   }
@@ -36,8 +37,8 @@ public class AssetController {
   @Tag(name = "Asset", description = "API to get Crypto Asset")
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> getAllAssets(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> getAllAssets(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return assetService.getAssets();
   }
 
@@ -46,7 +47,7 @@ public class AssetController {
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> getAsset(
-      @RequestHeader("authToken") String authToken,
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestParam(value = "identifier") String identifier)
       throws UtilsException {
     return assetService.getAsset(identifier);

@@ -9,6 +9,7 @@ import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationI
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class MarketDataController {
   @Operation(description = "API to get Market Data", tags = "Market Data")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> getMarketData(
-      @RequestHeader("authToken") String authToken, @RequestParam String currency)
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestParam String currency)
       throws UtilsException {
     return ResponseEntity.ok(
         new Response(

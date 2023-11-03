@@ -12,6 +12,7 @@ import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
+import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -82,7 +83,8 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> login(String username, String password) throws UtilsException {
+  public ResponseEntity<Response> login(String username, String password)
+      throws UtilsException, JOSEException {
     logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
@@ -217,7 +219,7 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException {
+  public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException, JOSEException {
     User user = authMapper.mapUserEntityToUser(userEntity);
     AuthToken authToken = tokenService.generateToken(user);
 
@@ -230,7 +232,7 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public AuthToken refreshToken(String authToken) throws UtilsException {
+  public AuthToken refreshToken(String authToken) throws UtilsException, JOSEException {
     AuthToken token = new AuthToken();
     token.setAccessToken(authToken);
     User user = new User();

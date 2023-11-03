@@ -2,6 +2,7 @@ package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.generic.Response;
+import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +44,8 @@ public class AuthController {
   @Operation(description = "API to register an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> login(
-          @RequestParam String username, @RequestParam String password) throws UtilsException {
+      @RequestParam String username, @RequestParam String password)
+      throws UtilsException, JOSEException {
     return authService.login(username, password);
   }
 
@@ -67,8 +70,8 @@ public class AuthController {
   @Tag(name = "Authentication", description = "API to check an account")
   @Operation(description = "API to check an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
-  public ResponseEntity<Response> checkLogin(@RequestHeader("authToken") String authToken)
-      throws UtilsException {
+  public ResponseEntity<Response> checkLogin(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return authService.checkLoginFE(authToken);
   }
 
@@ -80,7 +83,7 @@ public class AuthController {
   @Operation(description = "API to update an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> updateUser(
-      @RequestHeader("authToken") String authToken, @RequestBody @Valid User user) {
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestBody @Valid User user) {
     return authService.updateUserData(authToken, user);
   }
 }

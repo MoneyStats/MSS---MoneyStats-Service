@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.giova.service.moneystats.authentication.AuthService;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
+import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -47,7 +49,7 @@ public class AppInterceptor extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String authToken = request.getHeader(AuthToken.AUTH_TOKEN_HEADER_NAME);
+    String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
     if (isEmpty(authToken)) {
       LOG.error("Auth-Token not found");
@@ -60,6 +62,8 @@ public class AppInterceptor extends OncePerRequestFilter {
     try {
       checkUser = authService.checkLogin(authToken);
       generateToken = authService.regenerateToken(checkUser);
+    } catch (JOSEException e) {
+      throw new UtilsException();
     } catch (UtilsException e) {
       LOG.error(
           "Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
@@ -72,7 +76,7 @@ public class AppInterceptor extends OncePerRequestFilter {
       return;
     }
     setUserInContext(checkUser);
-    response.setHeader(AuthToken.AUTH_TOKEN_HEADER_NAME, generateToken.getAccessToken());
+    response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
     filterChain.doFilter(request, response);
   }
 
