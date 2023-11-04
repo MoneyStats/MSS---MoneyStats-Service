@@ -78,7 +78,7 @@ public class AppInterceptor extends OncePerRequestFilter {
       return;
     }
     setUserInContext(checkUser);
-    setUserAndTokenInCookie(checkUser, generateToken, response);
+    // setUserAndTokenInCookie(checkUser, generateToken, response);
     response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
     filterChain.doFilter(request, response);
   }
