@@ -106,7 +106,7 @@ jobs:
         with:
           image: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
           #tags: latest
-          tags: ${{ env.RELEASE_VERSION }}
+          tags: ${{ env.RELEASE_VERSION }}, latest
           registry: docker.io
           dockerfile: Dockerfile
           username: ${{ secrets.DOCKER_USERNAME }}
