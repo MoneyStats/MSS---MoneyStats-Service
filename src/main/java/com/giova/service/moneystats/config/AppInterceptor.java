@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -26,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -76,6 +78,7 @@ public class AppInterceptor extends OncePerRequestFilter {
       return;
     }
     setUserInContext(checkUser);
+    setUserAndTokenInCookie(checkUser, generateToken, response);
     response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
     filterChain.doFilter(request, response);
   }
@@ -104,5 +107,27 @@ public class AppInterceptor extends OncePerRequestFilter {
 
   private void setUserInContext(UserEntity user) {
     BeanUtils.copyProperties(user, this.user);
+  }
+
+  private void setUserAndTokenInCookie(
+      UserEntity user, AuthToken token, HttpServletResponse response)
+      throws JsonProcessingException {
+    String userAsString =
+        Base64.getEncoder().encodeToString(objectMapper.writeValueAsString(user).getBytes());
+    setCookieInResponse(UserEntity.USER_COOKIE, userAsString, response);
+    setCookieInResponse(AuthToken.JWE_TOKEN_COOKIE, token.getAccessToken(), response);
+  }
+
+  private void setCookieInResponse(
+      String cookieName, String cookieValue, HttpServletResponse response) {
+    ResponseCookie cookie =
+        ResponseCookie.from(cookieName, cookieValue)
+            .maxAge(360000)
+            .sameSite("None")
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 }
