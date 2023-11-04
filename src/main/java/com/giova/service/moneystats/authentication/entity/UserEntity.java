@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "USERS")
 public class UserEntity extends GenericEntity {
 
+  public static final String USER_COOKIE = "user_cookie_application";
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID", nullable = false)
