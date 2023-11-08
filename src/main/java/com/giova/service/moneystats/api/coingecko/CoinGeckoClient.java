@@ -72,12 +72,13 @@ public class CoinGeckoClient {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
   public ResponseEntity<List<CoinGeckoMarketData>> getMarketData(
-      String currency, Boolean isStable) {
+      String currency, Integer page, Boolean isStable) {
     Map<String, Object> params = new HashMap<>();
     params.put("vs_currency", currency);
     params.put("order", "market_cap_desc");
-    params.put("per_page", 200);
-    params.put("page", 1);
+    if (isStable) params.put("per_page", 100);
+    else params.put("per_page", 250);
+    params.put("page", page);
     params.put("sparkline", false);
     params.put("locale", "it");
     if (isStable) params.put("category", "stablecoins");

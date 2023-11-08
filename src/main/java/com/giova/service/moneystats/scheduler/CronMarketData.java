@@ -26,6 +26,9 @@ public class CronMarketData {
   @Value(value = "#{new Boolean(${rest.scheduled.marketData.active:false})}")
   private Boolean isSchedulerActive;
 
+  @Value(value = "#{new Integer(${rest.scheduled.marketData.quantity:250})}")
+  private Integer marketDataQuantity;
+
   @Autowired private MarketDataService marketDataService;
 
   @Scheduled(
@@ -62,7 +65,8 @@ public class CronMarketData {
               LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
               List<MarketData> getMarketData = new ArrayList<>();
               try {
-                getMarketData = marketDataService.getCoinGeckoMarketData(fiatCurrency);
+                getMarketData =
+                    marketDataService.getCoinGeckoMarketData(fiatCurrency, marketDataQuantity);
                 LOG.info("Found {} data of Market Data", getMarketData.size());
                 marketDataService.saveMarketData(getMarketData, fiatCurrency);
               } catch (Exception e) {

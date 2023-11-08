@@ -90,8 +90,11 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
-      - name: Build with Maven
-        run: mvn clean install #-DskipTests
+      #- name: Build with Maven
+      #  run: mvn clean install #-DskipTests
+      - name: Set Release version env variable
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -102,7 +105,8 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@v6.2
         with:
           image: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
-          tags: latest
+          #tags: latest
+          tags: ${{ env.RELEASE_VERSION }}, latest
           registry: docker.io
           dockerfile: Dockerfile
           username: ${{ secrets.DOCKER_USERNAME }}

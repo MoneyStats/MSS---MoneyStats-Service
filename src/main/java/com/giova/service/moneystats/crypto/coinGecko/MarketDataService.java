@@ -9,11 +9,13 @@ import com.giova.service.moneystats.crypto.coinGecko.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.math.MathService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,26 +36,37 @@ public class MarketDataService {
   @Autowired private IMarketDataDAO marketDataDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public List<MarketData> getCoinGeckoMarketData(String currency) {
-    LOG.info("Getting MarketData for {}", currency);
-    ResponseEntity<List<CoinGeckoMarketData>> getMarketData =
-        coinGeckoClient.getMarketData(currency, false);
+  public List<MarketData> getCoinGeckoMarketData(String currency, Integer quantity) {
+    LOG.info("Getting {} MarketData for {}", quantity, currency);
+    List<CoinGeckoMarketData> getMarketData = new ArrayList<>();
+    getPage(quantity).stream()
+        .peek(
+            page -> {
+              ResponseEntity<List<CoinGeckoMarketData>> marketData =
+                  coinGeckoClient.getMarketData(currency, page, false);
+
+              if (marketData.getBody() == null) {
+                LOG.error("Error on fetching MarketData");
+                throw new CoinGeckoException(
+                    "An error occurred during calling CoinGecko, empty body");
+              }
+              getMarketData.addAll(marketData.getBody());
+            })
+        .collect(Collectors.toList());
 
     ResponseEntity<List<CoinGeckoMarketData>> getStableData =
-        coinGeckoClient.getMarketData(currency, true);
+        coinGeckoClient.getMarketData(currency, 1, true);
 
-    if (getMarketData.getBody() == null || getStableData.getBody() == null) {
+    if (getStableData.getBody() == null) {
       LOG.error("Error on fetching MarketData");
       throw new CoinGeckoException("An error occurred during calling CoinGecko, empty body");
     }
 
-    List<CoinGeckoMarketData> geckoCryptocurrencies = getMarketData.getBody();
     List<CoinGeckoMarketData> geckoStablecoin = getStableData.getBody();
-
-    geckoCryptocurrencies.removeAll(geckoStablecoin);
+    getMarketData.removeAll(geckoStablecoin);
 
     List<MarketData> cryptocurrency =
-        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoCryptocurrencies, "Cryptocurrency");
+        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(getMarketData, "Cryptocurrency");
     List<MarketData> stablecoin =
         mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoStablecoin, "Stablecoin");
 
@@ -114,5 +127,11 @@ public class MarketDataService {
       currencies.stream()
           .peek(currency -> marketDataCacheService.deleteAllByCurrency(currency))
           .collect(Collectors.toList());
+  }
+
+  private List<Integer> getPage(Integer quantity) {
+    int page = (int) MathService.round(((double) (quantity - 100) / 250), 0);
+    LOG.info("For {} MarketData, {} Pages have to be checked", quantity, page);
+    return IntStream.rangeClosed(1, page).boxed().collect(Collectors.toList());
   }
 }

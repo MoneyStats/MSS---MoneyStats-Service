@@ -28,9 +28,10 @@ rest:
   scheduled:
     marketData:
       active: true
+      quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
       delay:
-        start: 60000
-        end: 3600000
+        start: ${SCHEDULER_MARKET_DATA_DELAY_START}
+        end: ${SCHEDULER_MARKET_DATA_DELAY_END}
     caching:
       active: true
       cron: 0 0 1 * * MON
