@@ -24,6 +24,7 @@ rest:
   scheduled:
     marketData:
       active: true
+      quantity: 250
       delay:
         start: 5000
         #end: 60000
