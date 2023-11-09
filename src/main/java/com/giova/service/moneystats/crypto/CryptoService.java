@@ -70,7 +70,7 @@ public class CryptoService {
     } else {
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getCryptoWallets().getBody().getData(),
+              walletService.getCryptoWallets(true).getBody().getData(),
               new TypeReference<List<Wallet>>() {});
       CryptoDashboard dashboard =
           cryptoMapper.mapCryptoDashboardWithoutStats(
@@ -104,7 +104,7 @@ public class CryptoService {
 
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getCryptoWallets().getBody().getData(),
+              walletService.getCryptoWallets(false).getBody().getData(),
               new TypeReference<List<Wallet>>() {});
       CryptoDashboard dashboard =
           cryptoMapper.mapCryptoDashboardWithoutStats(
@@ -133,7 +133,7 @@ public class CryptoService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getCryptoWallets().getBody().getData(),
+            walletService.getCryptoWallets(true).getBody().getData(),
             new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);

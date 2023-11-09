@@ -4,6 +4,7 @@ import com.giova.service.moneystats.app.category.CategoryCacheService;
 import com.giova.service.moneystats.app.wallet.WalletCacheService;
 import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
+import com.giova.service.moneystats.crypto.forex.ForexDataCacheService;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ public class CronCachingReset {
   @Autowired private AuthCacheService authCacheService;
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private CategoryCacheService categoryCacheService;
+  @Autowired private ForexDataCacheService forexDataCacheService;
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
@@ -43,6 +45,7 @@ public class CronCachingReset {
     authCacheService.deleteUserCache();
     marketDataCacheService.deleteAllMarketDataCache();
     categoryCacheService.deleteWalletsCache();
+    forexDataCacheService.deleteAllForexDataCache();
 
     LOG.info("[Clean-Cache] Scheduler Finished at {}", LocalDateTime.now());
   }

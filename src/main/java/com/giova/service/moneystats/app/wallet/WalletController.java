@@ -41,8 +41,10 @@ public class WalletController {
   @Operation(description = "API to get all wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> listWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
-    return walletService.getWallets();
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
+      @RequestParam(value = "live", required = false, defaultValue = "true") Boolean live)
+      throws UtilsException {
+    return walletService.getWallets(live);
   }
 
   @GetMapping(value = "/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,7 +52,9 @@ public class WalletController {
   @Operation(description = "API to get all Crypto wallet", tags = "Wallet")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
   public ResponseEntity<Response> listCryptoWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
-    return walletService.getCryptoWallets();
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
+      @RequestParam(value = "live", required = false, defaultValue = "true") Boolean live)
+      throws UtilsException {
+    return walletService.getCryptoWallets(live);
   }
 }

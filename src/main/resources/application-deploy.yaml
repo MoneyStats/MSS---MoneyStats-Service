@@ -32,6 +32,11 @@ rest:
       delay:
         start: ${SCHEDULER_MARKET_DATA_DELAY_START}
         end: ${SCHEDULER_MARKET_DATA_DELAY_END}
+    forex:
+      active: true
+      delay:
+        start: 5000
+        end: 3600000
     caching:
       active: true
       cron: 0 0 1 * * MON
@@ -46,6 +51,10 @@ rest:
     coinGecko:
       url: https://api.coingecko.com
       marketDataUrl: /api/v3/coins/markets
+    exchangeRates:
+      baseUrl: http://api.exchangerate.host
+      rates: /live
+      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
 
 jwt:
   secret: ${JWT_SECRET}
