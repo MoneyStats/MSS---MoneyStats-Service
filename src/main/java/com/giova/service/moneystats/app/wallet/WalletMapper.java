@@ -13,11 +13,15 @@ import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.forex.ForexDataService;
+import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.math.MathService;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +37,7 @@ public class WalletMapper {
   @Autowired ImageMapper imageMapper;
   @Autowired private AssetMapper assetMapper;
   @Autowired private MarketDataService marketDataService;
+  @Autowired private ForexDataService forexDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
@@ -94,7 +99,7 @@ public class WalletMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities) {
+  public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities, Boolean live) {
     return walletEntities.stream()
         .map(
             (walletEntity -> {
@@ -126,7 +131,7 @@ public class WalletMapper {
                 wallet.setAssets(
                     assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
               }
-
+              if (live) setLivePriceInWallet(wallet);
               return wallet;
             }))
         .collect(Collectors.toList());
@@ -192,6 +197,17 @@ public class WalletMapper {
               return wallet;
             }))
         .collect(Collectors.toList());
+  }
+
+  private void setLivePriceInWallet(Wallet wallet) {
+    if (user.getCryptoCurrency().equalsIgnoreCase(user.getCurrency())
+        || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
+    AtomicReference<Double> balance = new AtomicReference<>(0D);
+    wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
+    ForexData forex = forexDataService.getForexData(user.getCryptoCurrency());
+    if (forex == null) return;
+    double converter = forex.getQuotes().get(user.getCurrency());
+    wallet.setBalance(MathService.round(balance.get() * converter, 2));
   }
 
   private String convertWithStream(Map<String, ?> map) {

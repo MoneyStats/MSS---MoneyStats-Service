@@ -94,7 +94,8 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+              walletService.getWallets(true).getBody().getData(),
+              new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -127,7 +128,8 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+              walletService.getWallets(false).getBody().getData(),
+              new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -196,7 +198,7 @@ public class AppService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> backupData() throws UtilsException {
 
-    ResponseEntity<Response> getWallets = walletService.getWallets();
+    ResponseEntity<Response> getWallets = walletService.getWallets(false);
 
     List<Wallet> wallets =
         objectMapper.convertValue(
@@ -247,7 +249,8 @@ public class AppService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+            walletService.getWallets(true).getBody().getData(),
+            new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()
@@ -284,7 +287,9 @@ public class AppService {
                             wallet1.setHistory(listFilter);
 
                             if (!listFilter.isEmpty()) {
-                              appMapper.updateBalance(listFilter, filterDateByYear, balance);
+                              if (index.get() != 0)
+                                appMapper.updateBalance(listFilter, filterDateByYear, balance);
+                              else balance.updateAndGet(b -> b + wallet.getBalance());
                               appMapper.updateInitialBalance(
                                   listFilter, filterDateByYear, initialBalance);
                               appMapper.updateLastBalance(

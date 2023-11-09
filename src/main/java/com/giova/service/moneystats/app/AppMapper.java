@@ -22,19 +22,10 @@ public class AppMapper {
       List<Stats> listFilter, List<LocalDate> filterDateByYear, AtomicReference<Double> balance) {
     Double balanceFilter =
         listFilter.stream()
-                    .filter(
-                        lF ->
-                            lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1)))
-                    .collect(Collectors.toList())
-                    .size()
-                != 0
-            ? listFilter.stream()
-                .filter(
-                    lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1)))
-                .collect(Collectors.toList())
-                .get(0)
-                .getBalance()
-            : 0;
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1)))
+            .findFirst()
+            .map(Stats::getBalance)
+            .orElse(0.0);
     balance.updateAndGet(v -> v + balanceFilter);
   }
 
@@ -45,16 +36,10 @@ public class AppMapper {
       AtomicReference<Double> initialBalance) {
     Double initialBalanceFilter =
         listFilter.stream()
-                    .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
-                    .collect(Collectors.toList())
-                    .size()
-                != 0
-            ? listFilter.stream()
-                .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
-                .collect(Collectors.toList())
-                .get(0)
-                .getBalance()
-            : 0;
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
+            .findFirst()
+            .map(Stats::getBalance)
+            .orElse(0.0);
     initialBalance.updateAndGet(v -> v + initialBalanceFilter);
   }
 
@@ -65,28 +50,15 @@ public class AppMapper {
       AtomicReference<Double> lastBalance) {
     Double lastBalanceFilter =
         listFilter.stream()
-                    .filter(
-                        lF ->
-                            lF.getDate()
-                                .isEqual(
-                                    filterDateByYear.get(
-                                        filterDateByYear.size() > 1
-                                            ? filterDateByYear.size() - 2
-                                            : 0)))
-                    .collect(Collectors.toList())
-                    .size()
-                != 0
-            ? listFilter.stream()
-                .filter(
-                    lF ->
-                        lF.getDate()
-                            .isEqual(
-                                filterDateByYear.get(
-                                    filterDateByYear.size() > 1 ? filterDateByYear.size() - 2 : 0)))
-                .collect(Collectors.toList())
-                .get(0)
-                .getBalance()
-            : 0;
+            .filter(
+                lF ->
+                    lF.getDate()
+                        .isEqual(
+                            filterDateByYear.get(
+                                filterDateByYear.size() > 1 ? filterDateByYear.size() - 2 : 0)))
+            .findFirst()
+            .map(Stats::getBalance)
+            .orElse(0.0);
     lastBalance.updateAndGet(v -> v + lastBalanceFilter);
   }
 

@@ -68,7 +68,7 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> getWallets() throws UtilsException {
+  public ResponseEntity<Response> getWallets(Boolean live) throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
 
     List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
@@ -80,7 +80,7 @@ public class WalletService {
       message = "Found " + walletEntity.size() + " Wallets";
     }
 
-    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
+    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity, live);
 
     Response response =
         new Response(
@@ -89,7 +89,7 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> getCryptoWallets() throws UtilsException {
+  public ResponseEntity<Response> getCryptoWallets(Boolean live) throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
     String CRYPTO = "Crypto";
 
@@ -103,7 +103,7 @@ public class WalletService {
       message = "Found " + walletEntity.size() + " Crypto Wallets";
     }
 
-    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
+    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity, live);
 
     Response response =
         new Response(

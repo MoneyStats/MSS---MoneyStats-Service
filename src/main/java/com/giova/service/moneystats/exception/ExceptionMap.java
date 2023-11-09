@@ -40,6 +40,12 @@ public enum ExceptionMap implements ExceptionCode {
   // Client
   ERR_COIN_GECKO_001(
       "COIN_GECKO_EXCEPTION", HttpStatus.BAD_REQUEST, "An error happen during call CoinGecko!"),
+  ERR_EXC_RATES_001(
+      "EXCHANGE_RATES_EXCEPTION",
+      HttpStatus.BAD_REQUEST,
+      "An error happen during call Exchange Rates!"),
+  ERR_FOR_DATA_001(
+      "FOREX_DATA_EXCEPTION", HttpStatus.BAD_REQUEST, "An error happen during call Forex!"),
   ERR_THREAD_001("THREAD_ERROR", HttpStatus.BAD_REQUEST, "An error happen during sleeping Thread!");
 
   private final HttpStatus status;

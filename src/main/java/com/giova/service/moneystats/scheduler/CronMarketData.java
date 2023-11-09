@@ -59,45 +59,43 @@ public class CronMarketData {
     marketDataService.deleteMarketData();
     AtomicInteger index = new AtomicInteger(0);
 
-    fiatCurrencies.stream()
-        .peek(
-            fiatCurrency -> {
-              LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
-              List<MarketData> getMarketData = new ArrayList<>();
-              try {
-                getMarketData =
-                    marketDataService.getCoinGeckoMarketData(fiatCurrency, marketDataQuantity);
-                LOG.info("Found {} data of Market Data", getMarketData.size());
-                marketDataService.saveMarketData(getMarketData, fiatCurrency);
-              } catch (Exception e) {
-                LOG.error(
-                    "Transaction is rolling back cause an error happen during getting MarketData for currency {}",
-                    fiatCurrency);
-                LOG.error("The exception message is {}", e.getMessage());
-                LOG.error("Cleaning MarketData Database");
-                rollBackMarketData(fiatCurrencies, allMarketData);
-                return;
-              }
+    try {
+      fiatCurrencies.forEach(
+          fiatCurrency -> {
+            LOG.info("Getting and Saving MarketData for currency {}", fiatCurrency);
+            List<MarketData> getMarketData = new ArrayList<>();
 
-              if (index.getAndIncrement() != fiatCurrencies.size() - 1) threadSeep();
-            })
-        .collect(Collectors.toList());
+            getMarketData =
+                marketDataService.getCoinGeckoMarketData(fiatCurrency, marketDataQuantity);
+            LOG.info("Found {} data of Market Data", getMarketData.size());
+            marketDataService.saveMarketData(getMarketData, fiatCurrency);
+
+            if (index.getAndIncrement() != fiatCurrencies.size() - 1) threadSeep();
+          });
+    } catch (Exception e) {
+      LOG.error(
+          "Transaction is rolling back cause an error happen during getting MarketData for currency {}",
+          fiatCurrencies.get(index.get()));
+      LOG.error("The exception message is {}", e.getMessage());
+      LOG.error("Cleaning MarketData Database");
+      rollBackMarketData(fiatCurrencies, allMarketData);
+      return;
+    }
     LOG.info("Scheduler Finished at {}", LocalDateTime.now());
   }
 
   private void rollBackMarketData(List<String> fiatCurrencies, List<MarketData> allMarketData) {
     marketDataService.deleteMarketData();
-    fiatCurrencies.stream()
-        .peek(
-            fc -> {
-              LOG.info("Found {} data of Market Data to RollBack", allMarketData.size());
-              marketDataService.saveMarketData(
-                  allMarketData.stream()
-                      .filter(marketData -> marketData.getCurrency().equalsIgnoreCase(fc))
-                      .collect(Collectors.toList()),
-                  fc);
-            })
-        .collect(Collectors.toList());
+    fiatCurrencies.forEach(
+        fc -> {
+          LOG.info("Found {} data of Market Data to RollBack", allMarketData.size());
+          if (!allMarketData.isEmpty())
+            marketDataService.saveMarketData(
+                allMarketData.stream()
+                    .filter(marketData -> marketData.getCurrency().equalsIgnoreCase(fc))
+                    .collect(Collectors.toList()),
+                fc);
+        });
   }
 
   private void threadSeep() {
