@@ -35,7 +35,7 @@ rest:
     forex:
       active: true
       delay:
-        start: 5000
+        start: 1800000
         end: 3600000
     caching:
       active: true
