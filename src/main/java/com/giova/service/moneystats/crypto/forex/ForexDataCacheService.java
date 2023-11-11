@@ -22,7 +22,7 @@ public class ForexDataCacheService {
   private static final String FOREX_DATA_CACHE = "ForexData-Cache";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
-  @Autowired private IForexDataDAO forexDataDAO;
+  @Autowired private IForexDAO forexDataDAO;
 
   @CachePut(value = FOREX_DATA_CACHE, key = "#currency", condition = "#currency!=null")
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)

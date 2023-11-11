@@ -8,9 +8,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
 
-    List<WalletEntity> findAllByUserId(Long userId);
+  List<WalletEntity> findAllByUserId(Long userId);
 
-    List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
+  List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
 
-    void deleteAllByUserId(Long userId);
+  WalletEntity findWalletEntityById(Long id);
+
+  void deleteAllByUserId(Long userId);
 }

@@ -38,8 +38,36 @@ public class WalletService {
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
+    return insertOrUpdate(wallet, true);
+  }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> notFilterInsertOrUpdateWallet(Wallet wallet)
+      throws UtilsException, JsonProcessingException {
+    return insertOrUpdate(wallet, false);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> insertOrUpdate(Wallet wallet, Boolean isWalletLive)
+      throws UtilsException, JsonProcessingException {
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
+
+    if (wallet.getId() != null && isWalletLive) {
+      WalletEntity getFromDB = walletCacheService.findWalletEntityById(wallet.getId());
+      if (getFromDB != null) {
+        walletEntity.setBalance(getFromDB.getBalance());
+        walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
+        walletEntity.setDifferenceLastStats(getFromDB.getDifferenceLastStats());
+        walletEntity.setHighPrice(getFromDB.getHighPrice());
+        walletEntity.setHighPriceDate(getFromDB.getHighPriceDate());
+        walletEntity.setLowPrice(getFromDB.getLowPrice());
+        walletEntity.setLowPriceDate(getFromDB.getLowPriceDate());
+        walletEntity.setAllTimeHigh(getFromDB.getAllTimeHigh());
+        walletEntity.setAllTimeHighDate(getFromDB.getAllTimeHighDate());
+      }
+    }
 
     if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
       LOG.info("Building attachment with filename {}", wallet.getImgName());
