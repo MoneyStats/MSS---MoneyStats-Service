@@ -29,7 +29,7 @@ public class ForexDataService {
   @Autowired private ExchangeRatesClient exchangeRatesClient;
   @Autowired private ForexDataMapper mapper;
   @Autowired private ForexDataCacheService forexDataCacheService;
-  @Autowired private IForexDataDAO iForexDataDAO;
+  @Autowired private IForexDAO iForexDataDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ForexData getFromExchangeRateForexData(String currency) {

@@ -152,7 +152,8 @@ public class AppService {
             wallet -> {
               try {
                 objectMapper.convertValue(
-                    walletService.insertOrUpdateWallet(wallet).getBody().getData(), Wallet.class);
+                    walletService.notFilterInsertOrUpdateWallet(wallet).getBody().getData(),
+                    Wallet.class);
               } catch (JsonProcessingException e) {
                 throw new UtilsException(
                     ExceptionMap.ERR_JSON_FOR_001, ExceptionMap.ERR_JSON_FOR_001.getMessage());

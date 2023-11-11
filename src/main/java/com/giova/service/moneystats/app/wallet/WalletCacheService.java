@@ -19,6 +19,7 @@ public class WalletCacheService {
 
   private static final String WALLET_CACHE = "Wallets-Cache";
   private static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
+  private static final String DETAILS_WALLET = "Details-Wallet-Cache";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
   @Autowired private IWalletDAO walletDAO;
@@ -37,12 +38,18 @@ public class WalletCacheService {
     return walletDAO.findAllByUserIdAndCategory(userId, category);
   }
 
-  @Caching(evict = {@CacheEvict(value = WALLET_CACHE), @CacheEvict(value = CRYPTO_WALLET_CACHE)})
+  @Caching(
+      evict = {
+        @CacheEvict(value = WALLET_CACHE),
+        @CacheEvict(value = CRYPTO_WALLET_CACHE),
+        @CacheEvict(value = DETAILS_WALLET)
+      })
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
   public void deleteWalletsCache() {
     LOG.info("[Caching] Deleting cache for {} and {}", WALLET_CACHE, CRYPTO_WALLET_CACHE);
     Objects.requireNonNull(cacheManager.getCache(WALLET_CACHE)).clear();
     Objects.requireNonNull(cacheManager.getCache(CRYPTO_WALLET_CACHE)).clear();
+    Objects.requireNonNull(cacheManager.getCache(DETAILS_WALLET)).clear();
   }
 
   public WalletEntity save(WalletEntity wallet) {
@@ -58,5 +65,11 @@ public class WalletCacheService {
   public void deleteAllByUserId(Long userId) {
     deleteWalletsCache();
     walletDAO.deleteAllByUserId(userId);
+  }
+
+  @Caching(cacheable = @Cacheable(value = DETAILS_WALLET, key = "#id"))
+  public WalletEntity findWalletEntityById(Long id) {
+    LOG.info("[Caching] WalletEntity from Database by and id {}", id);
+    return walletDAO.findWalletEntityById(id);
   }
 }
