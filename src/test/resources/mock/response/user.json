@@ -25,6 +25,8 @@
     "username": "giovannilamarmora",
     "role": "USER",
     "profilePhoto": "string",
-    "currency": "EUR"
+    "settings": {
+      "currency": "EUR"
+    }
   }
 }

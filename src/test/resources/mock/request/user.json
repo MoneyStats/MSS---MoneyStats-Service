@@ -6,5 +6,7 @@
   "password": "string",
   "role": "USER",
   "profilePhoto": "string",
-  "currency": "EUR"
+  "settings": {
+    "currency": "EUR"
+  }
 }
