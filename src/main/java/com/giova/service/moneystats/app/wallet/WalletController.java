@@ -44,7 +44,7 @@ public class WalletController {
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestParam(value = "live", required = false, defaultValue = "true") Boolean live)
       throws UtilsException {
-    return walletService.getWallets(live);
+    return walletService.getWallets();
   }
 
   @GetMapping(value = "/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -93,7 +93,8 @@ public class WalletMapper {
               .collect(Collectors.toList()));
     }
     if (walletEntity.getAssets() != null) {
-      List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+      List<MarketData> marketData =
+          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
       wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
     }
     return wallet;
@@ -102,7 +103,7 @@ public class WalletMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities, Boolean live) {
     ForexData forex = null;
-    if (live) forex = forexDataService.getForexData(user.getCryptoCurrency());
+    if (live) forex = forexDataService.getForexData(user.getSettings().getCryptoCurrency());
     ForexData finalForex = forex;
     AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()
@@ -137,7 +138,7 @@ public class WalletMapper {
               }
               if (walletEntity.getAssets() != null) {
                 List<MarketData> marketData =
-                    marketDataService.getMarketData(user.getCryptoCurrency());
+                    marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
                 wallet.setAssets(
                     assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
               }
@@ -211,12 +212,12 @@ public class WalletMapper {
 
   private void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
-    if (user.getCryptoCurrency().equalsIgnoreCase(user.getCurrency())
+    if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
         || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
     if (forex == null) return;
-    double converter = forex.getQuotes().get(user.getCurrency());
+    double converter = forex.getQuotes().get(user.getSettings().getCurrency());
     wallet.setBalance(MathService.round(balance.get() * converter, 2));
     wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
     wallet.setPerformanceLastStats(

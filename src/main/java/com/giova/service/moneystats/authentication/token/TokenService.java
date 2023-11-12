@@ -1,10 +1,13 @@
 package com.giova.service.moneystats.authentication.token;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.settings.dto.UserSettingDTO;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -39,10 +42,11 @@ public class TokenService {
   private static final String FIRSTNAME = "firstName";
   private static final String LASTNAME = "lastName";
   private static final String PROFILE_PHOTO = "profilePhoto";
-  private static final String CURRENCY = "currency";
+  private static final String SETTINGS = "settings";
   private static final String EMAIL = "email";
   private static final String ROLE = "role";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   @Value(value = "${jwt.secret}")
   private String secret;
@@ -58,7 +62,7 @@ public class TokenService {
     claims.put(EMAIL, user.getEmail());
     claims.put(ROLE, user.getRole());
     // claims.put(PROFILE_PHOTO, user.getProfilePhoto());
-    claims.put(CURRENCY, user.getCurrency());
+    claims.put(SETTINGS, user.getSettings());
     long dateExp = Long.parseLong(expirationTime);
     Date exp = new Date(System.currentTimeMillis() + dateExp);
     String token =
@@ -87,22 +91,28 @@ public class TokenService {
         body.getSubject(),
         UserRole.valueOf((@NotNull String) body.get(ROLE)),
         // (@NotNull String) body.get(PROFILE_PHOTO),
-        (@NotNull String) body.get(CURRENCY));
+        (@NotNull UserSettingDTO) body.get(SETTINGS));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public AuthToken generateToken(User user) throws JOSEException {
     // Crea un set di claims
-    JWTClaimsSet claimsSet =
-        new JWTClaimsSet.Builder()
-            .subject(user.getUsername())
-            .claim(FIRSTNAME, user.getName())
-            .claim(LASTNAME, user.getSurname())
-            .claim(EMAIL, user.getEmail())
-            .claim(ROLE, user.getRole())
-            .claim(CURRENCY, user.getCurrency())
-            .expirationTime(new Date(System.currentTimeMillis() + Long.parseLong(expirationTime)))
-            .build();
+    JWTClaimsSet claimsSet = null;
+    try {
+      claimsSet =
+          new JWTClaimsSet.Builder()
+              .subject(user.getUsername())
+              .claim(FIRSTNAME, user.getName())
+              .claim(LASTNAME, user.getSurname())
+              .claim(EMAIL, user.getEmail())
+              .claim(ROLE, user.getRole())
+              .claim(SETTINGS, mapper.writeValueAsString(user.getSettings()))
+              .expirationTime(new Date(System.currentTimeMillis() + Long.parseLong(expirationTime)))
+              .build();
+    } catch (JsonProcessingException e) {
+      LOG.error("Not Authorized, generateToken - Exception -> {}", e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
+    }
 
     Payload payload = new Payload(claimsSet.toJSONObject());
 
@@ -131,14 +141,17 @@ public class TokenService {
 
       JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
 
+      UserSettingDTO settingDTO =
+          mapper.readValue((String) claimsSet.getClaim(SETTINGS), UserSettingDTO.class);
+
       return new User(
           (String) claimsSet.getClaim(FIRSTNAME),
           (String) claimsSet.getClaim(LASTNAME),
           (String) claimsSet.getClaim(EMAIL),
           claimsSet.getSubject(),
           UserRole.valueOf((String) claimsSet.getClaim(ROLE)),
-          (String) claimsSet.getClaim(CURRENCY));
-    } catch (JOSEException | ParseException | BadJOSEException e) {
+          settingDTO);
+    } catch (JOSEException | ParseException | BadJOSEException | JsonProcessingException e) {
       LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
       throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
     }

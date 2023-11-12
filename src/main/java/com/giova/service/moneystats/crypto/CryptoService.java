@@ -54,7 +54,8 @@ public class CryptoService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() throws UtilsException {
-    List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+    List<MarketData> marketData =
+        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
     List<LocalDate> filter = new ArrayList<>();
@@ -74,7 +75,7 @@ public class CryptoService {
               new TypeReference<List<Wallet>>() {});
       CryptoDashboard dashboard =
           cryptoMapper.mapCryptoDashboardWithoutStats(
-              user.getCryptoCurrency(),
+              user.getSettings().getCryptoCurrency(),
               getAllWallet,
               getCryptoAsset(getAllWallet, marketData, false),
               getAssetValue(marketData, BTC_SYMBOL));
@@ -94,7 +95,8 @@ public class CryptoService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getCryptoResumeData() throws UtilsException {
-    List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+    List<MarketData> marketData =
+        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = LocalDate.now().getYear();
@@ -108,7 +110,7 @@ public class CryptoService {
               new TypeReference<List<Wallet>>() {});
       CryptoDashboard dashboard =
           cryptoMapper.mapCryptoDashboardWithoutStats(
-              user.getCryptoCurrency(),
+              user.getSettings().getCryptoCurrency(),
               getAllWallet,
               getCryptoAsset(getAllWallet, marketData, true),
               getAssetValue(marketData, BTC_SYMBOL));
@@ -148,7 +150,7 @@ public class CryptoService {
               CryptoDashboard dashboard = new CryptoDashboard();
               dashboard.setLastUpdate(filterDateByYear.get(filterDateByYear.size() - 1));
               dashboard.setStatsAssetsDays(filterDateByYear);
-              dashboard.setCurrency(user.getCryptoCurrency());
+              dashboard.setCurrency(user.getSettings().getCryptoCurrency());
               dashboard.setPerformanceSince(filterDateByYear.get(0));
 
               AtomicReference<Double> balance = new AtomicReference<>(0D);

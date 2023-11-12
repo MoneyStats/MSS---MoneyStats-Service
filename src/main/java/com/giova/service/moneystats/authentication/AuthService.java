@@ -12,6 +12,7 @@ import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.settings.entity.UserSettingEntity;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -101,6 +102,8 @@ public class AuthService {
       throw new AuthException(
           ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
     }
+
+    migrateToSettings(userEntity);
 
     User user = authMapper.mapUserEntityToUser(userEntity);
     user.setPassword(null);
@@ -315,5 +318,23 @@ public class AuthService {
           CorrelationIdUtils.getCorrelationId() != null
               ? CorrelationIdUtils.getCorrelationId()
               : CorrelationIdUtils.generateCorrelationId());
+  }
+
+  private void migrateToSettings(UserEntity user) {
+    LOG.info("Checking User {} to migrate", user.getUsername());
+    if (user.getCurrency() != null || user.getSettings() == null) {
+      LOG.info("Migrating user {} to the new settings", user.getUsername());
+      UserSettingEntity userSettingEntity = new UserSettingEntity();
+      userSettingEntity.setCurrency(user.getCurrency());
+      user.setCurrency(null);
+      userSettingEntity.setCryptoCurrency(user.getCryptoCurrency());
+      user.setCryptoCurrency(null);
+      userSettingEntity.setGithubUser(user.getGithubUser());
+      user.setGithubUser(null);
+      userSettingEntity.setUser(user);
+      user.setSettings(userSettingEntity);
+      authCacheService.save(user);
+    }
+    LOG.info("User {} not need migration", user.getUsername());
   }
 }
