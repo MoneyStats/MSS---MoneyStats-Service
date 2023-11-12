@@ -8,10 +8,12 @@
     "username": "giovannilamarmora",
     "role": "USER",
     "profilePhoto": "string",
-    "currency": "EUR",
     "authToken": {
       "expirationTime": 3600,
       "accessToken": "authToken"
+    },
+    "settings": {
+      "currency": "EUR"
     }
   }
 }
