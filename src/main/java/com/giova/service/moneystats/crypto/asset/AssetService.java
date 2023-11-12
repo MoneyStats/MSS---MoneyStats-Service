@@ -72,7 +72,8 @@ public class AssetService {
     if (assetEntities.isEmpty()) {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
-      List<MarketData> marketData = marketDataService.getMarketData(user.getCryptoCurrency());
+      List<MarketData> marketData =
+          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
       assets =
           assetMapper.mapAssetList(
               assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData), marketData);

@@ -17,6 +17,6 @@ public class UserSettingDTO extends GenericDTO {
   @NotNull private String currency;
   private String cryptoCurrency;
   private String githubUser;
-  private Boolean darkMode;
-  private Boolean liveWallets;
+  private String darkMode;
+  private String liveWallets;
 }

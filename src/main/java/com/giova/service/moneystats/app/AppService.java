@@ -94,8 +94,7 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets(true).getBody().getData(),
-              new TypeReference<List<Wallet>>() {});
+              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -128,8 +127,7 @@ public class AppService {
               new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
-              walletService.getWallets(false).getBody().getData(),
-              new TypeReference<List<Wallet>>() {});
+              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
       dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
@@ -199,7 +197,7 @@ public class AppService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> backupData() throws UtilsException {
 
-    ResponseEntity<Response> getWallets = walletService.getWallets(false);
+    ResponseEntity<Response> getWallets = walletService.getWallets();
 
     List<Wallet> wallets =
         objectMapper.convertValue(
@@ -250,8 +248,7 @@ public class AppService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getWallets(true).getBody().getData(),
-            new TypeReference<List<Wallet>>() {});
+            walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()

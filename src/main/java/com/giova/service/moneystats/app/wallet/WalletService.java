@@ -7,6 +7,7 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -38,7 +39,10 @@ public class WalletService {
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
-    return insertOrUpdate(wallet, true);
+    Boolean isLiveWallet =
+        user.getSettings().getLiveWallets() != null
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+    return insertOrUpdate(wallet, isLiveWallet);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
@@ -96,7 +100,7 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> getWallets(Boolean live) throws UtilsException {
+  public ResponseEntity<Response> getWallets() throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
 
     List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
@@ -107,8 +111,12 @@ public class WalletService {
     } else {
       message = "Found " + walletEntity.size() + " Wallets";
     }
+    Boolean isLiveWallet =
+        user.getSettings().getLiveWallets() != null
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
-    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity, live);
+    List<Wallet> walletToReturn =
+        walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet);
 
     Response response =
         new Response(
