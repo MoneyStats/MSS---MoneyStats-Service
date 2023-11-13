@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -79,8 +78,8 @@ public class AppMapper {
             : MathService.round(
                 ((balance.get() - initialBalance.get()) / initialBalance.get()) * 100, 2));
     dashboard.setLastStatsPerformance(
-        balance.get() == 0 && lastBalance.get() == 0
-            ? 0D
+        balance.get() == 0 || lastBalance.get() == 0
+            ? 1000D
             : MathService.round(
                 ((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
   }

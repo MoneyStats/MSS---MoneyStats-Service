@@ -9,6 +9,7 @@ import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.AssetService;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
@@ -51,6 +52,7 @@ public class CryptoService {
   @Autowired private AssetMapper assetMapper;
   @Autowired private StatsMapper statsMapper;
   @Autowired private MarketDataService marketDataService;
+  @Autowired private AssetService assetService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() throws UtilsException {
@@ -77,7 +79,7 @@ public class CryptoService {
           cryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
-              getCryptoAsset(getAllWallet, marketData, false),
+              getCryptoAsset(false),
               getAssetValue(marketData, BTC_SYMBOL));
       getData.put(String.valueOf(thisYear), dashboard);
     }
@@ -112,7 +114,7 @@ public class CryptoService {
           cryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
-              getCryptoAsset(getAllWallet, marketData, true),
+              getCryptoAsset(true),
               getAssetValue(marketData, BTC_SYMBOL));
       getData.put(String.valueOf(thisYear), dashboard);
     }
@@ -178,7 +180,8 @@ public class CryptoService {
                       tradingBalance,
                       tradingLastBalance);
 
-              dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
+              // dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
+              dashboard.setAssets(getCryptoAsset(isResume));
 
               // Filtro Wallet cancellati da anni che non hanno stats
               Predicate<Wallet> walletRemovedInThePast = wallet -> wallet.getDeletedDate() != null;
@@ -348,35 +351,29 @@ public class CryptoService {
     }
   }
 
-  private List<Asset> getCryptoAsset(
-      List<Wallet> filterWallet, List<MarketData> marketData, Boolean isResume) {
-    List<Asset> assets = new ArrayList<>();
-    filterWallet.stream()
-        .peek(
-            wallet -> {
-              if (wallet.getAssets() != null && !wallet.getAssets().isEmpty())
-                assets.addAll(wallet.getAssets());
-            })
-        .collect(Collectors.toList());
-    List<Asset> filterAsset =
-        assets.stream()
-            .map(
-                asset -> {
-                  Asset newAsset = new Asset();
-                  BeanUtils.copyProperties(asset, newAsset);
-                  if (asset.getHistory() != null && !asset.getHistory().isEmpty() && !isResume) {
-                    Stats stats = asset.getHistory().get(asset.getHistory().size() - 1);
-                    newAsset.setHistory(List.of(stats));
-                  }
-                  return newAsset;
-                })
-            .collect(Collectors.toList());
+  private List<Asset> getCryptoAsset(Boolean isResume) {
+    List<Asset> assets =
+        objectMapper.convertValue(
+            Objects.requireNonNull(assetService.getAssets().getBody()).getData(),
+            new TypeReference<List<Asset>>() {});
+
+    List<Asset> filterAsset = new ArrayList<>();
+    assets.forEach(
+        asset -> {
+          Asset newAsset = new Asset();
+          BeanUtils.copyProperties(asset, newAsset);
+          if (asset.getHistory() != null && !asset.getHistory().isEmpty() && !isResume) {
+            Stats stats = asset.getHistory().get(asset.getHistory().size() - 1);
+            newAsset.setHistory(List.of(stats));
+          }
+          filterAsset.add(newAsset);
+        });
     if (isResume) {
       Predicate<Asset> hasEmptyStats =
           asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
       filterAsset.removeIf(hasEmptyStats);
     }
-    return assetMapper.mapAssetList(filterAsset, marketData);
+    return filterAsset;
   }
 
   private Double getAssetValue(List<MarketData> marketData, String symbol) {

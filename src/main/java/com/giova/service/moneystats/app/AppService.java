@@ -19,6 +19,7 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -285,13 +286,25 @@ public class AppService {
                             wallet1.setHistory(listFilter);
 
                             if (!listFilter.isEmpty()) {
-                              if (index.get() != 0)
+                              if (index.get() != 0) {
                                 appMapper.updateBalance(listFilter, filterDateByYear, balance);
-                              else balance.updateAndGet(b -> b + wallet.getBalance());
+                                appMapper.updateLastBalance(
+                                    listFilter, filterDateByYear, lastBalance);
+                              } else {
+                                balance.updateAndGet(b -> b + wallet.getBalance());
+                                if (user.getSettings().getLiveWallets() != null
+                                    && user.getSettings()
+                                        .getLiveWallets()
+                                        .equalsIgnoreCase(Status.ACTIVE.name()))
+                                  // Uso questa funzione perchè prende l'ultimo saldo
+                                  appMapper.updateBalance(
+                                      listFilter, filterDateByYear, lastBalance);
+                                else
+                                  appMapper.updateLastBalance(
+                                      listFilter, filterDateByYear, lastBalance);
+                              }
                               appMapper.updateInitialBalance(
                                   listFilter, filterDateByYear, initialBalance);
-                              appMapper.updateLastBalance(
-                                  listFilter, filterDateByYear, lastBalance);
                             }
 
                             checkAndMapWalletInThePast(

@@ -120,7 +120,7 @@ public class WalletMapper {
                   throw new RuntimeException(e);
                 }
               }
-              if (walletEntity.getHistory() != null) {
+              if (walletEntity.getHistory() != null && !walletEntity.getHistory().isEmpty()) {
                 lastBalance.set(
                     walletEntity
                         .getHistory()
