@@ -9,6 +9,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +32,17 @@ public class AssetController {
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestBody @Valid Wallet wallet)
       throws UtilsException, JsonProcessingException {
     return assetService.insertOrUpdateAsset(wallet);
+  }
+
+  @PostMapping(value = "/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Tag(name = "Asset", description = "API to get Crypto Asset")
+  @Operation(description = "API to get Crypto Asset", tags = "Asset")
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  public ResponseEntity<Response> saveOrUpdateCryptoAssets(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
+      @RequestBody @Valid List<Wallet> wallets)
+      throws UtilsException, JsonProcessingException {
+    return assetService.insertOrUpdateAssets(wallets);
   }
 
   @GetMapping(value = "/getAll", produces = MediaType.APPLICATION_JSON_VALUE)
