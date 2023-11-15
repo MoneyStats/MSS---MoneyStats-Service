@@ -43,6 +43,37 @@ public class AssetService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> insertOrUpdateAssets(List<Wallet> wallets)
+      throws UtilsException, JsonProcessingException {
+    StringBuilder message = new StringBuilder("Assets ");
+    List<Wallet> walletRes = new ArrayList<>();
+
+    wallets.forEach(
+        wallet -> {
+          try {
+            ResponseEntity<Response> saveWallet = walletService.insertOrUpdateWallet(wallet);
+            message
+                .append(wallet.getAssets().get(wallet.getAssets().size() - 1).getName())
+                .append(" ");
+            walletRes.add((Wallet) Objects.requireNonNull(saveWallet.getBody()).getData());
+          } catch (JsonProcessingException e) {
+            LOG.error("An Error happen during saving asset, message is {}", e.getMessage());
+            throw new AssetException(e.getMessage());
+          }
+        });
+    message.append("Successfully saved!");
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message.toString(),
+            CorrelationIdUtils.getCorrelationId(),
+            Objects.requireNonNull(walletRes));
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateAsset(Wallet wallet)
       throws UtilsException, JsonProcessingException {
 

@@ -285,13 +285,19 @@ public class AppService {
                                     : new ArrayList<>();
                             wallet1.setHistory(listFilter);
 
+                            if (index.get() == 0
+                                && user.getSettings().getLiveWallets() != null
+                                && user.getSettings()
+                                    .getLiveWallets()
+                                    .equalsIgnoreCase(Status.ACTIVE.name()))
+                              balance.updateAndGet(b -> b + wallet.getBalance());
+
                             if (!listFilter.isEmpty()) {
                               if (index.get() != 0) {
                                 appMapper.updateBalance(listFilter, filterDateByYear, balance);
                                 appMapper.updateLastBalance(
                                     listFilter, filterDateByYear, lastBalance);
                               } else {
-                                balance.updateAndGet(b -> b + wallet.getBalance());
                                 if (user.getSettings().getLiveWallets() != null
                                     && user.getSettings()
                                         .getLiveWallets()
@@ -299,9 +305,11 @@ public class AppService {
                                   // Uso questa funzione perchè prende l'ultimo saldo
                                   appMapper.updateBalance(
                                       listFilter, filterDateByYear, lastBalance);
-                                else
+                                else {
+                                  appMapper.updateBalance(listFilter, filterDateByYear, balance);
                                   appMapper.updateLastBalance(
                                       listFilter, filterDateByYear, lastBalance);
+                                }
                               }
                               appMapper.updateInitialBalance(
                                   listFilter, filterDateByYear, initialBalance);

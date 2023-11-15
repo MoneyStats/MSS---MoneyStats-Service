@@ -120,11 +120,11 @@ public class AssetMapper {
             Asset mapResponse = response.get(index);
             mapResponse.setBalance(
                 MathService.round(mapResponse.getBalance() + asset.getBalance(), 8));
-            if (mapResponse.getPerformance() != null)
+            if (mapResponse.getPerformance() != null && asset.getPerformance() != null)
               mapResponse.setPerformance(
                   MathService.round(
                       ((mapResponse.getPerformance() + asset.getPerformance()) / 2), 2));
-            if (mapResponse.getTrend() != null)
+            if (mapResponse.getTrend() != null && asset.getTrend() != null)
               mapResponse.setTrend(mapResponse.getTrend() + asset.getTrend());
             mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
             mapResponse.setValue(MathService.round(mapResponse.getValue() + asset.getValue(), 2));
