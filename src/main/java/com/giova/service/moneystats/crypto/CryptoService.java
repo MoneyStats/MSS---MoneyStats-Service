@@ -181,7 +181,7 @@ public class CryptoService {
                       tradingLastBalance);
 
               // dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
-              dashboard.setAssets(getCryptoAsset(isResume));
+              dashboard.setAssets(getCryptoAssetByYear(isResume, year));
 
               // Filtro Wallet cancellati da anni che non hanno stats
               Predicate<Wallet> walletRemovedInThePast = wallet -> wallet.getDeletedDate() != null;
@@ -351,7 +351,15 @@ public class CryptoService {
     }
   }
 
+  private List<Asset> getCryptoAssetByYear(Boolean isResume, Integer year) {
+    return getCryptoAssetsList(isResume, year);
+  }
+
   private List<Asset> getCryptoAsset(Boolean isResume) {
+    return getCryptoAssetsList(isResume, null);
+  }
+
+  private List<Asset> getCryptoAssetsList(Boolean isResume, Integer year) {
     List<Asset> assets =
         objectMapper.convertValue(
             Objects.requireNonNull(assetService.getAssets().getBody()).getData(),
@@ -365,6 +373,12 @@ public class CryptoService {
           if (asset.getHistory() != null && !asset.getHistory().isEmpty() && !isResume) {
             Stats stats = asset.getHistory().get(asset.getHistory().size() - 1);
             newAsset.setHistory(List.of(stats));
+          }
+          // Se siamo in resume devo rimuovere gli Stats che non hanno history per l'anno passato
+          // come parametro
+          if (isResume && year != null && newAsset.getHistory() != null) {
+            Predicate<Stats> hasNotYearStats = stats -> stats.getDate().getYear() != year;
+            newAsset.getHistory().removeIf(hasNotYearStats);
           }
           filterAsset.add(newAsset);
         });
