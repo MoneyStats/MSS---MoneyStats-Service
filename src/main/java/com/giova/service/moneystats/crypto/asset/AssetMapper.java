@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import android.util.Base64;
+import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
@@ -14,22 +15,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 public class AssetMapper {
 
+  private final UserEntity user;
   @Autowired private OperationsMapper operationsMapper;
+  @Autowired private StatsService statsService;
 
   public List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData) {
+    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+    LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -49,12 +55,15 @@ public class AssetMapper {
                               return stats;
                             })
                         .collect(Collectors.toList()));
-                Double lastStatsPerformance =
-                    assetEntity.getHistory().get(assetEntity.getHistory().size() - 1).getBalance();
+                Stats lastStats =
+                    asset.getHistory().stream()
+                        .filter(a -> a.getDate().isEqual(lastDate))
+                        .findFirst()
+                        .orElse(new Stats(lastDate, 0D, 0D, 0D));
                 asset.setPerformance(
-                    lastStatsPerformance != 0
+                    lastStats.getBalance() != 0
                         ? MathService.round(
-                            ((asset.getValue() - lastStatsPerformance) / lastStatsPerformance)
+                            ((asset.getValue() - lastStats.getBalance()) / lastStats.getBalance())
                                 * 100,
                             2)
                         : 0.0);
@@ -103,6 +112,102 @@ public class AssetMapper {
   }
 
   public List<Asset> mapAssetList(List<Asset> assetList, List<MarketData> marketData) {
+    Map<String, Asset> assetMap = new HashMap<>();
+
+    assetList.forEach(
+        asset -> {
+          Asset existingAsset = assetMap.get(asset.getName());
+
+          if (existingAsset != null) {
+            // Aggiorna l'asset esistente
+            updateExistingAsset(existingAsset, asset);
+          } else {
+            // Crea un nuovo asset
+            Asset newAsset = new Asset();
+            BeanUtils.copyProperties(asset, newAsset);
+            newAsset.setCurrent_price(getAssetValue(marketData, asset));
+            newAsset.setValue(
+                MathService.round(asset.getBalance() * newAsset.getCurrent_price(), 2));
+            newAsset.setId(null);
+
+            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+              newAsset.setHistory(
+                  asset.getHistory().stream()
+                      .map(
+                          stats -> {
+                            Stats statsToReturn = new Stats();
+                            BeanUtils.copyProperties(stats, statsToReturn);
+                            statsToReturn.setId(null);
+                            return statsToReturn;
+                          })
+                      .collect(Collectors.toList()));
+            }
+
+            assetMap.put(asset.getName(), newAsset);
+          }
+        });
+
+    return assetMap.values().stream()
+        .sorted(Comparator.comparing(Asset::getRank))
+        .collect(Collectors.toList());
+  }
+
+  private void updateExistingAsset(Asset existingAsset, Asset newAsset) {
+    existingAsset.setBalance(
+        MathService.round(existingAsset.getBalance() + newAsset.getBalance(), 8));
+
+    if (existingAsset.getPerformance() != null && newAsset.getPerformance() != null) {
+      existingAsset.setPerformance(
+          MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
+    }
+
+    if (existingAsset.getTrend() != null && newAsset.getTrend() != null) {
+      existingAsset.setTrend(existingAsset.getTrend() + newAsset.getTrend());
+    }
+
+    existingAsset.setInvested(existingAsset.getInvested() + newAsset.getInvested());
+    existingAsset.setValue(MathService.round(existingAsset.getValue() + newAsset.getValue(), 2));
+
+    if (newAsset.getHistory() != null && !newAsset.getHistory().isEmpty()) {
+      for (Stats newStats : newAsset.getHistory()) {
+        if (existingAsset.getHistory() == null) {
+          existingAsset.setHistory(new ArrayList<>());
+        }
+
+        Optional<Stats> existingStatsOptional =
+            existingAsset.getHistory().stream()
+                .filter(h -> h.getDate().isEqual(newStats.getDate()))
+                .findFirst();
+
+        if (existingStatsOptional.isPresent()) {
+          // Aggiorna l'elemento esistente nella history
+          Stats existingStats = existingStatsOptional.get();
+          existingStats.setBalance(existingStats.getBalance() + newStats.getBalance());
+          existingStats.setTrend(existingStats.getTrend() + newStats.getTrend());
+          existingStats.setPercentage(
+              MathService.round((existingStats.getPercentage() + newStats.getPercentage()) / 2, 2));
+        } else {
+          // Aggiungi un nuovo elemento alla history
+          Stats newStatsToAdd = new Stats();
+          BeanUtils.copyProperties(newStats, newStatsToAdd);
+          newStatsToAdd.setId(null);
+          existingAsset.getHistory().add(newStatsToAdd);
+        }
+      }
+    }
+
+    if (newAsset.getOperations() != null && !newAsset.getOperations().isEmpty()) {
+      // Aggiungi logica per aggiungere le nuove operazioni
+      if (existingAsset.getOperations() != null) {
+        existingAsset.getOperations().addAll(newAsset.getOperations());
+      } else {
+        existingAsset.setOperations(newAsset.getOperations());
+      }
+    }
+  }
+
+  @Deprecated
+  public List<Asset> mapAssetListOLD(List<Asset> assetList, List<MarketData> marketData) {
     List<Asset> response = new ArrayList<>();
     assetList.forEach(
         asset -> {
