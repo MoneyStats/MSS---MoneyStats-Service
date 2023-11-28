@@ -153,20 +153,45 @@ public class AssetMapper {
   }
 
   private void updateExistingAsset(Asset existingAsset, Asset newAsset) {
+    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+    LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
     existingAsset.setBalance(
         MathService.round(existingAsset.getBalance() + newAsset.getBalance(), 8));
 
+    existingAsset.setValue(MathService.round(existingAsset.getValue() + newAsset.getValue(), 2));
+
+    Stats existingAssetLastStats =
+        existingAsset.getHistory() != null
+            ? existingAsset.getHistory().stream()
+                .filter(a -> a.getDate().isEqual(lastDate))
+                .findFirst()
+                .orElse(new Stats(lastDate, 0D, 0D, 0D))
+            : new Stats(lastDate, 0D, 0D, 0D);
+    Stats newAssetLastStats =
+        newAsset.getHistory() != null
+            ? newAsset.getHistory().stream()
+                .filter(a -> a.getDate().isEqual(lastDate))
+                .findFirst()
+                .orElse(new Stats(lastDate, 0D, 0D, 0D))
+            : new Stats(lastDate, 0D, 0D, 0D);
+
     if (existingAsset.getPerformance() != null && newAsset.getPerformance() != null) {
+      // existingAsset.setPerformance(
+      //    MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
+      Double lastStatsBalance =
+          existingAssetLastStats.getBalance() + newAssetLastStats.getBalance();
       existingAsset.setPerformance(
-          MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
+          lastStatsBalance != 0
+              ? MathService.round(
+                  ((existingAsset.getValue() - lastStatsBalance) / lastStatsBalance) * 100, 2)
+              : 0.0);
     }
 
     if (existingAsset.getTrend() != null && newAsset.getTrend() != null) {
-      existingAsset.setTrend(existingAsset.getTrend() + newAsset.getTrend());
+      existingAsset.setTrend(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend());
     }
 
     existingAsset.setInvested(existingAsset.getInvested() + newAsset.getInvested());
-    existingAsset.setValue(MathService.round(existingAsset.getValue() + newAsset.getValue(), 2));
 
     if (newAsset.getHistory() != null && !newAsset.getHistory().isEmpty()) {
       for (Stats newStats : newAsset.getHistory()) {
