@@ -73,7 +73,8 @@ public class WalletMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public Wallet fromWalletEntityToWallet(WalletEntity walletEntity) throws JsonProcessingException {
+  public Wallet fromWalletEntityToWallet(
+      WalletEntity walletEntity, List<LocalDate> getAllCryptoDates) throws JsonProcessingException {
     Wallet wallet = new Wallet();
     BeanUtils.copyProperties(walletEntity, wallet);
 
@@ -95,13 +96,16 @@ public class WalletMapper {
     if (walletEntity.getAssets() != null) {
       List<MarketData> marketData =
           marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
-      wallet.setAssets(assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
+      wallet.setAssets(
+          assetMapper.fromAssetEntitiesToAssets(
+              walletEntity.getAssets(), marketData, getAllCryptoDates));
     }
     return wallet;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities, Boolean live) {
+  public List<Wallet> fromWalletEntitiesToWallets(
+      List<WalletEntity> walletEntities, Boolean live, List<LocalDate> getAllCryptoDates) {
     ForexData forex = null;
     if (live) forex = forexDataService.getForexData(user.getSettings().getCryptoCurrency());
     ForexData finalForex = forex;
@@ -140,7 +144,8 @@ public class WalletMapper {
                 List<MarketData> marketData =
                     marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
                 wallet.setAssets(
-                    assetMapper.fromAssetEntitiesToAssets(walletEntity.getAssets(), marketData));
+                    assetMapper.fromAssetEntitiesToAssets(
+                        walletEntity.getAssets(), marketData, getAllCryptoDates));
               }
               if (live) setLivePriceInWallet(wallet, finalForex, lastBalance);
               return wallet;

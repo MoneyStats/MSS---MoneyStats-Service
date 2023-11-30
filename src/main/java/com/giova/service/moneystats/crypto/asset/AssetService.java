@@ -3,6 +3,7 @@ package com.giova.service.moneystats.crypto.asset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -16,6 +17,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +42,7 @@ public class AssetService {
   @Autowired private IAssetDAO assetDAO;
   @Autowired private AssetMapper assetMapper;
   @Autowired private MarketDataService marketDataService;
+  @Autowired private StatsService statsService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -98,6 +101,7 @@ public class AssetService {
 
     List<AssetEntity> assetEntities = assetDAO.findAllByUserIdOrderByRank(user.getId());
     List<Asset> assets = new ArrayList<>();
+    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
 
     String message = "";
     if (assetEntities.isEmpty()) {
@@ -107,7 +111,9 @@ public class AssetService {
           marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
       assets =
           assetMapper.mapAssetList(
-              assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData), marketData);
+              assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),
+              marketData,
+              getAllDates);
       message = "Found " + assets.size() + " Assets";
     }
 
