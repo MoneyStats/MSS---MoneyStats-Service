@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import android.util.Base64;
-import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
@@ -10,6 +9,8 @@ import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.OperationsMapper;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -30,11 +31,10 @@ public class AssetMapper {
 
   private final UserEntity user;
   @Autowired private OperationsMapper operationsMapper;
-  @Autowired private StatsService statsService;
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public List<Asset> fromAssetEntitiesToAssets(
-      List<AssetEntity> assetEntityList, List<MarketData> marketData) {
-    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+      List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
     return assetEntityList.stream()
         .map(
@@ -77,6 +77,7 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public List<AssetEntity> fromAssetToAssetsEntities(
       List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
     return assetList.stream()
@@ -111,7 +112,9 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  public List<Asset> mapAssetList(List<Asset> assetList, List<MarketData> marketData) {
+  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  public List<Asset> mapAssetList(
+      List<Asset> assetList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     Map<String, Asset> assetMap = new HashMap<>();
 
     assetList.forEach(
@@ -120,7 +123,7 @@ public class AssetMapper {
 
           if (existingAsset != null) {
             // Aggiorna l'asset esistente
-            updateExistingAsset(existingAsset, asset);
+            updateExistingAsset(existingAsset, asset, getAllDates);
           } else {
             // Crea un nuovo asset
             Asset newAsset = new Asset();
@@ -152,8 +155,8 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  private void updateExistingAsset(Asset existingAsset, Asset newAsset) {
-    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+  private void updateExistingAsset(
+      Asset existingAsset, Asset newAsset, List<LocalDate> getAllDates) {
     LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
     existingAsset.setBalance(
         MathService.round(existingAsset.getBalance() + newAsset.getBalance(), 8));

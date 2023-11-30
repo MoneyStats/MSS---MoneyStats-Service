@@ -3,6 +3,7 @@ package com.giova.service.moneystats.app.wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
+import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -13,6 +14,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +36,7 @@ public class WalletService {
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
+  @Autowired private StatsService statsService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -86,7 +89,8 @@ public class WalletService {
 
     WalletEntity saved = walletCacheService.save(walletEntity);
 
-    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, getAllCryptoDates);
     // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
     //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
     // }
@@ -115,8 +119,9 @@ public class WalletService {
         user.getSettings().getLiveWallets() != null
             && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     List<Wallet> walletToReturn =
-        walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet);
+        walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet, getAllCryptoDates);
 
     Response response =
         new Response(
@@ -139,7 +144,9 @@ public class WalletService {
       message = "Found " + walletEntity.size() + " Crypto Wallets";
     }
 
-    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity, live);
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<Wallet> walletToReturn =
+        walletMapper.fromWalletEntitiesToWallets(walletEntity, live, getAllCryptoDates);
 
     Response response =
         new Response(
@@ -182,7 +189,8 @@ public class WalletService {
             walletEntity -> {
               Wallet wallet = new Wallet();
               try {
-                walletMapper.fromWalletEntityToWallet(walletEntity);
+                List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+                walletMapper.fromWalletEntityToWallet(walletEntity, getAllCryptoDates);
               } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
               }
