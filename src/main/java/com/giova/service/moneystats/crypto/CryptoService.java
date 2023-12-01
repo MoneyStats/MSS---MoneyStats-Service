@@ -398,7 +398,7 @@ public class CryptoService {
           marketData.stream()
               .filter(marketData1 -> marketData1.getSymbol().equalsIgnoreCase(symbol))
               .findFirst()
-              .get()
+              .orElse(new MarketData())
               .getCurrent_price(),
           2);
     }
