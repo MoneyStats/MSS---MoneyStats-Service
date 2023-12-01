@@ -189,8 +189,7 @@ public class WalletService {
             walletEntity -> {
               Wallet wallet = new Wallet();
               try {
-                List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
-                walletMapper.fromWalletEntityToWallet(walletEntity, getAllCryptoDates);
+                walletMapper.fromWalletEntityToWallet(walletEntity, null);
               } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
               }

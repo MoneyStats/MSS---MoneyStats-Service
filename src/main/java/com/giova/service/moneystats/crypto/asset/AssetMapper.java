@@ -35,7 +35,10 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
   public List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
-    LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
+    LocalDate lastDate =
+        (getAllDates != null && !getAllDates.isEmpty())
+            ? getAllDates.get(getAllDates.size() - 1)
+            : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -158,6 +161,8 @@ public class AssetMapper {
   private void updateExistingAsset(
       Asset existingAsset, Asset newAsset, List<LocalDate> getAllDates) {
     LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
+    LocalDate beforeLastDate =
+        getAllDates.size() >= 2 ? getAllDates.get(getAllDates.size() - 2) : null;
     existingAsset.setBalance(
         MathService.round(existingAsset.getBalance() + newAsset.getBalance(), 8));
 
@@ -207,13 +212,26 @@ public class AssetMapper {
                 .filter(h -> h.getDate().isEqual(newStats.getDate()))
                 .findFirst();
 
+        Optional<Stats> beforeStatsOptional =
+            beforeLastDate != null
+                ? existingAsset.getHistory().stream()
+                    .filter(h -> h.getDate().isEqual(beforeLastDate))
+                    .findFirst()
+                : Optional.empty();
+
         if (existingStatsOptional.isPresent()) {
           // Aggiorna l'elemento esistente nella history
           Stats existingStats = existingStatsOptional.get();
           existingStats.setBalance(existingStats.getBalance() + newStats.getBalance());
           existingStats.setTrend(existingStats.getTrend() + newStats.getTrend());
-          existingStats.setPercentage(
-              MathService.round((existingStats.getPercentage() + newStats.getPercentage()) / 2, 2));
+          if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
+          else
+            existingStats.setPercentage(
+                MathService.round(
+                    ((existingStats.getBalance() - beforeStatsOptional.get().getBalance())
+                            / beforeStatsOptional.get().getBalance())
+                        * 100,
+                    2));
         } else {
           // Aggiungi un nuovo elemento alla history
           Stats newStatsToAdd = new Stats();

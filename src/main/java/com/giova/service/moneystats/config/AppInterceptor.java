@@ -41,6 +41,16 @@ public class AppInterceptor extends OncePerRequestFilter {
           .registerModule(new JavaTimeModule())
           .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
   private final UserEntity user;
+  private final List<String> notFiltering =
+      List.of(
+          "/v1/auth/sign-up",
+          "/v1/auth/login",
+          "/v1/auth/forgot-password",
+          "/v1/auth/reset-password",
+          "/v1/app/report/bug",
+          "/v1/app/contact",
+          "/v1/upload/attachment");
+
   @Autowired private AuthService authService;
 
   private static boolean isEmpty(String value) {
@@ -86,15 +96,6 @@ public class AppInterceptor extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
-    List<String> notFiltering =
-        List.of(
-            "/v1/auth/sign-up",
-            "/v1/auth/login",
-            "/v1/auth/forgot-password",
-            "/v1/auth/reset-password",
-            "/v1/app/report/bug",
-            "/v1/app/contact",
-            "/v1/upload/attachment");
     return notFiltering.contains(path);
   }
 
