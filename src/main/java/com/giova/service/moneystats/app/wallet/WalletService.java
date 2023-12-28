@@ -89,8 +89,8 @@ public class WalletService {
 
     WalletEntity saved = walletCacheService.save(walletEntity);
 
-    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
-    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, getAllCryptoDates);
+    //List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null);
     // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
     //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
     // }
