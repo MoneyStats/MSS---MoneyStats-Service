@@ -196,7 +196,8 @@ public class AssetMapper {
     }
 
     if (existingAsset.getTrend() != null && newAsset.getTrend() != null) {
-      existingAsset.setTrend(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend());
+      existingAsset.setTrend(
+          MathService.round(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend(), 2));
     }
 
     existingAsset.setInvested(existingAsset.getInvested() + newAsset.getInvested());
@@ -222,8 +223,10 @@ public class AssetMapper {
         if (existingStatsOptional.isPresent()) {
           // Aggiorna l'elemento esistente nella history
           Stats existingStats = existingStatsOptional.get();
-          existingStats.setBalance(existingStats.getBalance() + newStats.getBalance());
-          existingStats.setTrend(existingStats.getTrend() + newStats.getTrend());
+          existingStats.setBalance(
+              MathService.round(existingStats.getBalance() + newStats.getBalance(), 2));
+          existingStats.setTrend(
+              MathService.round(existingStats.getTrend() + newStats.getTrend(), 2));
           if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
           else
             existingStats.setPercentage(
