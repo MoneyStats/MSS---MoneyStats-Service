@@ -2,13 +2,11 @@ package com.giova.service.moneystats.crypto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.AssetService;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
@@ -49,8 +47,6 @@ public class CryptoService {
   @Autowired private WalletService walletService;
   @Autowired private StatsService statsService;
   @Autowired private CryptoMapper cryptoMapper;
-  @Autowired private AssetMapper assetMapper;
-  @Autowired private StatsMapper statsMapper;
   @Autowired private MarketDataService marketDataService;
   @Autowired private AssetService assetService;
 
