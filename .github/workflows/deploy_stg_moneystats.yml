@@ -5,7 +5,6 @@ on:
     branches: [ develop ]
 
 env:
-  JAVA_VERSION: '11'
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
@@ -14,14 +13,18 @@ jobs:
   checkout-and-setup:
     name: 🔧 Checkout and Setup
     runs-on: ubuntu-latest
+    outputs:
+      id: setup-info
+      value: ${{ steps.setup.outputs }}
     steps:
       - name: "☁️ Checkout Repository"
         uses: actions/checkout@v3
 
       - name: Set up JDK and Maven
+        id: setup
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '11'
           distribution: 'adopt'
 
   install:
@@ -30,7 +33,9 @@ jobs:
     needs: checkout-and-setup
     steps:
       - name: Install dependencies and build
-        run: mvn -X clean install
+        run: |
+          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
+          mvn -X clean install
 
   test-and-build:
     name: 📂 Test and Build
@@ -38,10 +43,14 @@ jobs:
     needs: checkout-and-setup
     steps:
       - name: 📂 Test with Maven
-        run: mvn test
+        run: |
+          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
+          mvn test
 
       - name: 📂 Build with Maven
-        run: mvn -B package --file pom.xml
+        run: |
+          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
+          mvn -B package --file pom.xml
 
   set-release-version:
     name: 📝 Set Release Version
@@ -49,7 +58,9 @@ jobs:
     needs: test-and-build
     steps:
       - name: Set Release version env variable
-        run: echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        run: |
+          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   docker-login:
     name: 🐳 Docker Login
