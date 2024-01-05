@@ -23,6 +23,12 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'adopt'
+      - name: Debug files in current directory
+        run: ls -la
+      - name: Change to project directory
+        run: cd MoneyStats-Service-Application
+      - name: Debug files in current directory
+        run: ls -la
 
   install:
     name: 🌱 Install
