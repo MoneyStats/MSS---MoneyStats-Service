@@ -25,6 +25,19 @@ spring:
       max-file-size: 1MB
       max-request-size: 1MB
 
+management:
+  info:
+    enabled: true
+  env:
+    enable: true
+  health:
+    probes:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,beans,loggers
+
 rest:
   scheduled:
     marketData:
