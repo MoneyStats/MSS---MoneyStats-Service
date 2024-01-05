@@ -32,6 +32,14 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - name: Debug files in current directory
+        run: ls -la
+
+      - name: Change to project directory
+        run: cd MoneyStats-Service-Application
+      - name: Debug files in current directory
+        run: ls -la
+
   install:
     name: 🌱 Install
     runs-on: ubuntu-latest
