@@ -6,7 +6,6 @@ on:
 
 env:
   JAVA_VERSION: '11'
-  MAVEN_OPTS: '-B -DskipTests'
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
@@ -36,7 +35,18 @@ jobs:
     needs: [ checkout, setup-java-maven ]
     steps:
       - name: Install dependencies and build
-        run: mvn ${{ env.MAVEN_OPTS }} package
+        run: mvn -X clean install
+
+  test-and-build:
+    name: 📂 Test and Build
+    runs-on: ubuntu-latest
+    needs: [ install, setup-java-maven ]
+    steps:
+      - name: 📂 Test with Maven
+        run: mvn test
+
+      - name: 📂 Build with Maven
+        run: mvn -B package --file pom.xml
 
   set-release-version:
     name: 📝 Set Release Version
