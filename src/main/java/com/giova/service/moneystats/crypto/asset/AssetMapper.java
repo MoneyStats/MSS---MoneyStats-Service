@@ -200,7 +200,8 @@ public class AssetMapper {
           MathService.round(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend(), 2));
     }
 
-    existingAsset.setInvested(existingAsset.getInvested() + newAsset.getInvested());
+    existingAsset.setInvested(
+        MathService.round(existingAsset.getInvested() + newAsset.getInvested(), 2));
 
     if (newAsset.getHistory() != null && !newAsset.getHistory().isEmpty()) {
       for (Stats newStats : newAsset.getHistory()) {
