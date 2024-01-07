@@ -46,12 +46,17 @@ jobs:
   set-release-version:
     name: 📝 Set Release Version
     runs-on: ubuntu-latest
+    outputs:
+      id: release-version
+      value: ${{ steps.set-release-version.outputs.release-version }}
     needs: [ install-test-and-build, checkout-and-setup ]
     steps:
       - name: Set Release version env variable
+        id: set-release-version
         run: |
-          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
-          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          echo "release-version=${{ steps.set-release-version.outputs.release-version }}" >> $GITHUB_ENV
+  
 
   docker-login:
     name: 🐳 Docker Login
