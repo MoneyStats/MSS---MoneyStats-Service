@@ -31,4 +31,5 @@ public class Operations extends GenericDTO {
   private Double exitQuantity;
   private Double performance;
   private Double trend;
+  private Double fees;
 }
