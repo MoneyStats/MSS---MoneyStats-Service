@@ -46,7 +46,7 @@ jobs:
   docker-login:
     name: 🐳 Docker Login
     runs-on: ubuntu-latest
-    needs: set-release-version
+    needs: install-test-and-build
     steps:
       - name: 🐳 Log in to Docker Hub
         uses: docker/login-action@v2
@@ -57,7 +57,7 @@ jobs:
   build-and-push-docker:
     name: 🚀 Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [ set-release-version, docker-login ]
+    needs: [ install-test-and-build, docker-login ]
     steps:
       - uses: actions/checkout@v3
 
