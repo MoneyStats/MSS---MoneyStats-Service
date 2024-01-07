@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-and-setup
     steps:
+      - uses: actions/checkout@v3
       - name: Set up JDK and Maven
         id: setup
         uses: actions/setup-java@v3
