@@ -66,6 +66,9 @@ public class OperationsEntity extends GenericEntity {
   @Column(name = "TREND")
   private Double trend;
 
+  @Column(name = "FEES")
+  private Double fees;
+
   @ManyToOne
   @JoinColumn(name = "USER_ID", nullable = false)
   private UserEntity user;
