@@ -25,7 +25,7 @@ jobs:
           distribution: 'adopt'
 
   install-test-and-build:
-    name: 🌱 Install, 📂 Test and Build
+    name: 🌱 Install, Test and Build
     runs-on: ubuntu-latest
     needs: checkout-and-setup
     steps:
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: set-release-version
     steps:
-      - name: Log in to Docker Hub
+      - name: 🐳 Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ env.DOCKER_USERNAME }}
@@ -68,9 +68,11 @@ jobs:
     name: 🚀 Build & Push Docker Image
     runs-on: ubuntu-latest
     needs: [ set-release-version, docker-login ]
+    env:
+      RELEASE_VERSION: ${{ needs.set-release-version.outputs.release-version }}
     steps:
       - uses: actions/checkout@v3
-      - name: Build & push Docker image
+      - name: 🚀 Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6.2
         with:
           image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
