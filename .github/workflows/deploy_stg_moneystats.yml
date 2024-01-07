@@ -13,49 +13,37 @@ jobs:
   checkout-and-setup:
     name: 🔧 Checkout and Setup
     runs-on: ubuntu-latest
-    outputs:
-      id: setup-info
-      value: ${{ steps.setup.outputs }}
     steps:
       - name: "☁️ Checkout Repository"
         uses: actions/checkout@v3
 
+  install-test-and-build:
+    name: 🌱 Install, 📂 Test and Build
+    runs-on: ubuntu-latest
+    needs: checkout-and-setup
+    steps:
       - name: Set up JDK and Maven
         id: setup
         uses: actions/setup-java@v3
         with:
           java-version: '11'
           distribution: 'adopt'
-
-  install:
-    name: 🌱 Install
-    runs-on: ubuntu-latest
-    needs: checkout-and-setup
-    steps:
       - name: Install dependencies and build
         run: |
-          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
           mvn -X clean install
 
-  test-and-build:
-    name: 📂 Test and Build
-    runs-on: ubuntu-latest
-    needs: checkout-and-setup
-    steps:
       - name: 📂 Test with Maven
         run: |
-          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
           mvn test
 
       - name: 📂 Build with Maven
         run: |
-          cd ${{ needs.checkout-and-setup.outputs.setup-info.checkout-path }}
           mvn -B package --file pom.xml
 
   set-release-version:
     name: 📝 Set Release Version
     runs-on: ubuntu-latest
-    needs: test-and-build
+    needs: [ install-test-and-build, checkout-and-setup ]
     steps:
       - name: Set Release version env variable
         run: |
