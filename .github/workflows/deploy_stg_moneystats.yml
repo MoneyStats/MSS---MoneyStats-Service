@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: stg-moneystats-service
-    needs: [ java, build ]
+    needs: [ docker-login ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
