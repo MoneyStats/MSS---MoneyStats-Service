@@ -24,6 +24,9 @@ public class OperationsEntity extends GenericEntity {
   @Column(name = "ID", nullable = false)
   private Long id;
 
+  @Column(name = "IDENTIFIER")
+  private String identifier;
+
   @Column(name = "TYPE", nullable = false)
   private String type;
 

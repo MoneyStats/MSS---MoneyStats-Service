@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class Operations extends GenericDTO {
 
   private Long id;
+  private String identifier;
   private String type;
   private String status;
   private LocalDateTime entryDate;

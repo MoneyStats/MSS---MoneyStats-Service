@@ -146,21 +146,21 @@ public class AppService {
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> addStats(List<Wallet> wallets, String authToken) {
 
-    wallets.stream()
-        .peek(
-            wallet -> {
-              try {
-                objectMapper.convertValue(
-                    walletService.notFilterInsertOrUpdateWallet(wallet).getBody().getData(),
-                    Wallet.class);
-              } catch (JsonProcessingException e) {
-                throw new UtilsException(
-                    ExceptionMap.ERR_JSON_FOR_001, ExceptionMap.ERR_JSON_FOR_001.getMessage());
-              }
-              List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
-              wallet.setHistory(statsList);
-            })
-        .collect(Collectors.toList());
+    wallets.forEach(
+        wallet -> {
+          try {
+            objectMapper.convertValue(
+                Objects.requireNonNull(
+                        walletService.notFilterInsertOrUpdateWallet(wallet).getBody())
+                    .getData(),
+                Wallet.class);
+          } catch (JsonProcessingException e) {
+            throw new UtilsException(
+                ExceptionMap.ERR_JSON_FOR_001, ExceptionMap.ERR_JSON_FOR_001.getMessage());
+          }
+          List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
+          wallet.setHistory(statsList);
+        });
 
     String message = "Stats Added Successfully!";
 
@@ -240,7 +240,7 @@ public class AppService {
     // Category List
     List<Category> getAllCategory =
         objectMapper.convertValue(
-            categoryService.getAllCategories().getBody().getData(),
+            Objects.requireNonNull(categoryService.getAllCategories().getBody()).getData(),
             new TypeReference<List<Category>>() {});
 
     List<Integer> distinctDatesByYear =
@@ -249,12 +249,14 @@ public class AppService {
     // Wallet List
     List<Wallet> getAllWallet =
         objectMapper.convertValue(
-            walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+            Objects.requireNonNull(walletService.getWallets().getBody()).getData(),
+            new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()
         .sorted(Collections.reverseOrder())
-        .peek(
+        .collect(Collectors.toList())
+        .forEach(
             year -> {
               LOG.info("Mapping Data for year {}", year);
               // Filtro le date secondo l'anno
@@ -343,8 +345,7 @@ public class AppService {
               }
               index.incrementAndGet();
               response.put(String.valueOf(year), dashboard);
-            })
-        .collect(Collectors.toList());
+            });
 
     return response;
   }
