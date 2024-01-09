@@ -11,7 +11,7 @@ public enum ExceptionMap implements ExceptionCode {
   ERR_AUTH_MSS_002("TOKEN_PARSE", HttpStatus.UNAUTHORIZED, "Error during parsing Access-Token"),
   ERR_AUTH_MSS_003(
       "WRONG_CREDENTIAL",
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.UNAUTHORIZED,
       "Wrong Credential for username or password. Try again!"),
   ERR_AUTH_MSS_004(
       "CHECK_LOGIN_FAIL",
