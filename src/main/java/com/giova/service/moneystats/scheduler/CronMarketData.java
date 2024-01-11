@@ -47,10 +47,10 @@ public class CronMarketData {
     // List<String> fiatCurrencies = authService.getCryptoFiatUsersCurrency();
     List<String> fiatCurrencies = List.of("USD", "EUR", "GBP");
 
-    if (fiatCurrencies.isEmpty()) {
-      LOG.info("No Currency found on Database, Stopping Scheduler");
-      return;
-    }
+    // if (fiatCurrencies.isEmpty()) {
+    //  LOG.info("No Currency found on Database, Stopping Scheduler");
+    //  return;
+    // }
 
     // Mi salvo tutti i Market Data presenti a DB in caso di rollback
     List<MarketData> allMarketData = marketDataService.getAllMarketData();

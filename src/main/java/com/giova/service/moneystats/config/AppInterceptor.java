@@ -13,6 +13,8 @@ import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -25,9 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -41,15 +43,9 @@ public class AppInterceptor extends OncePerRequestFilter {
           .registerModule(new JavaTimeModule())
           .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
   private final UserEntity user;
-  private final List<String> notFiltering =
-      List.of(
-          "/v1/auth/sign-up",
-          "/v1/auth/login",
-          "/v1/auth/forgot-password",
-          "/v1/auth/reset-password",
-          "/v1/app/report/bug",
-          "/v1/app/contact",
-          "/v1/upload/attachment");
+
+  @Value(value = "new ArrayList<String>()${app.shouldNotFilter}")
+  private List<String> shouldNotFilter;
 
   @Autowired private AuthService authService;
 
@@ -61,8 +57,13 @@ public class AppInterceptor extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+    LOG.debug("Starting Filter Authentication");
     String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
+    if (shouldNotFilter(request)) {
+      filterChain.doFilter(request, response);
+      return;
+    }
     if (isEmpty(authToken)) {
       LOG.error("Auth-Token not found");
       response.reset();
@@ -79,31 +80,24 @@ public class AppInterceptor extends OncePerRequestFilter {
     } catch (UtilsException e) {
       LOG.error(
           "Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
-      exceptionResponse =
-          getExceptionResponse(e, request, e.getExceptionCode(), e.getExceptionCode().getStatus());
+      exceptionResponse = getExceptionResponse(e, request, e.getExceptionCode());
       exceptionResponse.setCorrelationId(CorrelationIdUtils.getCorrelationId());
       response.setStatus(e.getExceptionCode().getStatus().value());
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.getWriter().write(convertObjectToJson(exceptionResponse));
+      response.getWriter().write(Utilities.convertObjectToJson(exceptionResponse));
       return;
     }
     setUserInContext(checkUser);
     // setUserAndTokenInCookie(checkUser, generateToken, response);
     response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
+    LOG.debug("Ending Filter Authentication");
     filterChain.doFilter(request, response);
   }
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
-    return notFiltering.contains(path);
-  }
-
-  public String convertObjectToJson(Object object) throws JsonProcessingException {
-    if (object == null) {
-      return null;
-    }
-    return objectMapper.writeValueAsString(object);
+    return shouldNotFilter.contains(path);
   }
 
   private void setUserInContext(UserEntity user) {
@@ -115,20 +109,7 @@ public class AppInterceptor extends OncePerRequestFilter {
       throws JsonProcessingException {
     String userAsString =
         Base64.getEncoder().encodeToString(objectMapper.writeValueAsString(user).getBytes());
-    setCookieInResponse(UserEntity.USER_COOKIE, userAsString, response);
-    setCookieInResponse(AuthToken.JWE_TOKEN_COOKIE, token.getAccessToken(), response);
-  }
-
-  private void setCookieInResponse(
-      String cookieName, String cookieValue, HttpServletResponse response) {
-    ResponseCookie cookie =
-        ResponseCookie.from(cookieName, cookieValue)
-            .maxAge(360000)
-            .sameSite("None")
-            .secure(true)
-            .httpOnly(true)
-            .path("/")
-            .build();
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    CookieManager.setCookieInResponse(UserEntity.USER_COOKIE, userAsString, response);
+    CookieManager.setCookieInResponse(AuthToken.JWE_TOKEN_COOKIE, token.getAccessToken(), response);
   }
 }

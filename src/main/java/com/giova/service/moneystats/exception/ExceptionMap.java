@@ -4,15 +4,13 @@ import io.github.giovannilamarmora.utils.exception.ExceptionCode;
 import org.springframework.http.HttpStatus;
 
 public enum ExceptionMap implements ExceptionCode {
-  // Application
-  ERR_APP_MSS_001("MATH_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on rounding value, try again!"),
   // Authentication
-  ERR_AUTH_MSS_001("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Missing Value for: "),
-  ERR_AUTH_MSS_002("TOKEN_PARSE", HttpStatus.UNAUTHORIZED, "Error during parsing Access-Token"),
-  ERR_AUTH_MSS_003(
+  ERR_AUTH_MSS_001(
       "WRONG_CREDENTIAL",
       HttpStatus.UNAUTHORIZED,
       "Wrong Credential for username or password. Try again!"),
+  ERR_AUTH_MSS_002("TOKEN_PARSE", HttpStatus.UNAUTHORIZED, "Error during parsing Access-Token"),
+  ERR_AUTH_MSS_003("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Missing Value for: "),
   ERR_AUTH_MSS_004(
       "CHECK_LOGIN_FAIL",
       HttpStatus.UNAUTHORIZED,
@@ -50,17 +48,17 @@ public enum ExceptionMap implements ExceptionCode {
 
   private final HttpStatus status;
   private final String message;
-  private final String exceptionName;
+  private final String exception;
 
-  ExceptionMap(String exceptionName, HttpStatus status, String message) {
-    this.exceptionName = exceptionName;
+  ExceptionMap(String exception, HttpStatus status, String message) {
+    this.exception = exception;
     this.status = status;
     this.message = message;
   }
 
   @Override
-  public String exceptionName() {
-    return this.exceptionName;
+  public String exception() {
+    return this.exception;
   }
 
   @Override

@@ -23,14 +23,13 @@ public class ExceptionHandler extends UtilsException {
         request.getRequestURI(),
         e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
-    ExceptionResponse response =
-        getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_001, status);
+    ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_003);
     String value = "";
     if (response.getError().getExceptionMessage().contains("constraint")) {
       value = Objects.requireNonNull(e.getMessage()).split(";")[2];
     } else {
       value =
-          ExceptionMap.ERR_AUTH_MSS_001.getMessage()
+          ExceptionMap.ERR_AUTH_MSS_003.getMessage()
               + e.getCause()
                   .getMessage()
                   .split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
@@ -52,23 +51,11 @@ public class ExceptionHandler extends UtilsException {
         request.getRequestURI(),
         e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
-    ExceptionResponse response =
-        getExceptionResponse(e, request, ExceptionMap.ERR_IMG_MSS_002, status);
+    ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_IMG_MSS_002);
     response.getError().setMessage(ExceptionMap.ERR_IMG_MSS_002.getMessage());
     if (e.getStackTrace().length != 0) {
       response.getError().setStackTrace(Arrays.toString(e.getStackTrace()));
     }
     return new ResponseEntity<>(response, status);
   }
-
-  /**
-   * @org.springframework.web.bind.annotation.ExceptionHandler( value = RuntimeException.class)
-   *     public ResponseEntity<ExceptionResponse> handleRuntimeException( RuntimeException e,
-   *     HttpServletRequest request) { LOG.error( "An error happened while calling {} Downstream
-   *     APIIII: {}", request.getRequestURI(), e.getMessage()); HttpStatus status =
-   *     HttpStatus.BAD_REQUEST; ExceptionResponse response = getExceptionResponse(e, request,
-   *     AuthException.ERR_AUTH_MSS_004, status);
-   *     <p>response.getError().setMessage(e.getMessage()); return new ResponseEntity<>(response,
-   *     status); }
-   */
 }
