@@ -1,6 +1,7 @@
 server:
   servlet:
-    context-path: /moneystats-service
+    context-path:
+    #context-path: /moneystats-service
 spring:
   datasource:
     url: jdbc:h2:mem:mydb
@@ -23,19 +24,19 @@ spring:
 rest:
   scheduled:
     marketData:
-      active: true
+      active: false
       quantity: 250
       delay:
         start: 5000
         #end: 60000
         end: 3600000
     forex:
-      active: true
+      active: false
       delay:
         start: 5000
         end: 3600000
     caching:
-      active: true
+      active: false
       cron: 0 0 1 * * MON
   client:
     github:
@@ -52,12 +53,22 @@ rest:
       baseUrl: http://api.exchangerate.host
       rates: /live
       apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
+
+logging:
+  level:
+    com.giova.service.moneystats: INFO
+    web: INFO
+    root: INFO
+    org:
+      springframework:
+        web: INFO
+      hibernate: ERROR
+
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000
 app:
-  logTail:
-    active: false
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: http://localhost:4200

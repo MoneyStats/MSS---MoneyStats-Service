@@ -86,6 +86,7 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
   public ResponseEntity<Response> login(String username, String password)
       throws UtilsException, JOSEException {
+    LOG.debug("Login process started for user {}", username);
     logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
@@ -94,13 +95,13 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
 
     migrateToSettings(userEntity);
@@ -113,7 +114,7 @@ public class AuthService {
 
     Response response =
         new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
-
+    LOG.debug("Login process ended for user {}", username);
     return ResponseEntity.ok(response);
   }
 
@@ -216,7 +217,7 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     return userEntity;
   }
@@ -229,7 +230,7 @@ public class AuthService {
     if (authToken == null) {
       LOG.error("Token not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     return authToken;
   }
@@ -251,7 +252,7 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
 
     AuthToken refreshToken = tokenService.generateToken(user);
@@ -259,7 +260,7 @@ public class AuthService {
     if (authToken == null) {
       LOG.error("Token not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_003, ExceptionMap.ERR_AUTH_MSS_003.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     return refreshToken;
   }
