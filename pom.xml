@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.16.19</version>
+    <version>1.16.20</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>0.2.52</version>
+            <version>0.2.53</version>
         </dependency>
         <!--<dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
@@ -119,13 +119,13 @@
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.jaxrs.version}</version>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jakarta.ws.version}</version>
-        </dependency>
+        </dependency>-->
 
         <!--<dependency>
             <groupId>jakarta.inject</groupId>
@@ -138,24 +138,17 @@
             <artifactId>jakarta.activation-api</artifactId>
             <version>${jakarta.activation.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${glassfish.jersey.core.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${glassfish.jersey.inject.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <version>${jboss.resteasy.version}</version>
-        </dependency>-->
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${glassfish.jersey.core.version}</version>
+        </dependency>
+        -->
 
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
@@ -167,7 +160,37 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
-        <!--
+
+        <!--<dependency>
+            <groupId>com.logtail</groupId>
+            <artifactId>logback-logtail</artifactId>
+            <version>0.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.11</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.2.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.15.1</version>
+        </dependency>
         <dependency>
             <groupId>net.morimekta.utils</groupId>
             <artifactId>android-util</artifactId>

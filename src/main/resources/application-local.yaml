@@ -77,6 +77,8 @@ app:
     stacktrace:
       utilsException:
         active: false
+  logTail:
+    active: false
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
   fe:

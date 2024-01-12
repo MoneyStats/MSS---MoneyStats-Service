@@ -58,8 +58,8 @@ rest:
 
 logging:
   level:
-    com.giova.service.moneystats: INFO
-    io.github.giovannilamarmora.utils: INFO
+    com.giova.service.moneystats: ${LOGGING_LEVEL}
+    io.github.giovannilamarmora.utils: ${LOGGING_LEVEL}
     web: INFO
     root: INFO
     org:
@@ -73,7 +73,7 @@ jwt:
 app:
   exception:
     stacktrace:
-      utilsException: false
+      utilsException: ${SHOW_UTILS_EXCEPTION_STACKTRACE}
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   cors:
     enabled: true
