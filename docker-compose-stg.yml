@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.3'
 services:
   backend-service:
     container_name: stg-moneystats-service
@@ -25,6 +25,8 @@ services:
       - REST_CLIENT_EXCHANGE_RATES_API_TOKEN=${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - SHOW_UTILS_EXCEPTION_STACKTRACE=${SHOW_UTILS_EXCEPTION_STACKTRACE}
+    deploy:
+      replicas: 1
     networks:
       docker-network:
         aliases:

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CryptoMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateBalance(
       List<Stats> listFilter, List<LocalDate> filterDateByYear, AtomicReference<Double> balance) {
     Double balanceFilter =
@@ -32,7 +32,7 @@ public class CryptoMapper {
     balance.updateAndGet(v -> v + balanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateInitialBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
@@ -46,7 +46,7 @@ public class CryptoMapper {
     initialBalance.updateAndGet(v -> v + initialBalanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateLastBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
@@ -68,7 +68,7 @@ public class CryptoMapper {
     if (isHolding) holdingLastBalance.updateAndGet(v -> v + lastBalanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void mapWalletInThePast(Wallet wallet) throws RuntimeException {
     // AtomicReference<Double> balance = new AtomicReference<>(0D);
     // AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
@@ -95,11 +95,10 @@ public class CryptoMapper {
         MathService.round(((balance - lastBalance) / lastBalance) * 100, 2));
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void mapDashboardBalanceAndPerformance(
       CryptoDashboard dashboard,
       AtomicReference<Double> balance,
-      AtomicReference<Double> lastBalance,
       AtomicReference<Double> holdingBalance,
       AtomicReference<Double> holdingLastBalance,
       AtomicReference<Double> tradingBalance,
@@ -109,19 +108,6 @@ public class CryptoMapper {
       throws UtilsException {
     dashboard.setBalance(MathService.round(balance.get(), 2));
     dashboard.setBtcBalance(MathService.round(balance.get() / BTC_VALUE, 8));
-    DashboardInfo performance = new DashboardInfo();
-    performance.setPerformance(
-        balance.get() == 0 && lastBalance.get() == 0
-            ? 0D
-            : MathService.round(
-                ((balance.get() - (lastBalance.get() + tradingBalance.get()))
-                        / (lastBalance.get() + tradingBalance.get()))
-                    * 100,
-                2));
-    performance.setBalance(
-        MathService.round(balance.get() - (lastBalance.get() + tradingBalance.get()), 2));
-    performance.setLastUpdate(dashboard.getLastUpdate());
-    dashboard.setPerformance(performance);
 
     DashboardInfo holding = new DashboardInfo();
     holding.setPerformance(
@@ -149,7 +135,7 @@ public class CryptoMapper {
             .toLocalDate());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public CryptoDashboard mapCryptoDashboardWithoutStats(
       String currency, List<Wallet> getAllWallet, List<Asset> getAllAsset, Double BTC_VALUE)
       throws UtilsException {
@@ -196,7 +182,7 @@ public class CryptoMapper {
   }
 
   @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public CryptoDashboard mapCryptoDashboardWithoutStats_OLD(
       String currency, List<Wallet> getAllWallet, List<Asset> getAllAsset, Double BTC_VALUE)
       throws UtilsException {

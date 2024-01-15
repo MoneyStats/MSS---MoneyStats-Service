@@ -38,7 +38,7 @@ public class WalletService {
   @Autowired private ImageService imageService;
   @Autowired private StatsService statsService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
@@ -48,14 +48,14 @@ public class WalletService {
     return insertOrUpdate(wallet, isLiveWallet);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> notFilterInsertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
     return insertOrUpdate(wallet, false);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdate(Wallet wallet, Boolean isWalletLive)
       throws UtilsException, JsonProcessingException {
@@ -89,7 +89,7 @@ public class WalletService {
 
     WalletEntity saved = walletCacheService.save(walletEntity);
 
-    //List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null);
     // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
     //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
@@ -103,7 +103,7 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getWallets() throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
 
@@ -129,7 +129,7 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoWallets(Boolean live) throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
     String CRYPTO = "Crypto";
@@ -154,12 +154,12 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
     return walletMapper.deleteWalletIds(wallets);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
 
     List<WalletEntity> walletEntities =
@@ -199,7 +199,7 @@ public class WalletService {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteWalletEntities() {
     walletCacheService.deleteAllByUserId(user.getId());
   }

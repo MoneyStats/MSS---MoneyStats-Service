@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class StatsMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<StatsEntity> fromStatsToEntity(
       List<Stats> stats, WalletEntity wallet, UserEntity user) {
     return stats.stream()
@@ -29,7 +29,7 @@ public class StatsMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Stats> fromEntityToStats(List<StatsEntity> statsEntities) {
     return statsEntities.stream()
         .map(

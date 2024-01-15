@@ -54,7 +54,7 @@ public class TokenService {
   @Value(value = "${jwt.time}")
   private String expirationTime;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateJWTToken(User user) {
     Claims claims = Jwts.claims().setSubject(user.getUsername());
     claims.put(FIRSTNAME, user.getName());
@@ -74,7 +74,7 @@ public class TokenService {
     return new AuthToken(dateExp, "Bearer", token);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public User parseJWTToken(AuthToken token) throws UtilsException {
     Claims body;
     try {
@@ -94,7 +94,7 @@ public class TokenService {
         (@NotNull UserSettingDTO) body.get(SETTINGS));
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(User user) throws JOSEException {
     // Crea un set di claims
     JWTClaimsSet claimsSet = null;
@@ -128,7 +128,7 @@ public class TokenService {
     return new AuthToken(claimsSet.getExpirationTime().getTime(), "Bearer", token);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public User parseToken(AuthToken token) throws UtilsException {
     try {
       String tokenSplit = token.getAccessToken().split("Bearer ")[1];

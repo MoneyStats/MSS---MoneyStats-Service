@@ -28,7 +28,7 @@ public class AssetMapper {
   private final UserEntity user;
   @Autowired private OperationsMapper operationsMapper;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     LocalDate lastDate =
@@ -76,7 +76,7 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<AssetEntity> fromAssetToAssetsEntities(
       List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
     return assetList.stream()
@@ -111,7 +111,7 @@ public class AssetMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Asset> mapAssetList(
       List<Asset> assetList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     Map<String, Asset> assetMap = new HashMap<>();

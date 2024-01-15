@@ -30,7 +30,7 @@ public class AppController {
   @GetMapping(value = "/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getDashboard(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
       throws UtilsException, JsonProcessingException {
@@ -40,7 +40,7 @@ public class AppController {
   @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getResume(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getResumeData(authToken);
@@ -52,7 +52,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> addStats(
       @RequestBody @Valid List<Wallet> wallets,
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
@@ -66,7 +66,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to report a bug")
   @Operation(description = "API to report a bug", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> bugReport( // @RequestHeader("authToken") String authToken,
       @RequestBody @Valid GithubIssues githubIssues) throws JsonProcessingException {
     return appService.reportBug(githubIssues);
@@ -78,7 +78,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to contact us")
   @Operation(description = "API to contact us", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> contactUs( // @RequestHeader("authToken") String authToken,
       @RequestBody @Valid Support support) throws UtilsException {
     return appService.contactSupport(support);
@@ -90,7 +90,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to Backup Wallet and Stats")
   @Operation(description = "API to Backup Wallet and Stats", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> backupData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.backupData();
@@ -102,7 +102,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "App", description = "API to restore Wallets and Stats")
   @Operation(description = "API to restore Wallets and Stats", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> restoreData(
       @RequestBody @Valid List<Wallet> wallets,
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) {

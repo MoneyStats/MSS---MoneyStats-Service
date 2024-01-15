@@ -23,12 +23,12 @@ public class ForexDataMapper {
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public ForexData fromExchangeRatesToForexData(ExchangeRates exchangeRates) {
     return new ForexData(LocalDateTime.now(), exchangeRates.getSource(), exchangeRates.getQuotes());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public ForexDataEntity fromForexDataToEntity(ForexData forexData) {
     ForexDataEntity forexDataEntity = new ForexDataEntity();
     forexDataEntity.setCurrency(forexData.getCurrency());
@@ -42,7 +42,7 @@ public class ForexDataMapper {
     return forexDataEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public ForexData fromEntityToForexData(ForexDataEntity forexDataEntity) {
     ForexData forexData = new ForexData();
     BeanUtils.copyProperties(forexDataEntity, forexData);
@@ -57,7 +57,7 @@ public class ForexDataMapper {
     return forexData;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<ForexData> fromEntitiesToForexDataList(List<ForexDataEntity> forexDataEntities) {
     return forexDataEntities.stream().map(this::fromEntityToForexData).collect(Collectors.toList());
   }

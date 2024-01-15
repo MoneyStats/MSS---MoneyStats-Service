@@ -47,7 +47,7 @@ public class CoinGeckoClient {
   }
 
   @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<List<CoinGeckoMarketData>> getMarketDataRest(String currency) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -70,7 +70,7 @@ public class CoinGeckoClient {
     return ResponseEntity.ok(list);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<List<CoinGeckoMarketData>> getMarketData(
       String currency, Integer page, Boolean isStable) {
     Map<String, Object> params = new HashMap<>();

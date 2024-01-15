@@ -25,7 +25,7 @@ public class MarketDataCacheService {
   @Autowired private IMarketDataDAO marketDataDAO;
 
   @CachePut(value = MARKET_DATA_CACHE, key = "#currency", condition = "#currency!=null")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<MarketDataEntity> saveAll(
       List<MarketDataEntity> marketDataEntities, String currency) {
     LOG.info("[Caching] Salving MarketData into Database for currency {}", currency);
@@ -33,7 +33,7 @@ public class MarketDataCacheService {
   }
 
   @Cacheable(value = MARKET_DATA_CACHE, key = "#currency", condition = "#currency!=null")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<MarketDataEntity> findAllByCurrency(String currency) {
     LOG.info("[Caching] MarketData into Database by currency {}", currency);
     return marketDataDAO.findAllByCurrency(currency);
@@ -41,7 +41,7 @@ public class MarketDataCacheService {
 
   @Transactional(Transactional.TxType.REQUIRES_NEW)
   @CacheEvict(value = MARKET_DATA_CACHE, key = "#currency", condition = "#currency!=null")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   // @Transactional(noRollbackFor = Exception.class)
   public void deleteAllByCurrency(String currency) {
     LOG.info("[Caching] Deleting MarketData into Database by currency {}", currency);
@@ -56,7 +56,7 @@ public class MarketDataCacheService {
   }
 
   @Caching(evict = @CacheEvict(value = MARKET_DATA_CACHE))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public void deleteAllMarketDataCache() {
     LOG.info("[Caching] Deleting cache for {}", MARKET_DATA_CACHE);
     Objects.requireNonNull(cacheManager.getCache(MARKET_DATA_CACHE)).clear();

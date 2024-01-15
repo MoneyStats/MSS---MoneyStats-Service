@@ -31,7 +31,7 @@ public class CronCachingReset {
   @Autowired private ForexDataCacheService forexDataCacheService;
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleCleanCache() {
     LOG.info("[Clean-Cache] Scheduler Started at {}", LocalDateTime.now());
 

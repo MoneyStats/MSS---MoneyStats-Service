@@ -17,7 +17,7 @@ public class ImageMapper {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public Image fromPartToDto(MultipartFile file) throws UtilsException {
     try {
       return new Image(
@@ -36,7 +36,7 @@ public class ImageMapper {
     }
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public MultipartFile fromDtoToPart(Image image) {
     MultipartFile file =
         new MockMultipartFile(

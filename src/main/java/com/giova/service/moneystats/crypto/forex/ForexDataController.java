@@ -27,7 +27,7 @@ public class ForexDataController {
   @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Forex", description = "API to get All Forex Data")
   @Operation(description = "API to get All Forex Data", tags = "Forex")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getForexDataList(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     List<ForexData> forex = forexDataService.getAllForexData();
@@ -42,7 +42,7 @@ public class ForexDataController {
   @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Forex", description = "API to get All Forex Data")
   @Operation(description = "API to get All Forex Data", tags = "Forex")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getForexData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestParam String currency)
       throws UtilsException {

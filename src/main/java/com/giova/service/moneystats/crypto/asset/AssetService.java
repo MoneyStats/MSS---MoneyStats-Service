@@ -44,7 +44,7 @@ public class AssetService {
   @Autowired private MarketDataService marketDataService;
   @Autowired private StatsService statsService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateAssets(List<Wallet> wallets)
       throws UtilsException, JsonProcessingException {
@@ -75,7 +75,7 @@ public class AssetService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateAsset(Wallet wallet)
       throws UtilsException, JsonProcessingException {
@@ -96,7 +96,7 @@ public class AssetService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAssets() {
 
     List<AssetEntity> assetEntities = assetDAO.findAllByUserIdOrderByRank(user.getId());
@@ -122,7 +122,7 @@ public class AssetService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAsset(String identifier) {
 
     List<Asset> assets =

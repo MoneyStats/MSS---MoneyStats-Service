@@ -31,7 +31,7 @@ public class ForexDataService {
   @Autowired private ForexDataCacheService forexDataCacheService;
   @Autowired private IForexDAO iForexDataDAO;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ForexData getFromExchangeRateForexData(String currency) {
     LOG.info("Getting MarketData for {}", currency);
     ResponseEntity<ExchangeRates> exchangeRatesList = exchangeRatesClient.getForexData(currency);
@@ -43,7 +43,7 @@ public class ForexDataService {
     return mapper.fromExchangeRatesToForexData(exchangeRatesList.getBody());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ForexData saveForexData(ForexData forexData) {
     LOG.info(
         "Saving {} ForexData for currency {}",
@@ -57,7 +57,7 @@ public class ForexDataService {
     return mapper.fromEntityToForexData(saved);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ForexData getForexData(String currency) {
     LOG.info("Getting ForexData from Database for {}", currency);
     ForexDataEntity getMarketData = forexDataCacheService.findByCurrency(currency);
@@ -69,7 +69,7 @@ public class ForexDataService {
     return mapper.fromEntityToForexData(getMarketData);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<ForexData> getAllForexData() {
     LOG.info("Getting All MarketData from Database");
     List<ForexDataEntity> getForexData = iForexDataDAO.findAll();
@@ -81,7 +81,7 @@ public class ForexDataService {
     return mapper.fromEntitiesToForexDataList(getForexData);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteForexData() {
     LOG.info("Deleting ForexData from Database");
     List<String> currencies = iForexDataDAO.selectDistinctCurrency();

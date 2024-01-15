@@ -30,7 +30,7 @@ public class AuthController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> signUp(
       @RequestBody @Valid User user, @RequestParam String invitationCode) throws UtilsException {
     return authService.register(user, invitationCode);
@@ -42,7 +42,7 @@ public class AuthController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> login(
       @RequestParam String username, @RequestParam String password)
       throws UtilsException, JOSEException {
@@ -52,7 +52,7 @@ public class AuthController {
   @PostMapping(value = "/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to reset a password")
   @Operation(description = "API to reset a password", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> forgotPassword(@RequestParam String email) throws UtilsException {
     return authService.forgotPassword(email);
   }
@@ -60,7 +60,7 @@ public class AuthController {
   @PostMapping(value = "/reset-password", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to reset a password")
   @Operation(description = "API to reset a password", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> resetPassword(
       @RequestParam String password, @RequestParam String token) throws UtilsException {
     return authService.resetPassword(password, token);
@@ -69,7 +69,7 @@ public class AuthController {
   @GetMapping(value = "/check-login", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to check an account")
   @Operation(description = "API to check an account", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> checkLogin(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return authService.checkLoginFE(authToken);
@@ -81,7 +81,7 @@ public class AuthController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Authentication", description = "API to update an account")
   @Operation(description = "API to update an account", tags = "Authentication")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> updateUser(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestBody @Valid User user) {
     return authService.updateUserData(authToken, user);

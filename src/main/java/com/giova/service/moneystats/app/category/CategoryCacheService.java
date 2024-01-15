@@ -23,14 +23,14 @@ public class CategoryCacheService {
   @Autowired private ICategoryDAO iCategoryDAO;
 
   @Caching(cacheable = @Cacheable(value = CATEGORY_CACHE))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<CategoryEntity> findAll() {
     LOG.info("[Caching] CategoryEntity into Database");
     return iCategoryDAO.findAll();
   }
 
   @Caching(evict = @CacheEvict(value = CATEGORY_CACHE))
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CACHE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public void deleteWalletsCache() {
     LOG.info("[Caching] Deleting cache for {}", CATEGORY_CACHE);
     Objects.requireNonNull(cacheManager.getCache(CATEGORY_CACHE)).clear();

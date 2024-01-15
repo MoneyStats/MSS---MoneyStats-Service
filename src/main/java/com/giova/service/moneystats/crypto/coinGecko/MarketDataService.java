@@ -35,7 +35,7 @@ public class MarketDataService {
   @Autowired private MarketDataCacheService marketDataCacheService;
   @Autowired private IMarketDataDAO marketDataDAO;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> getCoinGeckoMarketData(String currency, Integer quantity) {
     LOG.info("Getting {} MarketData for {}", quantity, currency);
     List<CoinGeckoMarketData> getMarketData = new ArrayList<>();
@@ -83,7 +83,7 @@ public class MarketDataService {
     return cryptocurrency;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> saveMarketData(List<MarketData> marketData, String currency) {
     LOG.info("Saving {} MarketData for currency {}", marketData.size(), currency);
     List<MarketDataEntity> marketDataEntities = mapper.fromMarketDataToEntity(marketData, currency);
@@ -93,7 +93,7 @@ public class MarketDataService {
     return mapper.fromEntityToMarketData(saved);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> getMarketData(String currency) {
     LOG.info("Getting MarketData from Database for {}", currency);
     List<MarketDataEntity> getMarketData = marketDataCacheService.findAllByCurrency(currency);
@@ -107,7 +107,7 @@ public class MarketDataService {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> getAllMarketData() {
     LOG.info("Getting All MarketData from Database");
     List<MarketDataEntity> getMarketData = marketDataDAO.findAll();
@@ -119,7 +119,7 @@ public class MarketDataService {
     return mapper.fromEntityToMarketData(getMarketData);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteMarketData() {
     LOG.info("Deleting MarketData from Database");
     List<String> currencies = marketDataDAO.selectDistinctCurrency();

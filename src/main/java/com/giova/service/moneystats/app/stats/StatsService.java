@@ -20,17 +20,17 @@ public class StatsService {
   @Autowired private IStatsDAO iStatsDAO;
   @Autowired private StatsMapper statsMapper;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<LocalDate> getDistinctDates(UserEntity user) {
     return iStatsDAO.selectAppDistinctDate(user.getId());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<LocalDate> getCryptoDistinctDates(UserEntity user) {
     return iStatsDAO.selectCryptoDistinctDate(user.getId());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {
     List<StatsEntity> statsEntities = statsMapper.fromStatsToEntity(stats, wallet, user);
 
@@ -39,7 +39,7 @@ public class StatsService {
     return statsMapper.fromEntityToStats(saved);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Stats> getStatsByWallet(Long walletId) {
 
     List<StatsEntity> stats = iStatsDAO.findStatsEntitiesByWalletId(walletId);

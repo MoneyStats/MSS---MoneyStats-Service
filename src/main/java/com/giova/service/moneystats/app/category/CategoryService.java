@@ -21,7 +21,7 @@ public class CategoryService {
 
   @Autowired private CategoryMapper categoryMapper;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAllCategories() {
     List<CategoryEntity> categoryEntity = categoryCacheService.findAll();
     List<Category> categories = categoryMapper.mapCategoryEntityToCategory(categoryEntity);

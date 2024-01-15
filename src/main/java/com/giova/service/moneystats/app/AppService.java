@@ -56,7 +56,7 @@ public class AppService {
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AppMapper appMapper;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> reportBug(GithubIssues githubIssues)
       throws JsonProcessingException {
     LOG.info("Bug to report: {}", objectMapper.writeValueAsString(githubIssues));
@@ -73,7 +73,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {
 
     List<LocalDate> getAllDates = statsService.getDistinctDates(user);
@@ -112,7 +112,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getResumeData(String authToken) throws UtilsException {
 
     List<LocalDate> getAllDates = statsService.getDistinctDates(user);
@@ -142,7 +142,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> addStats(List<Wallet> wallets, String authToken) {
 
@@ -170,7 +170,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> contactSupport(Support support) throws UtilsException {
     // Send Email
     EmailContent emailContent =
@@ -195,7 +195,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> backupData() throws UtilsException {
 
     ResponseEntity<Response> getWallets = walletService.getWallets();
@@ -216,7 +216,7 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> restoreData(List<Wallet> walletEntities) {
 

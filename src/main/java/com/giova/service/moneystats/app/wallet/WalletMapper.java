@@ -41,7 +41,7 @@ public class WalletMapper {
   @Autowired private MarketDataService marketDataService;
   @Autowired private ForexDataService forexDataService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
     WalletEntity walletEntity = new WalletEntity();
     BeanUtils.copyProperties(wallet, walletEntity);
@@ -73,7 +73,7 @@ public class WalletMapper {
     return walletEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public Wallet fromWalletEntityToWallet(
       WalletEntity walletEntity, List<LocalDate> getAllCryptoDates) throws JsonProcessingException {
     Wallet wallet = new Wallet();
@@ -104,7 +104,7 @@ public class WalletMapper {
     return wallet;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Wallet> fromWalletEntitiesToWallets(
       List<WalletEntity> walletEntities, Boolean live, List<LocalDate> getAllCryptoDates) {
     ForexData forex = null;
@@ -154,7 +154,7 @@ public class WalletMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
     return wallets.stream()
         .map(

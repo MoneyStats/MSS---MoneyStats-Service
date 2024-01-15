@@ -39,7 +39,7 @@ public class EmailSenderService {
     }
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public EmailResponse sendEmail(
       String templatePath, Map<String, String> params, EmailContent emailContent)
       throws UtilsException {
