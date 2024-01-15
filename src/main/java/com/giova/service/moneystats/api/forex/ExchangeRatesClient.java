@@ -81,6 +81,7 @@ public class ExchangeRatesClient {
           exchangeRates.getBody().getError().getInfo());
       throw new ExchangeRatesException(exchangeRates.getBody().getError().getInfo());
     }
+
     Map<String, Double> quotes = new HashMap<>();
     Map<String, Double> quotesToBeEdited = exchangeRates.getBody().getQuotes();
     quotesToBeEdited
