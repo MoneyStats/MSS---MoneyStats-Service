@@ -27,7 +27,7 @@ public class CronForexData {
   @Scheduled(
       fixedDelayString = "${rest.scheduled.marketData.delay.end}",
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SCHEDULER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleAllCryptoAsset() {
     LOG.info("[Forex] Scheduler Started at {}", LocalDateTime.now());
 

@@ -25,7 +25,7 @@ public class MarketDataController {
   @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Market Data", description = "API to get Market Data")
   @Operation(description = "API to get Market Data", tags = "Market Data")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestParam String currency)
       throws UtilsException {

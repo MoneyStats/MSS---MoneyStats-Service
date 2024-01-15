@@ -29,7 +29,7 @@ public class WalletController {
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   @Tag(name = "Wallet", description = "API to insert a wallet")
   @Operation(description = "API to insert a wallet", tags = "Wallet")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> insertOrUpdateWallet(
       @RequestBody @Valid Wallet wallet, @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken)
       throws UtilsException, JsonProcessingException {
@@ -39,7 +39,7 @@ public class WalletController {
   @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Wallet", description = "API to get all wallet")
   @Operation(description = "API to get all wallet", tags = "Wallet")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> listWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestParam(value = "live", required = false, defaultValue = "true") Boolean live)
@@ -50,7 +50,7 @@ public class WalletController {
   @GetMapping(value = "/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Wallet", description = "API to get all Crypto wallet")
   @Operation(description = "API to get all Crypto wallet", tags = "Wallet")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> listCryptoWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestParam(value = "live", required = false, defaultValue = "true") Boolean live)

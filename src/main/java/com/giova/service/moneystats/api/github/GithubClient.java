@@ -43,7 +43,7 @@ public class GithubClient {
   }
 
   @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<Object> openGithubIssuesRest(GithubIssues githubIssues) {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Accept", "application/vnd.github+json");
@@ -54,7 +54,7 @@ public class GithubClient {
     return restTemplate.exchange(openGithubIssuesUrl, HttpMethod.POST, request, Object.class);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<Object> openGithubIssues(GithubIssues githubIssues) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.ACCEPT, "application/vnd.github+json");
@@ -64,8 +64,7 @@ public class GithubClient {
     Mono<ResponseEntity<Object>> response =
         webClientRest.perform(
             HttpMethod.POST,
-            UtilsUriBuilder.toBuild()
-                .set(openGithubIssuesUrl, null),
+            UtilsUriBuilder.toBuild().set(openGithubIssuesUrl, null),
             githubIssues,
             headers,
             Object.class);

@@ -14,7 +14,7 @@ public class AuthMapper {
 
   @Autowired private UserSettingsMapper userSettingsMapper;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public UserEntity mapUserToUserEntity(User user) {
     UserEntity userEntity = new UserEntity();
     BeanUtils.copyProperties(user, userEntity);
@@ -23,7 +23,7 @@ public class AuthMapper {
     return userEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public User mapUserEntityToUser(UserEntity userEntity) {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);

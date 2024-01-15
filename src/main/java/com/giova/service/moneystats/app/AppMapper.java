@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateBalance(
       List<Stats> listFilter, List<LocalDate> filterDateByYear, AtomicReference<Double> balance) {
     Double balanceFilter =
@@ -28,7 +28,7 @@ public class AppMapper {
     balance.updateAndGet(v -> v + balanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateInitialBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
@@ -42,7 +42,7 @@ public class AppMapper {
     initialBalance.updateAndGet(v -> v + initialBalanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void updateLastBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
@@ -61,7 +61,7 @@ public class AppMapper {
     lastBalance.updateAndGet(v -> v + lastBalanceFilter);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void mapDashboardBalanceAndPerformance(
       Dashboard dashboard,
       AtomicReference<Double> balance,
@@ -84,7 +84,7 @@ public class AppMapper {
                 ((balance.get() - lastBalance.get()) / lastBalance.get()) * 100, 2));
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     AtomicReference<Double> initialBalance = new AtomicReference<>(0D);

@@ -50,7 +50,7 @@ public class CryptoService {
   @Autowired private MarketDataService marketDataService;
   @Autowired private AssetService assetService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() throws UtilsException {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
@@ -91,7 +91,7 @@ public class CryptoService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoResumeData() throws UtilsException {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
@@ -203,7 +203,6 @@ public class CryptoService {
                 cryptoMapper.mapDashboardBalanceAndPerformance(
                     dashboard,
                     balance,
-                    lastBalance,
                     holdingBalance,
                     holdingLastBalance,
                     tradingBalance,

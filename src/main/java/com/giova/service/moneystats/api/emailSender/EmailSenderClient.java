@@ -25,10 +25,13 @@ public class EmailSenderClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
   private final WebClientRest webClientRest = new WebClientRest();
+
   @Value(value = "${rest.client.emailSender.url}")
   private String emailSenderUrl;
+
   @Value(value = "${rest.client.emailSender.sendEmailUrl}")
   private String sendEmailUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -38,7 +41,7 @@ public class EmailSenderClient {
   }
 
   @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<EmailResponse> sendEmailRest(EmailContent emailContent) {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Accept", "application/json");
@@ -54,7 +57,7 @@ public class EmailSenderClient {
     return response;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<EmailResponse> sendEmail(EmailContent emailContent) {
     Map<String, Object> params = new HashMap<>();
     params.put("htmlText", true);

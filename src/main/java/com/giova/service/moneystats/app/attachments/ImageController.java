@@ -31,7 +31,7 @@ public class ImageController {
   @Operation(
       description = "API to upload the attachment before to send email",
       tags = "Upload Attachment")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> uploadAttachment(@RequestPart(name = "file") MultipartFile file)
       throws UtilsException {
     return imageService.saveAttachmentDto(file);

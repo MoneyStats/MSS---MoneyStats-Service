@@ -54,7 +54,7 @@ public class AuthService {
   @Autowired private ImageService imageService;
   @Autowired private HttpServletRequest request;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
     user.setRole(UserRole.USER);
 
@@ -83,7 +83,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> login(String username, String password)
       throws UtilsException, JOSEException {
     LOG.debug("Login process started for user {}", username);
@@ -118,7 +118,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
     UserEntity userEntity = authCacheService.findUserEntityByEmail(email);
     if (userEntity == null) {
@@ -152,7 +152,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> resetPassword(String password, String token)
       throws UtilsException {
     UserEntity userEntity = authCacheService.findUserEntityByTokenReset(token);
@@ -184,7 +184,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> checkLoginFE(String authToken) {
 
     User userDTO = authMapper.mapUserEntityToUser(user);
@@ -199,7 +199,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserEntity checkLogin(String authToken) throws UtilsException {
     logCurrentHostAddress();
     AuthToken token = new AuthToken();
@@ -222,7 +222,7 @@ public class AuthService {
     return userEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException, JOSEException {
     User user = authMapper.mapUserEntityToUser(userEntity);
     AuthToken authToken = tokenService.generateToken(user);
@@ -235,7 +235,7 @@ public class AuthService {
     return authToken;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken refreshToken(String authToken) throws UtilsException, JOSEException {
     AuthToken token = new AuthToken();
     token.setAccessToken(authToken);
@@ -265,7 +265,7 @@ public class AuthService {
     return refreshToken;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> updateUserData(String authToken, User userToUpdate) {
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(userToUpdate);
@@ -297,7 +297,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<String> getCryptoFiatUsersCurrency() {
     LOG.info("Getting Crypto Fiat Currency");
     return authCacheService.selectDistinctCryptoFiatCurrency();

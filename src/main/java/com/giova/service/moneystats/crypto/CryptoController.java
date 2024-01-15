@@ -30,7 +30,7 @@ public class CryptoController {
   @GetMapping(value = "/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Dashboard")
   @Operation(description = "API to get Crypto Dashboard", tags = "Crypto")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getCryptoDashboard(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getCryptoDashboardData();
@@ -39,7 +39,7 @@ public class CryptoController {
   @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getCryptoResume(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return appService.getCryptoResumeData();
@@ -48,7 +48,7 @@ public class CryptoController {
   @PatchMapping(value = "/marketData/import", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> importMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     cronMarketData.scheduleAllCryptoAsset();
@@ -64,7 +64,7 @@ public class CryptoController {
   @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Crypto", description = "API to get Crypto Resume")
   @Operation(description = "API to get Crypto Resume", tags = "Crypto")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> cleanCache(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     cronCachingReset.scheduleCleanCache();

@@ -27,7 +27,7 @@ public class AssetController {
   @PostMapping(value = "/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Asset", description = "API to get Crypto Asset")
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> saveOrUpdateCryptoAsset(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestBody @Valid Wallet wallet)
       throws UtilsException, JsonProcessingException {
@@ -37,7 +37,7 @@ public class AssetController {
   @PostMapping(value = "/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Asset", description = "API to get Crypto Asset")
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> saveOrUpdateCryptoAssets(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestBody @Valid List<Wallet> wallets)
@@ -48,7 +48,7 @@ public class AssetController {
   @GetMapping(value = "/getAll", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Asset", description = "API to get Crypto Asset")
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getAllAssets(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken) throws UtilsException {
     return assetService.getAssets();
@@ -57,7 +57,7 @@ public class AssetController {
   @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
   @Tag(name = "Asset", description = "API to get Crypto Asset")
   @Operation(description = "API to get Crypto Asset", tags = "Asset")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_CONTROLLER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getAsset(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
       @RequestParam(value = "identifier") String identifier)

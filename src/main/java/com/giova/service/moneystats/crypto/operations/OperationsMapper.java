@@ -14,14 +14,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class OperationsMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public Operations fromOperationEntityToDTO(OperationsEntity operationsEntity) {
     Operations operations = new Operations();
     BeanUtils.copyProperties(operationsEntity, operations);
     return operations;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public OperationsEntity fromOperationDTOToEntity(
       Operations operations, UserEntity user, AssetEntity asset) {
     OperationsEntity operationsEntity = new OperationsEntity();
@@ -31,24 +31,30 @@ public class OperationsMapper {
     return operationsEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Operations> fromOperationsEntitiesToDTOS(List<OperationsEntity> operationsEntities) {
-   return operationsEntities.stream().map(operationsEntity -> {
-     Operations operations = new Operations();
-     BeanUtils.copyProperties(operationsEntity, operations);
-     return operations;
-   }).collect(Collectors.toList());
+    return operationsEntities.stream()
+        .map(
+            operationsEntity -> {
+              Operations operations = new Operations();
+              BeanUtils.copyProperties(operationsEntity, operations);
+              return operations;
+            })
+        .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<OperationsEntity> fromOperationDTOSToEntities(
-          List<Operations> operations, UserEntity user, AssetEntity asset) {
-   return operations.stream().map(operation -> {
-      OperationsEntity operationsEntity = new OperationsEntity();
-      BeanUtils.copyProperties(operation, operationsEntity);
-      operationsEntity.setUser(user);
-      operationsEntity.setAsset(asset);
-      return operationsEntity;
-    }).collect(Collectors.toList());
+      List<Operations> operations, UserEntity user, AssetEntity asset) {
+    return operations.stream()
+        .map(
+            operation -> {
+              OperationsEntity operationsEntity = new OperationsEntity();
+              BeanUtils.copyProperties(operation, operationsEntity);
+              operationsEntity.setUser(user);
+              operationsEntity.setAsset(asset);
+              return operationsEntity;
+            })
+        .collect(Collectors.toList());
   }
 }

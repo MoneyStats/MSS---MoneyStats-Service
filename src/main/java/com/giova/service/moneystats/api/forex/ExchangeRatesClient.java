@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -44,7 +45,7 @@ public class ExchangeRatesClient {
     webClientRest.init(builder);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_EXTERNAL)
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public ResponseEntity<ExchangeRates> getForexData(String currency) {
     Map<String, Object> params = new HashMap<>();
     params.put("source", currency);
@@ -70,6 +71,15 @@ public class ExchangeRatesClient {
     if (exchangeRates == null || exchangeRates.getBody() == null) {
       LOG.error("ExchangeRate Response is null");
       throw new ExchangeRatesException("The Response of WebClient body is null");
+    }
+
+    if (exchangeRates.getBody().getSuccess().equalsIgnoreCase("false")
+        && !ObjectUtils.isEmpty(exchangeRates.getBody().getError())) {
+      LOG.error(
+          "ExchangeRate Error, error code is {} and message: {}",
+          exchangeRates.getBody().getError().getCode(),
+          exchangeRates.getBody().getError().getInfo());
+      throw new ExchangeRatesException(exchangeRates.getBody().getError().getInfo());
     }
     Map<String, Double> quotes = new HashMap<>();
     Map<String, Double> quotesToBeEdited = exchangeRates.getBody().getQuotes();

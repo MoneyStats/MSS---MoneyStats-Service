@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarketDataMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public MarketData fromCoinGeckoMarketDataToCoinGeckoModel(
       CoinGeckoMarketData coinGeckoMarketData, String category) {
     MarketData marketData = new MarketData();
@@ -36,7 +36,7 @@ public class MarketDataMapper {
     return marketData;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<MarketData> fromCoinGeckoMarketDataListToCoinGeckoList(
       List<CoinGeckoMarketData> coinGeckoMarketData, String category) {
     return coinGeckoMarketData.stream()
@@ -44,7 +44,7 @@ public class MarketDataMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<MarketDataEntity> fromMarketDataToEntity(
       List<MarketData> marketData, String currency) {
     return marketData.stream()
@@ -58,7 +58,7 @@ public class MarketDataMapper {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<MarketData> fromEntityToMarketData(List<MarketDataEntity> marketDataEntities) {
     return marketDataEntities.stream()
         .map(

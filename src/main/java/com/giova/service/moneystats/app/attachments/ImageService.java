@@ -28,14 +28,13 @@ public class ImageService {
   @Autowired private ImageMapper mapper;
 
   @Cacheable(cacheNames = "attachment")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> saveAttachmentDto(MultipartFile file) throws UtilsException {
     Image attachment;
     if (file == null || file.isEmpty()) {
       LOG.error("The file you have been passed is invalid");
       throw new ImageException(
-          "The file you have been passed is invalid",
-          ExceptionMap.ERR_IMG_MSS_001.getMessage());
+          "The file you have been passed is invalid", ExceptionMap.ERR_IMG_MSS_001.getMessage());
     }
     try {
       attachment = mapper.fromPartToDto(file);
@@ -53,12 +52,12 @@ public class ImageService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void removeAttachment(String filename) {
     attachmentMap.remove(filename);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Image getAttachment(String filename) {
     return attachmentMap.get(filename);
   }

@@ -36,7 +36,7 @@ rest:
       active: true
       delay:
         start: 1800000
-        end: 3600000
+        end: 10800000
     caching:
       active: true
       cron: 0 0 1 * * MON
