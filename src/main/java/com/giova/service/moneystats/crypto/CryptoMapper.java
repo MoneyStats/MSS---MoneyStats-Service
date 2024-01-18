@@ -60,7 +60,7 @@ public class CryptoMapper {
                     lF.getDate()
                         .isEqual(
                             filterDateByYear.get(
-                                filterDateByYear.size() > 1 ? filterDateByYear.size() - 2 : 0)))
+                                filterDateByYear.size() > 1 ? filterDateByYear.size() - 1 : 0)))
             .findFirst()
             .map(Stats::getBalance)
             .orElse(0.0);
@@ -110,6 +110,8 @@ public class CryptoMapper {
     dashboard.setBtcBalance(MathService.round(balance.get() / BTC_VALUE, 8));
 
     DashboardInfo holding = new DashboardInfo();
+    System.out.println(holdingLastBalance);
+    System.out.println(holdingBalance);
     holding.setPerformance(
         (holdingBalance.get() == 0 || holdingLastBalance.get() == 0
             ? 0D
