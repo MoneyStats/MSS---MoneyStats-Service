@@ -3,6 +3,9 @@ server:
     #context-path: /moneystats-service
     context-path:
 spring:
+  application:
+    name: MoneyStats Service Local
+    starter-log: true
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/moneystats

@@ -3,6 +3,9 @@ server:
     context-path:
     #context-path: /moneystats-service
 spring:
+  application:
+    name: MoneyStats Service H2
+    starter-log: true
   datasource:
     url: jdbc:h2:mem:mydb
     username: sa

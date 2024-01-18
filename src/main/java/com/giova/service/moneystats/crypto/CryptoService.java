@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Logged
 @Service
@@ -306,7 +307,8 @@ public class CryptoService {
                 Comparator<Operations> c = Comparator.comparing(Operations::getEntryDate);
                 operations.sort(c);
 
-                tradingLastBalance.updateAndGet(v -> operations.get(0).getPerformance());
+                tradingLastBalance.updateAndGet(
+                    v -> ObjectUtils.isEmpty(operations) ? 0 : operations.get(0).getPerformance());
               }
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
