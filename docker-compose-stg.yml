@@ -26,7 +26,7 @@ services:
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - SHOW_UTILS_EXCEPTION_STACKTRACE=${SHOW_UTILS_EXCEPTION_STACKTRACE}
     deploy:
-      replicas: 1
+      replicas: 2
     networks:
       docker-network:
         aliases:
