@@ -159,12 +159,12 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
     if (userEntity.getUpdateDate().plusDays(1).isBefore(LocalDateTime.now())) {
       LOG.error("Token Expired");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
     userEntity.setPassword(bCryptPasswordEncoder.encode(password));
     userEntity.setTokenReset(null);
