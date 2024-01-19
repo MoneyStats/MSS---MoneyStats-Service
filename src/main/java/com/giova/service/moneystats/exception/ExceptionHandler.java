@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +26,25 @@ public class ExceptionHandler extends UtilsException {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_003);
     String value = "";
-    if (response.getError().getExceptionMessage().contains("constraint")) {
-      value = Objects.requireNonNull(e.getMessage()).split(";")[2];
+    if (((ConstraintViolationException) e.getCause())
+        .getSQLException()
+        .getMessage()
+        .contains("Duplicate entry")) {
+      value =
+          Objects.requireNonNull(
+              ((ConstraintViolationException) e.getCause())
+                  .getSQLException()
+                  .getMessage()
+                  .split(" for key")[0]);
+      response
+          .getError()
+          .setExceptionMessage(
+              Objects.requireNonNull((ConstraintViolationException) e.getCause())
+                  .getSQLException()
+                  .getMessage());
     } else {
       value =
-          ExceptionMap.ERR_AUTH_MSS_003.getMessage()
+          "Missing Value for: "
               + e.getCause()
                   .getMessage()
                   .split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
