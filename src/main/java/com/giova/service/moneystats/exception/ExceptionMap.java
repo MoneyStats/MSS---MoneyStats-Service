@@ -4,7 +4,9 @@ import io.github.giovannilamarmora.utils.exception.ExceptionCode;
 import org.springframework.http.HttpStatus;
 
 public enum ExceptionMap implements ExceptionCode {
-  // Authentication
+  /**
+   * @Authentication Exception Map for Authentication
+   */
   ERR_AUTH_MSS_001(
       "WRONG_CREDENTIAL",
       HttpStatus.UNAUTHORIZED,
@@ -24,6 +26,7 @@ public enum ExceptionMap implements ExceptionCode {
       "INVALID_TOKEN",
       HttpStatus.UNAUTHORIZED,
       "Error on checking the current token provided, wrong token, try again!"),
+
   // Image
   ERR_IMG_MSS_001("FILE_NOT_FOUND", HttpStatus.BAD_REQUEST, "File not found!"),
   ERR_IMG_MSS_002(
