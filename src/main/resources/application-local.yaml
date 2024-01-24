@@ -76,6 +76,7 @@ jwt:
   time: 360000
 
 app:
+  version: @project.version@
   exception:
     stacktrace:
       utilsException:

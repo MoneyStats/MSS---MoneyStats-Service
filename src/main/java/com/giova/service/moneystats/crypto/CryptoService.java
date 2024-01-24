@@ -52,7 +52,7 @@ public class CryptoService {
   @Autowired private AssetService assetService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getCryptoDashboardData() throws UtilsException {
+  public ResponseEntity<Response> getCryptoDashboardData() {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
@@ -93,7 +93,7 @@ public class CryptoService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getCryptoResumeData() throws UtilsException {
+  public ResponseEntity<Response> getCryptoResumeData() {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
@@ -270,6 +270,7 @@ public class CryptoService {
                                 if (asset.getOperations() != null)
                                   operations.addAll(asset.getOperations());
                                 tradingBalance.updateAndGet(v -> v + asset1.getValue());
+                                tradingLastBalance.updateAndGet(v -> v + asset1.getInvested());
                               }
                               if (index.get() == 0)
                                 balance.updateAndGet(v -> v + asset1.getValue());
@@ -297,8 +298,7 @@ public class CryptoService {
                               return asset1;
                             })
                         .collect(Collectors.toList()));
-              if (indexWallet.get() == getAllWallet.size() - 1
-                  && wallet.getType().equalsIgnoreCase("Trading")) {
+              if (wallet.getType().equalsIgnoreCase("Trading")) {
                 Predicate<Operations> isNotTradingAndNotClosed =
                     operations1 ->
                         !operations1.getType().equalsIgnoreCase("Trading")
@@ -308,7 +308,7 @@ public class CryptoService {
                 operations.sort(c);
 
                 tradingLastBalance.updateAndGet(
-                    v -> ObjectUtils.isEmpty(operations) ? 0 : operations.get(0).getPerformance());
+                    v -> ObjectUtils.isEmpty(operations) ? v : v + operations.get(0).getTrend());
               }
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();

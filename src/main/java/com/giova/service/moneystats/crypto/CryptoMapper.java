@@ -123,7 +123,13 @@ public class CryptoMapper {
     holding.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setHoldingLong(holding);
     DashboardInfo trading = new DashboardInfo();
-    trading.setPerformance(tradingLastBalance.get());
+    trading.setPerformance(
+        (tradingBalance.get() == 0 || tradingLastBalance.get() == 0
+            ? 0D
+            : MathService.round(
+                ((tradingBalance.get() - tradingLastBalance.get()) / tradingLastBalance.get())
+                    * 100,
+                2)));
     trading.setBalance(MathService.round(tradingBalance.get(), 2));
     // trading.setPerformance(0D);
     // trading.setBalance(0D);

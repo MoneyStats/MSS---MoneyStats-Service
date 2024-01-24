@@ -4,10 +4,15 @@ import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.generic.Response;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/v1/auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "Authentication", description = "API for Authentication")
 public class AuthController {
 
   @Autowired private AuthService authService;
@@ -28,7 +34,6 @@ public class AuthController {
       value = "/sign-up",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  @Tag(name = "Authentication", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "Authentication")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> signUp(
@@ -40,8 +45,23 @@ public class AuthController {
       value = "/login",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  @Tag(name = "Authentication", description = "API to register an account")
   @Operation(description = "API to register an account", tags = "Authentication")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@login.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Wrong Credential",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@wrong-credential.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> login(
       @RequestParam String username, @RequestParam String password)
