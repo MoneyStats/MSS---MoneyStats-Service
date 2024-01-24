@@ -71,6 +71,7 @@ jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000
 app:
+  version: @project.version@
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
   fe:

@@ -1,0 +1,189 @@
+{
+  "status": 200,
+  "message": "Data for Crypto Dashboard!",
+  "correlationId": "44980345-e7fb-4d1d-9cdd-c31c717540c4",
+  "data": {
+    "balance": 100000,
+    "currency": "USD",
+    "btcBalance": 2,
+    "lastUpdate": "2024-01-24",
+    "performanceSince": "2023-10-31",
+    "holdingLong": {
+      "balance": 60000,
+      "performance": 10,
+      "lastUpdate": "2023-12-31"
+    },
+    "trading": {
+      "balance": 40000,
+      "performance": 4,
+      "lastUpdate": "2023-12-31"
+    },
+    "statsAssetsDays": [
+      "2023-10-31",
+      "2023-11-30",
+      "2023-12-31"
+    ],
+    "assets": [
+      {
+        "creationDate": "2024-01-24T16:22:54",
+        "updateDate": "2024-01-24T16:22:54",
+        "identifier": "bitcoin",
+        "name": "Bitcoin",
+        "category": "Cryptocurrency",
+        "symbol": "BTC",
+        "rank": 1,
+        "current_price": 39889.0,
+        "value": 10000,
+        "icon": "data:image/png;base64,",
+        "balance": 1,
+        "invested": 5000,
+        "lastUpdate": "2022-01-18",
+        "performance": 50,
+        "trend": 4000,
+        "operations": [
+          {
+            "id": 220,
+            "creationDate": "2024-01-24T16:22:54",
+            "updateDate": "2024-01-24T16:22:54",
+            "type": "Trading",
+            "status": "CLOSED",
+            "entryDate": "2023-09-27T18:12:59.691",
+            "entryCoin": "USDT",
+            "entryPrice": "25411.45",
+            "entryPriceValue": 500.0,
+            "entryQuantity": 0.01967617,
+            "exitDate": "2023-11-14T18:54:53.177",
+            "exitCoin": "BTC",
+            "exitPrice": "36300",
+            "exitPriceValue": 1000,
+            "exitQuantity": 1000.00000000,
+            "performance": 30.0,
+            "trend": 500
+          },
+          {
+            "id": 221,
+            "creationDate": "2024-01-24T16:22:54",
+            "updateDate": "2024-01-24T16:22:54",
+            "identifier": "c39478e6-e767-4d2d-b667-62461d0135e8",
+            "type": "Trading",
+            "status": "OPEN",
+            "entryDate": "2024-01-15T20:10:55.033",
+            "entryCoin": "USDT",
+            "entryPrice": "42500",
+            "entryPriceValue": 228.92,
+            "entryQuantity": 0.00538631,
+            "exitCoin": "BTC",
+            "fees": 0.9156727
+          }
+        ],
+        "history": [
+          {
+            "creationDate": "2024-01-24T16:22:55",
+            "updateDate": "2024-01-24T16:22:55",
+            "date": "2023-12-31",
+            "balance": 5000,
+            "percentage": 35.36,
+            "trend": 2000.99
+          }
+        ]
+      }
+    ],
+    "wallets": [
+      {
+        "id": 393,
+        "creationDate": "2024-01-24T16:22:54",
+        "updateDate": "2024-01-24T16:22:54",
+        "name": "Coinbase",
+        "type": "Trading",
+        "balance": 822.93,
+        "img": "https://pbs.twimg.com/profile_images/1484586799921909764/A9yYenz3_400x400.png",
+        "allTimeHigh": 10000,
+        "allTimeHighDate": "2020-10-01",
+        "highPrice": 10000,
+        "highPriceDate": "2023-11-30",
+        "lowPrice": 500,
+        "lowPriceDate": "2023-01-31",
+        "performanceLastStats": 50,
+        "differenceLastStats": 1500,
+        "dateLastStats": "2023-12-31",
+        "category": "Crypto",
+        "assets": [
+          {
+            "creationDate": "2024-01-24T16:22:54",
+            "updateDate": "2024-01-24T16:22:54",
+            "identifier": "bitcoin",
+            "name": "Bitcoin",
+            "category": "Cryptocurrency",
+            "symbol": "BTC",
+            "rank": 1,
+            "current_price": 39889.0,
+            "value": 10000,
+            "icon": "data:image/png;base64,",
+            "balance": 1,
+            "invested": 5000,
+            "lastUpdate": "2022-01-18",
+            "performance": 50,
+            "trend": 4000,
+            "operations": [
+              {
+                "id": 220,
+                "creationDate": "2024-01-24T16:22:54",
+                "updateDate": "2024-01-24T16:22:54",
+                "type": "Trading",
+                "status": "CLOSED",
+                "entryDate": "2023-09-27T18:12:59.691",
+                "entryCoin": "USDT",
+                "entryPrice": "25411.45",
+                "entryPriceValue": 500.0,
+                "entryQuantity": 0.01967617,
+                "exitDate": "2023-11-14T18:54:53.177",
+                "exitCoin": "BTC",
+                "exitPrice": "36300",
+                "exitPriceValue": 1000,
+                "exitQuantity": 1000.00000000,
+                "performance": 30.0,
+                "trend": 500
+              },
+              {
+                "id": 221,
+                "creationDate": "2024-01-24T16:22:54",
+                "updateDate": "2024-01-24T16:22:54",
+                "identifier": "c39478e6-e767-4d2d-b667-62461d0135e8",
+                "type": "Trading",
+                "status": "OPEN",
+                "entryDate": "2024-01-15T20:10:55.033",
+                "entryCoin": "USDT",
+                "entryPrice": "42500",
+                "entryPriceValue": 228.92,
+                "entryQuantity": 0.00538631,
+                "exitCoin": "BTC",
+                "fees": 0.9156727
+              }
+            ],
+            "history": [
+              {
+                "creationDate": "2024-01-24T16:22:55",
+                "updateDate": "2024-01-24T16:22:55",
+                "date": "2023-12-31",
+                "balance": 5000,
+                "percentage": 35.36,
+                "trend": 2000.99
+              }
+            ]
+          }
+        ],
+        "history": [
+          {
+            "id": 43787,
+            "creationDate": "2024-01-24T16:22:55",
+            "updateDate": "2024-01-24T16:22:55",
+            "date": "2023-12-31",
+            "balance": 842.06,
+            "percentage": -0.41,
+            "trend": -3.43
+          }
+        ]
+      }
+    ]
+  }
+}
