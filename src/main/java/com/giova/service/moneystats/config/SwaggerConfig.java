@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -67,9 +68,9 @@ public class SwaggerConfig {
                           content -> {
                             try {
                               if (ObjectUtils.isEmpty(content.getExample())) return;
-                              LOG.debug("Content name is {}", content.getExample());
                               String fileName = getExampleFileName(content.getExample().toString());
-                              LOG.debug("FileName is {}", fileName);
+                              LOG.debug(
+                                  "Content {} and FileName {}", content.getExample(), fileName);
                               String jsonContent = getFilePathFromResources(fileName);
                               if (jsonContent != null) {
                                 content.setExample(jsonContent);
@@ -99,7 +100,24 @@ public class SwaggerConfig {
 
     LOG.debug("The Resource URI is {}", resource.getURI());
 
-    try (Stream<Path> paths = Files.walk(Path.of(resource.getURI()))) {
+    Path resourcesPath;
+
+    if (resource.getURI().getScheme().equals("jar")) {
+      FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(), Collections.emptyMap());
+      resourcesPath = fileSystem.getPath("/BOOT-INF/classes");
+      LOG.debug(
+          "The Resource Path for scheme {} is {}",
+          resource.getURI().getScheme(),
+          resourcesPath.toUri());
+    } else {
+      resourcesPath = Path.of(resource.getURI());
+      LOG.debug(
+          "The Resource Path for scheme {} is {}",
+          resource.getURI().getScheme(),
+          resourcesPath.toUri());
+    }
+
+    try (Stream<Path> paths = Files.walk(resourcesPath)) {
       return paths
           .filter(path -> path.toFile().isFile() && path.toString().endsWith(fileName))
           .findFirst()
