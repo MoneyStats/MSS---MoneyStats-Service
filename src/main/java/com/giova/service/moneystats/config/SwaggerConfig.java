@@ -102,22 +102,23 @@ public class SwaggerConfig {
 
     LOG.debug("The Resource URI is {}", resource.getURI());
 
-    Path resourcesPath;
+    Path resourcesPath = FileSystems.getDefault().getPath("src/main/resources");
 
-    //if (resource.getURI().getScheme().equals("jar")) {
-    //  FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(), Collections.emptyMap());
+    // if (resource.getURI().getScheme().equals("jar")) {
+    //  FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(),
+    // Collections.emptyMap());
     //  resourcesPath = fileSystem.getPath("/BOOT-INF/classes/");
     //  LOG.debug(
     //      "The Resource Path for scheme {} is {}",
     //      resource.getURI().getScheme(),
     //      resourcesPath.toUri());
-    //} else {
-      resourcesPath = Path.of(resource.getURI());
-      LOG.debug(
-          "The Resource Path for scheme {} is {}",
-          resource.getURI().getScheme(),
-          resourcesPath.toUri());
-    //}
+    // } else {
+    // resourcesPath = Path.of(resource.getURI());
+    LOG.debug(
+        "The Resource Path for scheme {} is {}",
+        resource.getURI().getScheme(),
+        resourcesPath.toUri());
+    // }
 
     try (Stream<Path> paths = Files.walk(resourcesPath)) {
       Predicate<Path> validatePath =
