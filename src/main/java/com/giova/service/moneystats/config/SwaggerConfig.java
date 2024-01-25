@@ -68,12 +68,13 @@ public class SwaggerConfig {
                             try {
                               String fileName = getExampleFileName(content.getExample().toString());
                               LOG.debug("FileName is {}", fileName);
-                              String jsonContent = readJsonFromFile(fileName);
+                              String jsonContent = getFilePathFromResources(fileName);
                               if (jsonContent != null) {
                                 content.setExample(jsonContent);
                               }
                             } catch (Exception e) {
-                              return;
+                              LOG.error(
+                                  "An Exception occurred during read filename for Open API", e);
                             }
                           });
                 }
@@ -85,7 +86,7 @@ public class SwaggerConfig {
     return fileName.replaceFirst("@", "");
   }
 
-  private String readJsonFromFile(String fileName) throws IOException {
+  private String getFilePathFromResources(String fileName) throws IOException {
     Path path = getResourcePath(fileName);
     LOG.debug("The Path is {}", path);
     return path != null ? new String(Files.readAllBytes(path)) : null;
