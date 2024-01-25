@@ -97,6 +97,8 @@ public class SwaggerConfig {
   private Path getResourcePath(String fileName) throws IOException {
     Resource resource = resourceLoader.getResource("classpath:");
 
+    LOG.debug("The Resource URI is {}", resource.getURI());
+
     try (Stream<Path> paths = Files.walk(Path.of(resource.getURI()))) {
       return paths
           .filter(path -> path.toFile().isFile() && path.toString().endsWith(fileName))
