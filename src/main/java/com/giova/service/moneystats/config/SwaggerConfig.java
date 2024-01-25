@@ -66,6 +66,8 @@ public class SwaggerConfig {
                       .forEach(
                           content -> {
                             try {
+                              if (ObjectUtils.isEmpty(content.getExample())) return;
+                              LOG.debug("Content name is {}", content.getExample());
                               String fileName = getExampleFileName(content.getExample().toString());
                               LOG.debug("FileName is {}", fileName);
                               String jsonContent = getFilePathFromResources(fileName);
