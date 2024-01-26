@@ -5,10 +5,13 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
-import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,24 +109,38 @@ public class SwaggerConfig {
     Path resourcesPath;
 
     if (resource.getURI().getScheme().equals("jar")) {
-      FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(), Collections.emptyMap());
-      resourcesPath = fileSystem.getPath("/resources");
-      LOG.debug(
-          "The Resource Path for scheme {} is {}",
-          resource.getURI().getScheme(),
-          resourcesPath.toUri());
-    } else {
-      resourcesPath = java.nio.file.Paths.get(resource.getURI());
-      LOG.debug(
-          "The Resource Path for scheme {} is {}",
-          resource.getURI().getScheme(),
-          resourcesPath.toUri());
-    }
+      String jarPath =
+          resource.getURI().getPath().substring(5, resource.getURI().getPath().indexOf("!"));
 
-    try (Stream<Path> paths = Files.walk(resourcesPath)) {
-      Predicate<Path> validatePath =
-          path -> path != null && path.toFile().isFile() && path.toString().endsWith(fileName);
-      return paths.filter(validatePath).findFirst().orElse(null);
+      try (JarFile jarFile = new JarFile(jarPath)) {
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+          JarEntry entry = entries.nextElement();
+          if (!entry.isDirectory() && entry.getName().endsWith(fileName)) {
+            // Found the entry matching the folder and file name
+            try (InputStream entryStream = jarFile.getInputStream(entry)) {
+              Path tempFile = Files.createTempFile("jar-entry", null);
+              Files.copy(entryStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+              LOG.debug(
+                  "The Resource Path for scheme {} is {}", resource.getURI().getScheme(), tempFile);
+              return tempFile;
+            }
+          }
+        }
+      }
+    } else {
+      resourcesPath = Path.of(resource.getURI());
+      LOG.debug(
+          "The Resource Path for scheme {} is {}",
+          resource.getURI().getScheme(),
+          resourcesPath.toUri());
+
+      try (Stream<Path> paths = Files.walk(resourcesPath)) {
+        Predicate<Path> validatePath =
+            path -> path != null && path.toFile().isFile() && path.toString().endsWith(fileName);
+        return paths.filter(validatePath).findFirst().orElse(null);
+      }
     }
+    return null;
   }
 }
