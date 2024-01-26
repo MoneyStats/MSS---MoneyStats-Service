@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -104,28 +105,20 @@ public class SwaggerConfig {
 
     Path resourcesPath;
 
-    // if (resource.getURI().getScheme().equals("jar")) {
-    //  InputStream ioStream = this.getClass()
-    //          .getClassLoader()
-    //          .getResourceAsStream(fileName);
-    //
-    //  if (ioStream == null) {
-    //    throw new IllegalArgumentException(fileName + " is not found");
-    //  }
-    // FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(),
-    // Collections.emptyMap());
-    // resourcesPath = fileSystem.getPath("/BOOT-INF/classes/");
-    // LOG.debug(
-    //     "The Resource Path for scheme {} is {}",
-    //     resource.getURI().getScheme(),
-    //     resourcesPath.toUri());
-    // } else {
-    resourcesPath = java.nio.file.Paths.get(resource.getURI());
-    LOG.debug(
-        "The Resource Path for scheme {} is {}",
-        resource.getURI().getScheme(),
-        resourcesPath.toUri());
-    // }
+    if (resource.getURI().getScheme().equals("jar")) {
+      FileSystem fileSystem = FileSystems.newFileSystem(resource.getURI(), Collections.emptyMap());
+      resourcesPath = fileSystem.getPath("/resources");
+      LOG.debug(
+          "The Resource Path for scheme {} is {}",
+          resource.getURI().getScheme(),
+          resourcesPath.toUri());
+    } else {
+      resourcesPath = java.nio.file.Paths.get(resource.getURI());
+      LOG.debug(
+          "The Resource Path for scheme {} is {}",
+          resource.getURI().getScheme(),
+          resourcesPath.toUri());
+    }
 
     try (Stream<Path> paths = Files.walk(resourcesPath)) {
       Predicate<Path> validatePath =
