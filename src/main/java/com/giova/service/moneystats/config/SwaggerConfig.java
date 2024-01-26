@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.Enumeration;
 import java.util.Map;
@@ -109,8 +110,21 @@ public class SwaggerConfig {
     Path resourcesPath;
 
     if (resource.getURI().getScheme().equals("jar")) {
-      String jarPath =
-          resource.getURI().getPath().substring(5, resource.getURI().getPath().indexOf("!"));
+      URL resourceUrl = SwaggerConfig.class.getProtectionDomain().getCodeSource().getLocation();
+      LOG.debug(
+          "The Resource Path for scheme {} is {} and jar path {}, resource url {}",
+          resource.getURI().getScheme(),
+          resource.getURI(),
+          resource.getURI().getPath(),
+          resourceUrl);
+      String path = resourceUrl.getPath();
+      if (path.endsWith("/")) {
+        // Remove trailing "/"
+        path = path.substring(0, path.length() - 1);
+      }
+      String jarPath = path.substring(5, path.indexOf("!"));
+
+      LOG.debug("JarPath {}", jarPath);
 
       try (JarFile jarFile = new JarFile(jarPath)) {
         Enumeration<JarEntry> entries = jarFile.entries();
