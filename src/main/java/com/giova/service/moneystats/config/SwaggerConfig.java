@@ -5,9 +5,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -100,7 +98,7 @@ public class SwaggerConfig {
   }
 
   private Path getResourcePath(String fileName) throws IOException {
-    Resource resource = resourceLoader.getResource("classpath:");
+    Resource resource = resourceLoader.getResource("classpath:/");
 
     LOG.debug("The Resource URI is {}", resource.getURI());
 
