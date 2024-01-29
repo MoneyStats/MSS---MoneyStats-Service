@@ -6,7 +6,6 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.*;
 import java.util.Enumeration;
 import java.util.Map;
@@ -78,7 +77,7 @@ public class SwaggerConfig {
                               String fileName = getExampleFileName(content.getExample().toString());
                               LOG.debug(
                                   "Content {} and FileName {}", content.getExample(), fileName);
-                              String jsonContent = getFilePathFromResources(fileName);
+                              String jsonContent = searchFileFromResources(fileName);
                               if (jsonContent != null) {
                                 content.setExample(jsonContent);
                               }
@@ -96,9 +95,8 @@ public class SwaggerConfig {
     return fileName.replaceFirst("@", "");
   }
 
-  private String getFilePathFromResources(String fileName) throws IOException {
+  private String searchFileFromResources(String fileName) throws IOException {
     Path path = getResourcePath(fileName);
-    LOG.debug("The Path is {}", path);
     return path != null ? new String(Files.readAllBytes(path)) : null;
   }
 
@@ -107,24 +105,12 @@ public class SwaggerConfig {
 
     LOG.debug("The Resource URI is {}", resource.getURI());
 
-    Path resourcesPath;
+    Path resourcesPath = null;
 
     if (resource.getURI().getScheme().equals("jar")) {
-      URL resourceUrl = SwaggerConfig.class.getProtectionDomain().getCodeSource().getLocation();
-      LOG.debug(
-          "The Resource Path for scheme {} is {} and jar path {}, resource url {}",
-          resource.getURI().getScheme(),
-          resource.getURI(),
-          resource.getURI().getPath(),
-          resourceUrl);
-      String path = resourceUrl.getPath();
-      if (path.endsWith("/")) {
-        // Remove trailing "/"
-        path = path.substring(0, path.length() - 1);
-      }
+      String path = resource.getURI().getPath();
+      if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
       String jarPath = path.substring(5, path.indexOf("!"));
-
-      LOG.debug("JarPath {}", jarPath);
 
       try (JarFile jarFile = new JarFile(jarPath)) {
         Enumeration<JarEntry> entries = jarFile.entries();
@@ -155,6 +141,7 @@ public class SwaggerConfig {
         return paths.filter(validatePath).findFirst().orElse(null);
       }
     }
-    return null;
+    LOG.info("The Resource Path was found");
+    return resourcesPath;
   }
 }

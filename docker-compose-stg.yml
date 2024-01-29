@@ -1,8 +1,8 @@
 version: '3.3'
 services:
-  backend-service:
-    container_name: stg-moneystats-service
-    image: ${DOCKER_REPOSITORY}:latest
+  stg-moneystats-service:
+    #container_name: stg-moneystats-service
+    image: ${DOCKER_REPOSITORY}:${APP_VERSION}
     hostname: stg.moneystats.service
     ports:
       - "8001:8080"
@@ -26,11 +26,23 @@ services:
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - SHOW_UTILS_EXCEPTION_STACKTRACE=${SHOW_UTILS_EXCEPTION_STACKTRACE}
     deploy:
-      replicas: 1
+      replicas: 2  # Cambia il numero di repliche a seconda delle tue esigenze
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
     networks:
       docker-network:
         aliases:
           - stg.moneystats.service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
+      - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
   docker-network:
