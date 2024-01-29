@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.16.54</version>
+    <version>1.16.55</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
