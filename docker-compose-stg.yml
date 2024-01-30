@@ -8,6 +8,7 @@ services:
       - "8001-8002:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -34,14 +35,14 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - node.role == worker
+          - node.role == manager
     networks:
-      - docker-network
+      - swarm-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
       - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
-  docker-network:
-    external: false
+  swarm-network:
+    external: true
