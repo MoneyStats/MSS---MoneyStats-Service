@@ -28,7 +28,7 @@ services:
     deploy:
       replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
       update_config:
-        parallelism: 2
+        parallelism: 1
         delay: 10s
       restart_policy:
         condition: on-failure
@@ -36,9 +36,7 @@ services:
         constraints:
           - node.role == worker
     networks:
-      docker-network:
-        aliases:
-          - stg.moneystats.service
+      - docker-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
@@ -46,4 +44,4 @@ services:
 
 networks:
   docker-network:
-    external: true
+    external: false
