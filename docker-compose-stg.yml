@@ -1,7 +1,7 @@
 version: '3.7'
 services:
-  stg-moneystats-service:
-    #container_name: stg-moneystats-service
+  service:
+    container_name: stg-moneystats-service
     image: ${DOCKER_REPOSITORY}:${APP_VERSION}
     hostname: stg.moneystats.service
     ports:
@@ -37,7 +37,9 @@ services:
       #  constraints:
       #    - node.role == manager
     networks:
-      - docker-network
+      docker-network:
+        aliases:
+          - stg.moneystats.service
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
