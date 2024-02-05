@@ -45,7 +45,10 @@ public class AuthController {
       value = "/login",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to register an account", tags = "Authentication")
+  @Operation(
+      description = "API to register an account",
+      summary = "API to register an account",
+      tags = "Authentication")
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",

@@ -13,6 +13,7 @@ import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import io.github.giovannilamarmora.utils.utilities.FilesUtils;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class AppInterceptor extends OncePerRequestFilter {
           .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
   private final UserEntity user;
 
-  @Value(value = "new ArrayList<String>()${app.shouldNotFilter}")
+  @Value(value = "${app.shouldNotFilter}")
   private List<String> shouldNotFilter;
 
   @Autowired private AuthService authService;
@@ -97,7 +98,10 @@ public class AppInterceptor extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
-    return shouldNotFilter.contains(path);
+    if (shouldNotFilter.stream().noneMatch(endpoint -> FilesUtils.matchPath(path, endpoint)))
+      LOG.debug("Filtering Authentication on {}", path);
+    // return shouldNotFilter.contains(path);
+    return shouldNotFilter.stream().anyMatch(endpoint -> FilesUtils.matchPath(path, endpoint));
   }
 
   private void setUserInContext(UserEntity user) {
