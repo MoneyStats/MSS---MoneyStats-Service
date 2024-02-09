@@ -59,6 +59,10 @@ rest:
       baseUrl: http://api.exchangerate.host
       rates: /live
       apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
+    anyApi:
+      baseUrl: https://anyapi.io/api
+      rates: /v1/exchange/rates
+      apiKey: ${REST_CLIENT_ANY_API_TOKEN}
 
 logging:
   level:

@@ -1,11 +1,11 @@
-version: '3.1'
+version: '3.7'
 services:
   backend-service:
     container_name: prod-moneystats-service
-    image: ${DOCKER_REPOSITORY}:latest
+    image: ${DOCKER_REPOSITORY}:${APP_VERSION}
     hostname: prod.moneystats.service
     ports:
-      - "8005:8080"
+      - "8005-8006:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - DATABASE_NAME=${DATABASE_NAME}
@@ -23,12 +23,19 @@ services:
       - SCHEDULER_MARKET_DATA_DELAY_START=${SCHEDULER_MARKET_DATA_DELAY_START}
       - SCHEDULER_MARKET_DATA_DELAY_END=${SCHEDULER_MARKET_DATA_DELAY_END}
       - REST_CLIENT_EXCHANGE_RATES_API_TOKEN=${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
+      - REST_CLIENT_ANY_API_TOKEN=${REST_CLIENT_ANY_API_TOKEN}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - SHOW_UTILS_EXCEPTION_STACKTRACE=${SHOW_UTILS_EXCEPTION_STACKTRACE}
+    deploy:
+      replicas: 1
     networks:
       docker-network:
         aliases:
           - prod.moneystats.service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
+      - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
   docker-network:

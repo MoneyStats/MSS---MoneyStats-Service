@@ -1,8 +1,8 @@
 package com.giova.service.moneystats.crypto.forex;
 
 import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
-import com.giova.service.moneystats.api.forex.ExchangeRatesClient;
-import com.giova.service.moneystats.api.forex.dto.ExchangeRates;
+import com.giova.service.moneystats.api.forex.anyApi.AnyAPIClient;
+import com.giova.service.moneystats.api.forex.anyApi.dto.Rates;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
@@ -26,7 +26,8 @@ public class ForexDataService {
 
   private final UserEntity user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  @Autowired private ExchangeRatesClient exchangeRatesClient;
+  // @Autowired private ExchangeRatesClient exchangeRatesClient;
+  @Autowired private AnyAPIClient anyAPIClient;
   @Autowired private ForexDataMapper mapper;
   @Autowired private ForexDataCacheService forexDataCacheService;
   @Autowired private IForexDAO iForexDataDAO;
@@ -34,13 +35,15 @@ public class ForexDataService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ForexData getFromExchangeRateForexData(String currency) {
     LOG.info("Getting MarketData for {}", currency);
-    ResponseEntity<ExchangeRates> exchangeRatesList = exchangeRatesClient.getForexData(currency);
+    // ResponseEntity<ExchangeRates> exchangeRatesList = exchangeRatesClient.getForexData(currency);
+    ResponseEntity<Rates> exchangeRatesList = anyAPIClient.getAnyApiForexData(currency);
 
     if (exchangeRatesList.getBody() == null) {
       LOG.error("Error on fetching Exchange Rates");
       throw new CoinGeckoException("An error occurred during calling Exchange Rates, empty body");
     }
-    return mapper.fromExchangeRatesToForexData(exchangeRatesList.getBody());
+    // return mapper.fromExchangeRatesToForexData(exchangeRatesList.getBody());
+    return mapper.fromRatesToForexData(exchangeRatesList.getBody());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

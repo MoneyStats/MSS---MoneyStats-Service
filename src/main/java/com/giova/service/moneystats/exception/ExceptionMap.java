@@ -49,6 +49,8 @@ public enum ExceptionMap implements ExceptionCode {
       "EXCHANGE_RATES_EXCEPTION",
       HttpStatus.BAD_REQUEST,
       "An error happen during call Exchange Rates!"),
+  ERR_ANY_API_001(
+      "ANY_API_EXCEPTION", HttpStatus.BAD_REQUEST, "An error happen during call AnyApi Rates!"),
   ERR_FOR_DATA_001(
       "FOREX_DATA_EXCEPTION", HttpStatus.BAD_REQUEST, "An error happen during call Forex!"),
   ERR_THREAD_001("THREAD_ERROR", HttpStatus.BAD_REQUEST, "An error happen during sleeping Thread!");

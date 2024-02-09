@@ -4,9 +4,10 @@ import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.web.ThreadManager;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,22 +51,22 @@ public class CronForexData {
 
     // Cancello tutti i dati dalla tabella MarketData
     forexDataService.deleteForexData();
-    AtomicInteger index = new AtomicInteger(0);
     try {
-      fiatCurrencies.forEach(
-          fiatCurrency -> {
-            LOG.info("Getting and Saving ForexData for currency {}", fiatCurrency);
-            ForexData forexData;
+      IntStream.range(0, fiatCurrencies.size())
+          .forEach(
+              index -> {
+                LOG.info("Getting and Saving ForexData for currency {}", fiatCurrencies.get(index));
+                ForexData forexData;
 
-            forexData = forexDataService.getFromExchangeRateForexData(fiatCurrency);
-            LOG.info("Found {} rates of Forex Data", forexData.getQuotes().size());
-            forexDataService.saveForexData(forexData);
-            index.getAndIncrement();
-          });
+                forexData =
+                    forexDataService.getFromExchangeRateForexData(fiatCurrencies.get(index));
+                LOG.info("Found {} rates of Forex Data", forexData.getQuotes().size());
+                forexDataService.saveForexData(forexData);
+                if (index != fiatCurrencies.size() - 1) ThreadManager.threadSeep(5000);
+              });
     } catch (Exception e) {
       LOG.error(
-          "Transaction is rolling back cause an error happen during getting Forex for currency {}",
-          fiatCurrencies.get(index.get()));
+          "Transaction is rolling back cause an error happen during getting Forex for a currency");
       LOG.error("The exception message is {}", e.getMessage());
       LOG.error("Cleaning Forex Database");
       rollBackForexData(fiatCurrencies, allForexData);
@@ -84,7 +85,7 @@ public class CronForexData {
                 forexDataList.stream()
                     .filter(forex -> forex.getCurrency().equalsIgnoreCase(fc))
                     .findFirst()
-                    .get());
+                    .orElse(new ForexData()));
         });
   }
 }

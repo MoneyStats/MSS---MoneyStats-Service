@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.api.forex.dto;
+package com.giova.service.moneystats.api.forex.exchageRates.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Map;

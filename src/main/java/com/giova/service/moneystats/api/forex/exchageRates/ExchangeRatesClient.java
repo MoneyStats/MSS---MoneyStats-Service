@@ -1,7 +1,7 @@
-package com.giova.service.moneystats.api.forex;
+package com.giova.service.moneystats.api.forex.exchageRates;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.api.forex.dto.ExchangeRates;
+import com.giova.service.moneystats.api.forex.exchageRates.dto.ExchangeRates;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -20,6 +20,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+@Deprecated
 @Component
 @Logged
 public class ExchangeRatesClient {

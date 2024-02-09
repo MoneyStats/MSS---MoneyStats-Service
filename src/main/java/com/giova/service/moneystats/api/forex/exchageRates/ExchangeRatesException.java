@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.api.forex;
+package com.giova.service.moneystats.api.forex.exchageRates;
 
 import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.ExceptionCode;

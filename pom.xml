@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.16.65</version>
+    <version>1.16.70</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
@@ -76,13 +76,6 @@
             <artifactId>utils-code</artifactId>
             <version>0.2.71</version>
         </dependency>
-        <!--<dependency>
-            <groupId>io.github.giovannilamarmora.utils</groupId>
-            <artifactId>utils-code</artifactId>
-            <scope>system</scope>
-            <version>0.2.33</version>
-            <systemPath>C:/Users/giola/Documents/Personal Project/Utils/target/utils-code-0.2.28.jar</systemPath>
-        </dependency>-->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
