@@ -15,6 +15,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
@@ -152,8 +153,9 @@ public class AppConfig {
     Path resourcesPath = null;
 
     if (resource.getURI().getScheme().equals("jar")) {
-      // URL resourceUrl = FilesUtils.class.getProtectionDomain().getCodeSource().getLocation();
-      String path = resource.getURI().getPath();
+      URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
+      String path = resourceUrl.getPath();
+      // String path = resource.getURI().getPath();
       if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
       String jarPath = path.substring(5, path.indexOf("!"));
 
