@@ -2,31 +2,14 @@ package com.giova.service.moneystats.config;
 
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.config.OpenAPIConfig;
-import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
-import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +17,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.util.ObjectUtils;
 
 @ComponentScan(basePackages = "io.github.giovannilamarmora.utils")
 @Configuration
@@ -48,12 +30,6 @@ import org.springframework.util.ObjectUtils;
     name = HttpHeaders.AUTHORIZATION,
     in = SecuritySchemeIn.HEADER)
 public class AppConfig {
-
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-  private static String getExampleFileName(String fileName) {
-    return fileName.replaceFirst("@", "");
-  }
 
   @Bean
   public UserEntity user() {
@@ -71,120 +47,5 @@ public class AppConfig {
                   paths.addPathItem(entry.getKey(), OpenAPIConfig.addJSONExamplesOnResource(entry.getValue())));
       openApi.setPaths(paths);
     };
-  }
-
-  public PathItem addJSONExamplesOnResource(PathItem pathItem) {
-    if (!ObjectUtils.isEmpty(pathItem.getGet())) {
-      addOperations(pathItem.getGet());
-    }
-
-    if (!ObjectUtils.isEmpty(pathItem.getPost())) {
-      addOperations(pathItem.getPost());
-    }
-
-    if (!ObjectUtils.isEmpty(pathItem.getPatch())) {
-      addOperations(pathItem.getPatch());
-    }
-
-    if (!ObjectUtils.isEmpty(pathItem.getPut())) {
-      addOperations(pathItem.getPut());
-    }
-
-    if (!ObjectUtils.isEmpty(pathItem.getDelete())) {
-      addOperations(pathItem.getDelete());
-    }
-
-    return pathItem;
-  }
-
-  private void addOperations(Operation operation) {
-    if (!ObjectUtils.isEmpty(operation) && !ObjectUtils.isEmpty(operation.getResponses())) {
-      operation
-          .getResponses()
-          .forEach(
-              (statusCode, apiResponse) -> {
-                if (!ObjectUtils.isEmpty(apiResponse.getContent())
-                    && !ObjectUtils.isEmpty(apiResponse.getContent().values())) {
-                  apiResponse
-                      .getContent()
-                      .values()
-                      .forEach(
-                          (content) -> {
-                            try {
-                              if (!content.getExampleSetFlag()) {
-                                return;
-                              }
-
-                              String fileName = getExampleFileName(content.getExample().toString());
-                              LOG.debug("FileName is {}", fileName);
-                              String jsonContent = searchFileFromResources(fileName);
-                              if (jsonContent != null) {
-                                content.setExample(jsonContent);
-                              }
-                            } catch (Exception var4) {
-                              LOG.error(
-                                  "An Exception occurred during read filename for Open API", var4);
-                            }
-                          });
-                }
-              });
-    }
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public String searchFileFromResources(String fileName) throws IOException, URISyntaxException {
-    Path path = getResourcePath(fileName);
-    return path != null ? new String(java.nio.file.Files.readAllBytes(path)) : null;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public Path getResourcePath(String fileName) throws IOException, URISyntaxException {
-    // Resource resource = resourceLoader.getResource("classpath:/");
-    URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
-
-    LOG.debug("The Resource URI is {}", resourceUrl);
-
-    Path resourcesPath = null;
-
-    // if (resource.getURI().getScheme().equals("jar")) {
-    if (resourceUrl.getProtocol().equals("jar")) {
-      LOG.debug("JAR file detected");
-      // URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
-      String path = resourceUrl.getPath();
-      // String path = resource.getURI().getPath();
-      if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-      String jarPath = path.substring(5, path.indexOf("!"));
-
-      try (JarFile jarFile = new JarFile(jarPath)) {
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (!entry.isDirectory() && entry.getName().endsWith(fileName)) {
-            // Found the entry matching the folder and file name
-            try (InputStream entryStream = jarFile.getInputStream(entry)) {
-              Path tempFile = java.nio.file.Files.createTempFile("jar-entry", null);
-              java.nio.file.Files.copy(entryStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-              LOG.debug(
-                  "The Resource Path for scheme {} is {}", resourceUrl.getProtocol(), tempFile);
-              return tempFile;
-            }
-          }
-        }
-      }
-    } else {
-      resourcesPath = Path.of(resourceUrl.toURI());
-      LOG.debug(
-          "The Resource Path for scheme {} is {}",
-          resourceUrl.getProtocol(),
-          resourcesPath.toUri());
-
-      try (Stream<Path> paths = java.nio.file.Files.walk(resourcesPath)) {
-        Predicate<Path> validatePath =
-            path -> path != null && path.toFile().isFile() && path.toString().endsWith(fileName);
-        return paths.filter(validatePath).findFirst().orElse(null);
-      }
-    }
-    LOG.warn("The Resource Path was found");
-    return resourcesPath;
   }
 }
