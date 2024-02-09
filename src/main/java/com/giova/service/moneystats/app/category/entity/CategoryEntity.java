@@ -1,13 +1,12 @@
 package com.giova.service.moneystats.app.category.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data

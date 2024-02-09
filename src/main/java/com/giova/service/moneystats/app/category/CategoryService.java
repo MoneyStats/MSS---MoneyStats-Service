@@ -2,7 +2,7 @@ package com.giova.service.moneystats.app.category;
 
 import com.giova.service.moneystats.app.category.dto.Category;
 import com.giova.service.moneystats.app.category.entity.CategoryEntity;
-import com.giova.service.moneystats.generic.Response;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;

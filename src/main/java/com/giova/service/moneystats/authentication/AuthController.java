@@ -1,10 +1,10 @@
 package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.authentication.dto.User;
-import com.giova.service.moneystats.generic.Response;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;

@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.crypto.coinGecko.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import javax.persistence.*;
 import lombok.*;
 

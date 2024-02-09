@@ -1,18 +1,16 @@
 package com.giova.service.moneystats.authentication;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.generic.Response;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.generic.Response;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,13 +1,12 @@
 package com.giova.service.moneystats.app.stats.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.crypto.forex.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import java.time.LocalDateTime;
 import java.util.Map;

@@ -2,7 +2,7 @@ package com.giova.service.moneystats.authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.authentication.dto.User;
-import com.giova.service.moneystats.generic.Response;
+import io.github.giovannilamarmora.utils.generic.Response;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,7 +3,7 @@ package com.giova.service.moneystats.app.wallet.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
-import com.giova.service.moneystats.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;

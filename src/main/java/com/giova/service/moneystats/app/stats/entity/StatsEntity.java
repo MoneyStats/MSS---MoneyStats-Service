@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
-import com.giova.service.moneystats.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import java.time.LocalDate;
 import javax.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,9 +1,8 @@
 package com.giova.service.moneystats.crypto.operations.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.time.LocalDateTime;
-import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

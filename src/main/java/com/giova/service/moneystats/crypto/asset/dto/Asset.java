@@ -3,7 +3,7 @@ package com.giova.service.moneystats.crypto.asset.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
-import com.giova.service.moneystats.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;

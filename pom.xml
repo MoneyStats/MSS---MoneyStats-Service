@@ -10,32 +10,20 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.16.71</version>
+    <version>1.16.72</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
     <description>MoneyStats Service API</description>
     <properties>
         <java.version>11</java.version>
-        <aspectj.version>1.9.9.1</aspectj.version>
-        <spring.doc.version>1.6.14</spring.doc.version>
-        <spring.security.crypto.version>5.7.3</spring.security.crypto.version>
-        <jakarta.validation.version>2.0.2</jakarta.validation.version>
-        <jakarta.persistence.version>2.2.3</jakarta.persistence.version>
-        <jwt.version>0.9.1</jwt.version>
-        <logtail.version>0.1.0</logtail.version>
-        <logback.version>1.2.11</logback.version>
-        <logback.core.version>1.2.11</logback.core.version>
-        <jackson.jaxrs.version>2.13.3</jackson.jaxrs.version>
-        <jakarta.ws.version>3.0.0</jakarta.ws.version>
-        <jakarta.inject.version>2.0.1</jakarta.inject.version>
-        <jakarta.activation.version>2.1.1</jakarta.activation.version>
-        <glassfish.jersey.core.version>3.1.0</glassfish.jersey.core.version>
-        <glassfish.jersey.inject.version>3.1.0</glassfish.jersey.inject.version>
-        <jboss.resteasy.version>3.11.3.Final</jboss.resteasy.version>
-        <wiremock.tomakehurst.vesion>2.27.2</wiremock.tomakehurst.vesion>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>io.github.giovannilamarmora.utils</groupId>
+            <artifactId>utils-code</artifactId>
+            <version>0.2.72</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
@@ -72,30 +60,25 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.giovannilamarmora.utils</groupId>
-            <artifactId>utils-code</artifactId>
-            <version>0.2.71</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>${spring.security.crypto.version}</version>
+            <version>5.7.3</version>
         </dependency>
         <!---->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakarta.validation.version}</version>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-            <version>${jakarta.persistence.version}</version>
+            <version>2.2.3</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>${jwt.version}</version>
+            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -104,12 +87,12 @@
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>${jakarta.ws.version}</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
-            <version>${wiremock.tomakehurst.vesion}</version>
+            <version>2.27.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -136,15 +119,6 @@
     </dependencies>
 
     <build>
-        <!--<resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/application*.yml</include>
-                </includes>
-            </resource>
-        </resources>-->
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

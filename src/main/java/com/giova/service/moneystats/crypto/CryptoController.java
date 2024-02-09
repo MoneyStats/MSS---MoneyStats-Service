@@ -1,8 +1,8 @@
 package com.giova.service.moneystats.crypto;
 
-import com.giova.service.moneystats.generic.Response;
 import com.giova.service.moneystats.scheduler.CronCachingReset;
 import com.giova.service.moneystats.scheduler.CronMarketData;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;

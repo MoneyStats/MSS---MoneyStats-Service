@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.crypto.forex.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import java.time.LocalDateTime;
 import javax.persistence.*;
 import lombok.*;

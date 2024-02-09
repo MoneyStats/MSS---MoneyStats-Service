@@ -5,7 +5,7 @@ import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.operations.entity.OperationsEntity;
-import com.giova.service.moneystats.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.*;
