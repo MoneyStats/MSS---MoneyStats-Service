@@ -15,6 +15,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -32,7 +33,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -72,37 +72,36 @@ public class AppConfig {
           .sorted(Map.Entry.comparingByKey())
           .forEach(
               entry ->
-                  paths.addPathItem(
-                      entry.getKey(), addJSONExamplesOnResource(entry.getValue(), resourceLoader)));
+                  paths.addPathItem(entry.getKey(), addJSONExamplesOnResource(entry.getValue())));
       openApi.setPaths(paths);
     };
   }
 
-  public PathItem addJSONExamplesOnResource(PathItem pathItem, ResourceLoader resourceLoader) {
+  public PathItem addJSONExamplesOnResource(PathItem pathItem) {
     if (!ObjectUtils.isEmpty(pathItem.getGet())) {
-      addOperations(pathItem.getGet(), resourceLoader);
+      addOperations(pathItem.getGet());
     }
 
     if (!ObjectUtils.isEmpty(pathItem.getPost())) {
-      addOperations(pathItem.getPost(), resourceLoader);
+      addOperations(pathItem.getPost());
     }
 
     if (!ObjectUtils.isEmpty(pathItem.getPatch())) {
-      addOperations(pathItem.getPatch(), resourceLoader);
+      addOperations(pathItem.getPatch());
     }
 
     if (!ObjectUtils.isEmpty(pathItem.getPut())) {
-      addOperations(pathItem.getPut(), resourceLoader);
+      addOperations(pathItem.getPut());
     }
 
     if (!ObjectUtils.isEmpty(pathItem.getDelete())) {
-      addOperations(pathItem.getDelete(), resourceLoader);
+      addOperations(pathItem.getDelete());
     }
 
     return pathItem;
   }
 
-  private void addOperations(Operation operation, ResourceLoader resourceLoader) {
+  private void addOperations(Operation operation) {
     if (!ObjectUtils.isEmpty(operation) && !ObjectUtils.isEmpty(operation.getResponses())) {
       operation
           .getResponses()
@@ -122,8 +121,7 @@ public class AppConfig {
 
                               String fileName = getExampleFileName(content.getExample().toString());
                               LOG.debug("FileName is {}", fileName);
-                              String jsonContent =
-                                  searchFileFromResources(fileName, resourceLoader);
+                              String jsonContent = searchFileFromResources(fileName);
                               if (jsonContent != null) {
                                 content.setExample(jsonContent);
                               }
@@ -138,22 +136,24 @@ public class AppConfig {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public String searchFileFromResources(String fileName, ResourceLoader resourceLoader)
-      throws IOException {
-    Path path = getResourcePath(fileName, resourceLoader);
+  public String searchFileFromResources(String fileName) throws IOException, URISyntaxException {
+    Path path = getResourcePath(fileName);
     return path != null ? new String(java.nio.file.Files.readAllBytes(path)) : null;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public Path getResourcePath(String fileName, ResourceLoader resourceLoader) throws IOException {
-    Resource resource = resourceLoader.getResource("classpath:/");
+  public Path getResourcePath(String fileName) throws IOException, URISyntaxException {
+    // Resource resource = resourceLoader.getResource("classpath:/");
+    URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
 
-    LOG.debug("The Resource URI is {}", resource.getURI());
+    LOG.debug("The Resource URI is {}", resourceUrl);
 
     Path resourcesPath = null;
 
-    if (resource.getURI().getScheme().equals("jar")) {
-      URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
+    // if (resource.getURI().getScheme().equals("jar")) {
+    if (resourceUrl.getProtocol().equals("jar")) {
+      LOG.debug("JAR file detected");
+      // URL resourceUrl = AppConfig.class.getProtectionDomain().getCodeSource().getLocation();
       String path = resourceUrl.getPath();
       // String path = resource.getURI().getPath();
       if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
@@ -169,17 +169,17 @@ public class AppConfig {
               Path tempFile = java.nio.file.Files.createTempFile("jar-entry", null);
               java.nio.file.Files.copy(entryStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
               LOG.debug(
-                  "The Resource Path for scheme {} is {}", resource.getURI().getScheme(), tempFile);
+                  "The Resource Path for scheme {} is {}", resourceUrl.getProtocol(), tempFile);
               return tempFile;
             }
           }
         }
       }
     } else {
-      resourcesPath = Path.of(resource.getURI());
+      resourcesPath = Path.of(resourceUrl.toURI());
       LOG.debug(
           "The Resource Path for scheme {} is {}",
-          resource.getURI().getScheme(),
+          resourceUrl.getProtocol(),
           resourcesPath.toUri());
 
       try (Stream<Path> paths = java.nio.file.Files.walk(resourcesPath)) {
