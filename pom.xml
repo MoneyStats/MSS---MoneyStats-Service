@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.16.72</version>
+    <version>1.16.73</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>0.2.72</version>
+            <version>0.2.73</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
