@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import io.github.giovannilamarmora.utils.config.OpenAPIConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -28,12 +28,10 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.customizers.OpenApiCustomiser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.ObjectUtils;
@@ -52,8 +50,6 @@ import org.springframework.util.ObjectUtils;
 public class AppConfig {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-  @Autowired private ResourceLoader resourceLoader;
 
   private static String getExampleFileName(String fileName) {
     return fileName.replaceFirst("@", "");
@@ -72,7 +68,7 @@ public class AppConfig {
           .sorted(Map.Entry.comparingByKey())
           .forEach(
               entry ->
-                  paths.addPathItem(entry.getKey(), addJSONExamplesOnResource(entry.getValue())));
+                  paths.addPathItem(entry.getKey(), OpenAPIConfig.addJSONExamplesOnResource(entry.getValue())));
       openApi.setPaths(paths);
     };
   }
