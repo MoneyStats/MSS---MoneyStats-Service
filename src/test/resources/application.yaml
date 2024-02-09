@@ -44,6 +44,10 @@ rest:
       baseUrl: http://api.exchangerate.host
       rates: /live
       apiKey: apiKey
+    anyApi:
+      baseUrl: https://anyapi.io/api
+      rates: /v1/exchange/rates
+      apiKey: apiKey
 
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
