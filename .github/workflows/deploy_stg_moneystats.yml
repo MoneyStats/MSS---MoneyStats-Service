@@ -78,4 +78,5 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
           multiPlatform: true
-          platform: linux/amd64,linux/arm64
+          #platform: linux/amd64,linux/arm64
+          platform: linux/arm64

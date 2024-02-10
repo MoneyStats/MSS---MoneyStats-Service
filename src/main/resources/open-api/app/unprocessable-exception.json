@@ -1,0 +1,12 @@
+{
+  "dateTime": "2024-02-10T17:33:56",
+  "url": "/v1/app/report/bug",
+  "correlationId": "3862facb-7fe7-45c3-b60a-35b9a1fd3203",
+  "error": {
+    "errorCode": "ERR_WEB_CLI_001",
+    "exception": "WEB_CLIENT_EXCEPTION",
+    "status": "INTERNAL_SERVER_ERROR",
+    "message": "An error happened while calling the API: https://api.github.com/repos/MoneyStats/App/issues, Status Code: 422 UNPROCESSABLE_ENTITY, and body message {message=Validation Failed, errors=[{value=giovannilamamora, resource=Issue, field=assignees, code=invalid}], documentation_url=https://docs.github.com/rest/issues/issues#create-an-issue}",
+    "stackTrace": "[io.github.giovannilamarmora.utils.webClient.WebClientRest.flatMapResponse(WebClientRest.java:219)]"
+  }
+}

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Paths;
 import java.util.Map;
 import org.springdoc.core.customizers.OpenApiCustomiser;
@@ -25,6 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @OpenAPIDefinition(
     info = @Info(title = "MoneyStats Swagger", version = "1.0.0"),
     security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)})
+// servers = {@Server(url = "https://myserver1.com"), @Server(url = "https://myserver2.com")})
 @SecurityScheme(
     type = SecuritySchemeType.APIKEY,
     name = HttpHeaders.AUTHORIZATION,
@@ -44,7 +46,9 @@ public class AppConfig {
           .sorted(Map.Entry.comparingByKey())
           .forEach(
               entry ->
-                  paths.addPathItem(entry.getKey(), OpenAPIConfig.addJSONExamplesOnResource(entry.getValue())));
+                  paths.addPathItem(
+                      entry.getKey(),
+                      OpenAPIConfig.addJSONExamplesOnResource(entry.getValue(), AppConfig.class)));
       openApi.setPaths(paths);
     };
   }

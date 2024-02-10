@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "message": "Wallet Coinbase Successfully saved!",
+  "correlationId": "684a38d3-3688-4672-8e7b-b24ec8a4b220",
+  "data": {
+    "id": 413,
+    "creationDate": "2024-02-10T17:18:23",
+    "updateDate": "2024-02-10T17:18:23",
+    "name": "Coinbase",
+    "balance": 10000.0,
+    "img": "https://avatars.githubusercontent.com/u/1885080?s=280&v=4",
+    "allTimeHigh": 140000.0,
+    "allTimeHighDate": "2022-04-10",
+    "highPrice": 125908.0,
+    "highPriceDate": "2022-04-01",
+    "lowPrice": 100008.0,
+    "lowPriceDate": "2022-09-01",
+    "performanceLastStats": 10.0,
+    "differenceLastStats": 2500.0,
+    "dateLastStats": "2022-12-01",
+    "category": "Investments"
+  }
+}

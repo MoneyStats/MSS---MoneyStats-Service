@@ -50,7 +50,7 @@ rest:
       issuesUrl: /repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://oraclewebserver.ddns.net/email-sender
+      url: https://email-sender.hostwebserver.site/email-sender/
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com

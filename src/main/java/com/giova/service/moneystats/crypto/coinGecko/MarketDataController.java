@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.crypto.coinGecko;
 
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -28,7 +29,10 @@ public class MarketDataController {
   @Autowired private MarketDataService marketDataService;
 
   @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to get Market Data", tags = "Market Data")
+  @Operation(
+      description = "API to get Market Data",
+      summary = "Get MarketData",
+      tags = "Market Data")
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",
@@ -37,6 +41,22 @@ public class MarketDataController {
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@market-data.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-jwe.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Expired JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken, @RequestParam String currency)

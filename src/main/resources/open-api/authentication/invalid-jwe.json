@@ -1,0 +1,12 @@
+{
+  "dateTime": "2024-02-10T17:02:05",
+  "url": "/v1/auth/check-login",
+  "correlationId": "f93231cf-4383-4842-a49c-ae4461e415eb",
+  "error": {
+    "errorCode": "ERR_AUTH_MSS_004",
+    "exception": "com.giova.service.moneystats.authentication.AuthException",
+    "status": "UNAUTHORIZED",
+    "exceptionMessage": "Encrypted JWT rejected: MAC check failed",
+    "stackTrace": "stacktrace"
+  }
+}
