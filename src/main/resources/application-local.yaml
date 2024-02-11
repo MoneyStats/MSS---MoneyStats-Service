@@ -47,7 +47,7 @@ rest:
   client:
     github:
       baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/App/issues
+      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
       url: https://email-sender.hostwebserver.site/email-sender/
