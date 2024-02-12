@@ -10,14 +10,18 @@ import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.settings.entity.UserSettingEntity;
+import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.time.LocalDateTime;
 import java.util.*;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,27 +47,28 @@ public class AuthService {
   @Value(value = "${app.fe.url}")
   private String feUrl;
 
-  @Autowired private IAuthDAO iAuthDAO;
+  @Autowired private AuthCacheService authCacheService;
   @Autowired private AuthMapper authMapper;
   @Autowired private TokenService tokenService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private ImageService imageService;
+  @Autowired private HttpServletRequest request;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
     user.setRole(UserRole.USER);
 
     if (!registerToken.equalsIgnoreCase(invitationCode)) {
       LOG.error("Invitation code: {}, is wrong", invitationCode);
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
     }
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     user.setPassword(null);
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     saved.setPassword(null);
 
     String message = "User: " + user.getUsername() + " Successfully registered!";
@@ -78,24 +83,28 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public ResponseEntity<Response> login(String username, String password) throws UtilsException {
-
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> login(String username, String password)
+      throws UtilsException, JOSEException {
+    LOG.debug("Login process started for user {}", username);
+    logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
 
-    UserEntity userEntity = iAuthDAO.findUserEntityByUsernameOrEmail(username, email);
+    UserEntity userEntity = authCacheService.findUserEntityByUsernameOrEmail(username, email);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
+
+    migrateToSettings(userEntity);
 
     User user = authMapper.mapUserEntityToUser(userEntity);
     user.setPassword(null);
@@ -105,21 +114,21 @@ public class AuthService {
 
     Response response =
         new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
-
+    LOG.debug("Login process ended for user {}", username);
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
-    UserEntity userEntity = iAuthDAO.findUserEntityByEmail(email);
+    UserEntity userEntity = authCacheService.findUserEntityByEmail(email);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_006, AuthException.ERR_AUTH_MSS_006.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_006, ExceptionMap.ERR_AUTH_MSS_006.getMessage());
     }
     String token = UUID.randomUUID().toString();
     userEntity.setTokenReset(token);
-    iAuthDAO.save(userEntity);
+    authCacheService.save(userEntity);
 
     // Send Email
     EmailContent emailContent =
@@ -143,24 +152,24 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> resetPassword(String password, String token)
       throws UtilsException {
-    UserEntity userEntity = iAuthDAO.findUserEntityByTokenReset(token);
+    UserEntity userEntity = authCacheService.findUserEntityByTokenReset(token);
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
     if (userEntity.getUpdateDate().plusDays(1).isBefore(LocalDateTime.now())) {
       LOG.error("Token Expired");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_005, AuthException.ERR_AUTH_MSS_005.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
     userEntity.setPassword(bCryptPasswordEncoder.encode(password));
     userEntity.setTokenReset(null);
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     userEntity.setPassword(null);
 
     String message = "Password Updated!";
@@ -175,7 +184,7 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> checkLoginFE(String authToken) {
 
     User userDTO = authMapper.mapUserEntityToUser(user);
@@ -190,42 +199,73 @@ public class AuthService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserEntity checkLogin(String authToken) throws UtilsException {
+    logCurrentHostAddress();
     AuthToken token = new AuthToken();
     token.setAccessToken(authToken);
     User user = new User();
     try {
       user = tokenService.parseToken(token);
     } catch (UtilsException e) {
-      throw new UtilsException(AuthException.ERR_AUTH_MSS_004, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
     }
     UserEntity userEntity =
-        iAuthDAO.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
+        authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
     // userEntity.setPassword(null);
 
     if (userEntity == null) {
       LOG.error("User not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     return userEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
-  public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException {
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken regenerateToken(UserEntity userEntity) throws UtilsException, JOSEException {
     User user = authMapper.mapUserEntityToUser(userEntity);
     AuthToken authToken = tokenService.generateToken(user);
 
     if (authToken == null) {
       LOG.error("Token not found");
-      throw new UtilsException(
-          AuthException.ERR_AUTH_MSS_003, AuthException.ERR_AUTH_MSS_003.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
     }
     return authToken;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken refreshToken(String authToken) throws UtilsException, JOSEException {
+    AuthToken token = new AuthToken();
+    token.setAccessToken(authToken);
+    User user = new User();
+    try {
+      user = tokenService.parseToken(token);
+    } catch (UtilsException e) {
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
+    }
+    UserEntity userEntity =
+        authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
+    // userEntity.setPassword(null);
+
+    if (userEntity == null) {
+      LOG.error("User not found");
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+    }
+
+    AuthToken refreshToken = tokenService.generateToken(user);
+
+    if (authToken == null) {
+      LOG.error("Token not found");
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+    }
+    return refreshToken;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> updateUserData(String authToken, User userToUpdate) {
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(userToUpdate);
@@ -240,13 +280,13 @@ public class AuthService {
       Image image = imageService.getAttachment(userToUpdate.getImgName());
       imageService.removeAttachment(userToUpdate.getImgName());
       userEntity.setProfilePhoto(
-              "data:"
-                      + image.getContentType()
-                      + ";base64,"
-                      + Base64.getEncoder().encodeToString(image.getBody()));
+          "data:"
+              + image.getContentType()
+              + ";base64,"
+              + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
-    UserEntity saved = iAuthDAO.save(userEntity);
+    UserEntity saved = authCacheService.save(userEntity);
     saved.setPassword(null);
 
     String message = "User updated!";
@@ -255,5 +295,47 @@ public class AuthService {
         new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), saved);
 
     return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<String> getCryptoFiatUsersCurrency() {
+    LOG.info("Getting Crypto Fiat Currency");
+    return authCacheService.selectDistinctCryptoFiatCurrency();
+  }
+
+  private void logCurrentHostAddress() {
+    String ORIGIN = "origin";
+    if (request.getHeader(ORIGIN) != null)
+      LOG.info(
+          "[ADDRESS] Getting Remote Host Address {}, with correlationID {}",
+          request.getHeader(ORIGIN),
+          CorrelationIdUtils.getCorrelationId() != null
+              ? CorrelationIdUtils.getCorrelationId()
+              : CorrelationIdUtils.generateCorrelationId());
+    else
+      LOG.info(
+          "[ADDRESS] Getting Remote IP Address {}, with correlationID {}",
+          request.getRemoteAddr(),
+          CorrelationIdUtils.getCorrelationId() != null
+              ? CorrelationIdUtils.getCorrelationId()
+              : CorrelationIdUtils.generateCorrelationId());
+  }
+
+  private void migrateToSettings(UserEntity user) {
+    LOG.info("Checking User {} to migrate", user.getUsername());
+    if (user.getCurrency() != null || user.getSettings() == null) {
+      LOG.info("Migrating user {} to the new settings", user.getUsername());
+      UserSettingEntity userSettingEntity = new UserSettingEntity();
+      userSettingEntity.setCurrency(user.getCurrency());
+      user.setCurrency(null);
+      userSettingEntity.setCryptoCurrency(user.getCryptoCurrency());
+      user.setCryptoCurrency(null);
+      userSettingEntity.setGithubUser(user.getGithubUser());
+      user.setGithubUser(null);
+      userSettingEntity.setUser(user);
+      user.setSettings(userSettingEntity);
+      authCacheService.save(user);
+    }
+    LOG.info("User {} not need migration", user.getUsername());
   }
 }

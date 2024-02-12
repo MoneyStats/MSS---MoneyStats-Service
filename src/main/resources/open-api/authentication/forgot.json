@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "message": "Email Sent! Check your email address!",
+  "correlationId": "2a544244-77d2-4dab-8ff4-8010437a8846",
+  "data": {
+    "timestamp": "2024-02-10T16:49:18",
+    "message": "Email to email@gmail.com was successfully sent!",
+    "token": "467949c5-1ec6-41f7-93f7-a55292f14506"
+  }
+}

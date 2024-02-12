@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class CategoryMapper {
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Category> mapCategoryEntityToCategory(List<CategoryEntity> categoryEntities) {
     return categoryEntities.stream()
         .map(

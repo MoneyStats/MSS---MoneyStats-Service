@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.app.attachments;
 
 import com.giova.service.moneystats.app.attachments.dto.Image;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -16,7 +17,7 @@ public class ImageMapper {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public Image fromPartToDto(MultipartFile file) throws UtilsException {
     try {
       return new Image(
@@ -27,16 +28,15 @@ public class ImageMapper {
           file.getBytes());
     } catch (IOException e) {
       LOG.error("Error on converting Attachment: {}", e.getMessage());
-      throw new UtilsException(
-          ImageException.ERR_IMG_MSS_001,
-          ImageException.ERR_IMG_MSS_001.getMessage()
+      throw new ImageException(
+          ExceptionMap.ERR_IMG_MSS_001.getMessage()
               + " with filename: "
               + file.getOriginalFilename(),
           e.getMessage());
     }
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public MultipartFile fromDtoToPart(Image image) {
     MultipartFile file =
         new MockMultipartFile(

@@ -1,0 +1,13 @@
+{
+  "dateTime": "2024-02-10T17:09:03",
+  "url": "/v1/upload/attachment",
+  "correlationId": "94ec6e54-5dec-43c5-b830-bde057946368",
+  "error": {
+    "errorCode": "ERR_IMG_MSS_002",
+    "exception": "org.springframework.web.multipart.MaxUploadSizeExceededException",
+    "status": "BAD_REQUEST",
+    "message": "Maximum upload size exceeded! the request was rejected because its size exceeds the configured maximum (512000)",
+    "exceptionMessage": "Maximum upload size exceeded; nested exception is java.lang.IllegalStateException: org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException: the request was rejected because its size (3082736) exceeds the configured maximum (1048576)",
+    "stackTrace": "stacktrace"
+  }
+}

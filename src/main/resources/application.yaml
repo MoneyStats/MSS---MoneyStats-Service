@@ -1,14 +1,20 @@
 server:
   servlet:
-    context-path: /moneystats-service
+    context-path:
+    #context-path: /moneystats-service
 spring:
+  application:
+    name: MoneyStats Service H2
+    starter-log: true
   datasource:
     url: jdbc:h2:mem:mydb
     username: sa
     password:
     driverClassName: org.h2.Driver
   jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: true
   sql:
     init:
@@ -19,17 +25,58 @@ spring:
       max-request-size: 2MB
 
 rest:
+  scheduled:
+    marketData:
+      active: false
+      quantity: 250
+      delay:
+        start: 5000
+        #end: 60000
+        end: 3600000
+    forex:
+      active: false
+      delay:
+        start: 5000
+        end: 3600000
+    caching:
+      active: false
+      cron: 0 0 1 * * MON
   client:
     github:
-      issuesUrl: https://api.github.com/repos/MoneyStats/App/issues
+      baseUrl: https://api.github.com
+      issuesUrl: /repos/MoneyStats/App/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://prod-email-sender.up.railway.app
+      url: https://oraclewebserver.ddns.net/email-sender
       sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
+    exchangeRates:
+      baseUrl: http://api.exchangerate.host
+      rates: /live
+      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
+    anyApi:
+      baseUrl: https://anyapi.io/api
+      rates: /v1/exchange/rates
+      apiKey: ${REST_CLIENT_ANY_API_TOKEN}
+
+logging:
+  level:
+    com.giova.service.moneystats: INFO
+    web: INFO
+    root: INFO
+    org:
+      springframework:
+        web: INFO
+      hibernate: ERROR
+
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000
 app:
+  version: @project.version@
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: http://localhost:4200

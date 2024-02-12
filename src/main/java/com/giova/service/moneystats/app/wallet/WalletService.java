@@ -7,12 +7,14 @@ import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,18 +33,48 @@ import org.springframework.stereotype.Service;
 public class WalletService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final UserEntity user;
-  @Autowired private IWalletDAO iWalletDAO;
+  @Autowired private WalletCacheService walletCacheService;
   @Autowired private WalletMapper walletMapper;
-  @Autowired private StatsService statsService;
   @Autowired private ImageService imageService;
+  @Autowired private StatsService statsService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
       throws UtilsException, JsonProcessingException {
-    // UserEntity user = authService.checkLogin(authToken);
+    Boolean isLiveWallet =
+        user.getSettings().getLiveWallets() != null
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+    return insertOrUpdate(wallet, isLiveWallet);
+  }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> notFilterInsertOrUpdateWallet(Wallet wallet)
+      throws UtilsException, JsonProcessingException {
+    return insertOrUpdate(wallet, false);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> insertOrUpdate(Wallet wallet, Boolean isWalletLive)
+      throws UtilsException, JsonProcessingException {
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
+
+    if (wallet.getId() != null && isWalletLive) {
+      WalletEntity getFromDB = walletCacheService.findWalletEntityById(wallet.getId());
+      if (getFromDB != null) {
+        walletEntity.setBalance(getFromDB.getBalance());
+        walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
+        walletEntity.setDifferenceLastStats(getFromDB.getDifferenceLastStats());
+        walletEntity.setHighPrice(getFromDB.getHighPrice());
+        walletEntity.setHighPriceDate(getFromDB.getHighPriceDate());
+        walletEntity.setLowPrice(getFromDB.getLowPrice());
+        walletEntity.setLowPriceDate(getFromDB.getLowPriceDate());
+        walletEntity.setAllTimeHigh(getFromDB.getAllTimeHigh());
+        walletEntity.setAllTimeHighDate(getFromDB.getAllTimeHighDate());
+      }
+    }
 
     if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
       LOG.info("Building attachment with filename {}", wallet.getImgName());
@@ -55,9 +87,10 @@ public class WalletService {
               + Base64.getEncoder().encodeToString(image.getBody()));
     }
 
-    WalletEntity saved = iWalletDAO.save(walletEntity);
+    WalletEntity saved = walletCacheService.save(walletEntity);
 
-    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved);
+    // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null);
     // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
     //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
     // }
@@ -70,11 +103,11 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getWallets() throws UtilsException {
     // UserEntity user = authService.checkLogin(authToken);
 
-    List<WalletEntity> walletEntity = iWalletDAO.findAllByUserId(user.getId());
+    List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
 
     String message = "";
     if (walletEntity.isEmpty()) {
@@ -82,8 +115,13 @@ public class WalletService {
     } else {
       message = "Found " + walletEntity.size() + " Wallets";
     }
+    Boolean isLiveWallet =
+        user.getSettings().getLiveWallets() != null
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
-    List<Wallet> walletToReturn = walletMapper.fromWalletEntitiesToWallets(walletEntity);
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<Wallet> walletToReturn =
+        walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet, getAllCryptoDates);
 
     Response response =
         new Response(
@@ -91,12 +129,37 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getCryptoWallets(Boolean live) throws UtilsException {
+    // UserEntity user = authService.checkLogin(authToken);
+    String CRYPTO = "Crypto";
+
+    List<WalletEntity> walletEntity =
+        walletCacheService.findAllByUserIdAndCategory(user.getId(), CRYPTO);
+
+    String message = "";
+    if (walletEntity.isEmpty()) {
+      message = "Crypto Wallet Empty, insert new Crypto Wallet to get it!";
+    } else {
+      message = "Found " + walletEntity.size() + " Crypto Wallets";
+    }
+
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<Wallet> walletToReturn =
+        walletMapper.fromWalletEntitiesToWallets(walletEntity, live, getAllCryptoDates);
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
     return walletMapper.deleteWalletIds(wallets);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
 
     List<WalletEntity> walletEntities =
@@ -119,14 +182,14 @@ public class WalletService {
                 })
             .collect(Collectors.toList());
 
-    List<WalletEntity> saved = iWalletDAO.saveAll(walletEntities);
+    List<WalletEntity> saved = walletCacheService.saveAll(walletEntities);
 
     return saved.stream()
         .map(
             walletEntity -> {
               Wallet wallet = new Wallet();
               try {
-                walletMapper.fromWalletEntityToWallet(walletEntity);
+                walletMapper.fromWalletEntityToWallet(walletEntity, null);
               } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
               }
@@ -136,8 +199,8 @@ public class WalletService {
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteWalletEntities() {
-    iWalletDAO.deleteAllByUserId(user.getId());
+    walletCacheService.deleteAllByUserId(user.getId());
   }
 }

@@ -10,32 +10,25 @@
     </parent>
     <groupId>com.giova.service</groupId>
     <artifactId>moneystats</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
     <!-- <packaging>war</packaging> -->
     <packaging>jar</packaging>
     <name>MoneyStats-Service</name>
     <description>MoneyStats Service API</description>
     <properties>
         <java.version>11</java.version>
-        <aspectj.version>1.9.9.1</aspectj.version>
-        <spring.doc.version>1.6.14</spring.doc.version>
-        <spring.security.crypto.version>5.7.3</spring.security.crypto.version>
-        <jakarta.validation.version>2.0.2</jakarta.validation.version>
-        <jakarta.persistence.version>2.2.3</jakarta.persistence.version>
-        <jwt.version>0.9.1</jwt.version>
-        <logtail.version>0.1.0</logtail.version>
-        <logback.version>1.2.11</logback.version>
-        <logback.core.version>1.2.11</logback.core.version>
-        <jackson.jaxrs.version>2.13.3</jackson.jaxrs.version>
-        <jakarta.ws.version>3.0.0</jakarta.ws.version>
-        <jakarta.inject.version>2.0.1</jakarta.inject.version>
-        <jakarta.activation.version>2.1.1</jakarta.activation.version>
-        <glassfish.jersey.core.version>3.1.0</glassfish.jersey.core.version>
-        <glassfish.jersey.inject.version>3.1.0</glassfish.jersey.inject.version>
-        <jboss.resteasy.version>3.11.3.Final</jboss.resteasy.version>
-        <wiremock.tomakehurst.vesion>2.16.0</wiremock.tomakehurst.vesion>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>io.github.giovannilamarmora.utils</groupId>
+            <artifactId>utils-code</artifactId>
+            <version>0.2.77</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.68</version> <!-- Do Not Update -->
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -54,11 +47,7 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>2.2.220</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -71,122 +60,62 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.giovannilamarmora.utils</groupId>
-            <artifactId>utils-code</artifactId>
-            <version>0.2.20</version>
-        </dependency>
-        <!--<dependency>
-            <groupId>io.github.giovannilamarmora.utils</groupId>
-            <artifactId>utils-code</artifactId>
-            <scope>system</scope>
-            <version>0.2.8</version>
-            <systemPath>C:/Users/giola/Documents/Personal Project/Utils/target/utils-code-0.2.8.jar</systemPath>
-        </dependency>-->
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>${aspectj.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>${spring.security.crypto.version}</version>
+            <version>5.7.3</version>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${spring.doc.version}</version>
-        </dependency>
+        <!---->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakarta.validation.version}</version>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-            <version>${jakarta.persistence.version}</version>
+            <version>2.2.3</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>${jwt.version}</version>
+            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.logtail</groupId>
-            <artifactId>logback-logtail</artifactId>
-            <version>${logtail.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.core.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson.jaxrs.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>${jakarta.ws.version}</version>
+            <version>3.0.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-            <version>${jakarta.inject.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-            <version>${jakarta.activation.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${glassfish.jersey.core.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>${glassfish.jersey.inject.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <version>${jboss.resteasy.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
-            <version>${wiremock.tomakehurst.vesion}</version>
+            <version>2.27.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>3.1.10</version>
+        </dependency>
+        <!-- JWT Create -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>9.37</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-archiver</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <!-- END JWT Create -->
     </dependencies>
 
     <build>

@@ -7,105 +7,78 @@ on:
   push:
     branches: [ master ]
 
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+
 jobs:
-  setting-up:
-    name: ☁️ Setting Up
+  checkout-and-setup:
+    name: 🔧 Checkout and Setup
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    steps:
+      - name: "☁️ Checkout Repository"
+        uses: actions/checkout@v4
 
-    steps:
-      - name: 🚀 Setting Up Deployment Package
-        run: echo Process Started!!!
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
 
-  java:
-    name: 🔧 Java 11
+  install-test-and-build:
+    name: 🌱 Install, Test and Build
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    needs: checkout-and-setup
     steps:
-      - uses: actions/checkout@v3
-      - name: 🔧 Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-  install:
-    name: 🌱 Install
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
-      repository-projects: write
-      packages: write
-    needs: [ setting-up, java ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Install with Maven
-        run: mvn -X clean install
-  test:
-    name: 📂 Test
-    runs-on: ubuntu-latest
-    needs: [ install, java ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'adopt'
+      - uses: actions/checkout@v4
+
+      - name: ⬇️ Install dependencies
+        run: |
+          mvn -X clean install
+
       - name: 📂 Test with Maven
-        run: mvn test
-  build:
-    name: 📂 Build
+        run: |
+          mvn test
+
+      - name: 📂 Build with Maven
+        run: |
+          mvn -B package --file pom.xml -DskipTests
+
+  docker-login:
+    name: 🐳 Docker Login
     runs-on: ubuntu-latest
-    needs: [ test, java ]
+    needs: install-test-and-build
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - name: 🐳 Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
-  deploy:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+  build-and-push-docker:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
     environment:
       name: prod-moneystats-service
-    needs: [ java, build ]
+    needs: [ install-test-and-build, docker-login ]
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-          cache: maven
-      - name: Build with Maven
-        run: mvn clean install #-DskipTests
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v4
+
+      - name: 📝 Set Release Version
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6.2
         with:
-          image: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY }}
-          tags: latest
+          image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
+          #tags: latest
+          tags: ${{ env.RELEASE_VERSION }}, latest
           registry: docker.io
           dockerfile: Dockerfile
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
           multiPlatform: true
           platform: linux/amd64,linux/arm64

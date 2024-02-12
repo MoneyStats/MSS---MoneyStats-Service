@@ -2,7 +2,8 @@ package com.giova.service.moneystats.authentication.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.generic.GenericDTO;
+import com.giova.service.moneystats.settings.dto.UserSettingDTO;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import javax.validation.constraints.NotNull;
@@ -25,19 +26,26 @@ public class User extends GenericDTO {
   private UserRole role;
   @NotNull private String profilePhoto;
   private String imgName;
-  @NotNull private String currency;
-  private String githubUser;
+  // @NotNull private String currency;
+  // private String cryptoCurrency;
+  // private String githubUser;
 
   private AuthToken authToken;
   private String tokenReset;
+  private UserSettingDTO settings;
 
   public User(
-      String name, String surname, String email, String username, UserRole role, String currency) {
+      String name,
+      String surname,
+      String email,
+      String username,
+      UserRole role,
+      UserSettingDTO settings) {
     this.name = name;
     this.surname = surname;
     this.email = email;
     this.username = username;
     this.role = role;
-    this.currency = currency;
+    this.settings = settings;
   }
 }

@@ -1,17 +1,16 @@
 package com.giova.service.moneystats.authentication;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.generic.Response;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.generic.Response;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,7 @@ public class AuthServiceTest {
   }
 
   @Test
-  public void loginTest_successfully() throws IOException, UtilsException {
+  public void loginTest_successfully() throws IOException, UtilsException, JOSEException {
     User register =
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
@@ -77,7 +76,7 @@ public class AuthServiceTest {
   }
 
   @Test
-  public void checkLoginTest_successfully() throws IOException, UtilsException {
+  public void checkLoginTest_successfully() throws IOException, UtilsException, JOSEException {
     User register =
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
@@ -91,13 +90,15 @@ public class AuthServiceTest {
 
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
 
-    UserEntity checkLogin = authService.checkLogin(userAc.getAuthToken().getAccessToken());
+    UserEntity checkLogin =
+        authService.checkLogin(
+            userAc.getAuthToken().getType() + " " + userAc.getAuthToken().getAccessToken());
     assertEquals(userAc.getName(), checkLogin.getName());
     assertEquals(userAc.getUsername(), checkLogin.getUsername());
   }
 
   @Test
-  public void checkLoginFETest_successfully() throws IOException, UtilsException {
+  public void checkLoginFETest_successfully() throws IOException, UtilsException, JOSEException {
     User register =
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
@@ -118,23 +119,23 @@ public class AuthServiceTest {
 
   @Test
   public void testForgotPassword() throws Exception {
-    WireMockServer wireMockServer= new WireMockServer(8086);
+    WireMockServer wireMockServer = new WireMockServer(8086);
     wireMockServer.start();
     WireMock.configureFor(wireMockServer.port());
     User register =
-            objectMapper.readValue(
-                    new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
+        objectMapper.readValue(
+            new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
     String token = "token";
 
     ResponseEntity<Response> actualR = authService.register(register, token);
     User userAc = objectMapper.convertValue(actualR.getBody().getData(), User.class);
 
     wireMockServer.stubFor(
-            WireMock.post(WireMock.urlEqualTo("/v1/send-email?htmlText=true"))
-                    .willReturn(
-                            WireMock.aResponse()
-                                    .withHeader("Content-Type", "application/json")
-                                    .withBody(objectMapper.writeValueAsString(userAc))));
+        WireMock.post(WireMock.urlEqualTo("/v1/send-email?htmlText=true"))
+            .willReturn(
+                WireMock.aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(userAc))));
 
     EmailResponse emailResponse = new EmailResponse();
     emailResponse.setToken(token);

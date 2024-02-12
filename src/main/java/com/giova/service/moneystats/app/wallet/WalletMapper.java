@@ -9,22 +9,39 @@ import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.forex.ForexDataService;
+import com.giova.service.moneystats.crypto.forex.dto.ForexData;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.math.MathService;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WalletMapper {
 
+  private final UserEntity user;
   private final ObjectMapper mapper = new ObjectMapper();
   @Autowired ImageMapper imageMapper;
+  @Autowired private AssetMapper assetMapper;
+  @Autowired private MarketDataService marketDataService;
+  @Autowired private ForexDataService forexDataService;
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
     WalletEntity walletEntity = new WalletEntity();
     BeanUtils.copyProperties(wallet, walletEntity);
@@ -34,7 +51,7 @@ public class WalletMapper {
     walletEntity.setInfo(wallet.getInfoString());
     // } else
     if (wallet.getInfo() != null) {
-      walletEntity.setInfo(convertWithStream(wallet.getInfo()));
+      walletEntity.setInfo(Utilities.convertMapToString(wallet.getInfo()));
     }
     if (wallet.getHistory() != null) {
       walletEntity.setHistory(
@@ -49,11 +66,16 @@ public class WalletMapper {
                   })
               .collect(Collectors.toList()));
     }
+    if (wallet.getAssets() != null) {
+      walletEntity.setAssets(
+          assetMapper.fromAssetToAssetsEntities(wallet.getAssets(), userEntity, walletEntity));
+    }
     return walletEntity;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public Wallet fromWalletEntityToWallet(WalletEntity walletEntity) throws JsonProcessingException {
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public Wallet fromWalletEntityToWallet(
+      WalletEntity walletEntity, List<LocalDate> getAllCryptoDates) throws JsonProcessingException {
     Wallet wallet = new Wallet();
     BeanUtils.copyProperties(walletEntity, wallet);
 
@@ -72,11 +94,23 @@ public class WalletMapper {
                   })
               .collect(Collectors.toList()));
     }
+    if (walletEntity.getAssets() != null) {
+      List<MarketData> marketData =
+          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+      wallet.setAssets(
+          assetMapper.fromAssetEntitiesToAssets(
+              walletEntity.getAssets(), marketData, getAllCryptoDates));
+    }
     return wallet;
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
-  public List<Wallet> fromWalletEntitiesToWallets(List<WalletEntity> walletEntities) {
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public List<Wallet> fromWalletEntitiesToWallets(
+      List<WalletEntity> walletEntities, Boolean live, List<LocalDate> getAllCryptoDates) {
+    ForexData forex = null;
+    if (live) forex = forexDataService.getForexData(user.getSettings().getCryptoCurrency());
+    ForexData finalForex = forex;
+    AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()
         .map(
             (walletEntity -> {
@@ -91,7 +125,12 @@ public class WalletMapper {
                   throw new RuntimeException(e);
                 }
               }
-              if (walletEntity.getHistory() != null) {
+              if (walletEntity.getHistory() != null && !walletEntity.getHistory().isEmpty()) {
+                lastBalance.set(
+                    walletEntity
+                        .getHistory()
+                        .get(walletEntity.getHistory().size() - 1)
+                        .getBalance());
                 wallet.setHistory(
                     walletEntity.getHistory().stream()
                         .map(
@@ -102,13 +141,20 @@ public class WalletMapper {
                             })
                         .collect(Collectors.toList()));
               }
-
+              if (walletEntity.getAssets() != null) {
+                List<MarketData> marketData =
+                    marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+                wallet.setAssets(
+                    assetMapper.fromAssetEntitiesToAssets(
+                        walletEntity.getAssets(), marketData, getAllCryptoDates));
+              }
+              if (live) setLivePriceInWallet(wallet, finalForex, lastBalance);
               return wallet;
             }))
         .collect(Collectors.toList());
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_MAPPER)
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
     return wallets.stream()
         .map(
@@ -129,17 +175,73 @@ public class WalletMapper {
                             })
                         .collect(Collectors.toList()));
               }
-
+              if (walletToEdit.getAssets() != null) {
+                wallet.setAssets(
+                    walletToEdit.getAssets().stream()
+                        .map(
+                            assetMap -> {
+                              Asset asset = new Asset();
+                              assetMap.setId(null);
+                              BeanUtils.copyProperties(assetMap, asset);
+                              if (assetMap.getHistory() != null) {
+                                asset.setHistory(
+                                    assetMap.getHistory().stream()
+                                        .map(
+                                            statsEntity -> {
+                                              Stats stats = new Stats();
+                                              statsEntity.setId(null);
+                                              BeanUtils.copyProperties(statsEntity, stats);
+                                              return stats;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
+                              if (assetMap.getOperations() != null) {
+                                asset.setOperations(
+                                    assetMap.getOperations().stream()
+                                        .map(
+                                            operationEntity -> {
+                                              Operations operations = new Operations();
+                                              operationEntity.setId(null);
+                                              BeanUtils.copyProperties(operationEntity, operations);
+                                              return operations;
+                                            })
+                                        .collect(Collectors.toList()));
+                              }
+                              return asset;
+                            })
+                        .collect(Collectors.toList()));
+              }
               return wallet;
             }))
         .collect(Collectors.toList());
   }
 
-  private String convertWithStream(Map<String, ?> map) {
-    String mapAsString =
-        map.keySet().stream()
-            .map(key -> "\"" + key + "\"" + ": \"" + map.get(key) + "\"")
-            .collect(Collectors.joining(", ", "{", "}"));
-    return mapAsString;
+  private void setLivePriceInWallet(
+      Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
+    if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
+        || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
+    AtomicReference<Double> balance = new AtomicReference<>(0D);
+    wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
+    if (forex == null) return;
+    double converter = forex.getQuotes().get(user.getSettings().getCurrency());
+    wallet.setBalance(MathService.round(balance.get() * converter, 2));
+    wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
+    wallet.setPerformanceLastStats(
+        wallet.getBalance() == 0 && lastBalance.get() == 0
+            ? 0D
+            : MathService.round(
+                ((wallet.getBalance() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+    if (wallet.getBalance() > wallet.getHighPrice()) {
+      wallet.setHighPrice(wallet.getBalance());
+      wallet.setHighPriceDate(LocalDate.now());
+    }
+    if (wallet.getBalance() < wallet.getLowPrice()) {
+      wallet.setLowPrice(wallet.getBalance());
+      wallet.setLowPriceDate(LocalDate.now());
+    }
+    if (wallet.getBalance() > wallet.getAllTimeHigh()) {
+      wallet.setAllTimeHigh(wallet.getBalance());
+      wallet.setAllTimeHighDate(LocalDate.now());
+    }
   }
 }

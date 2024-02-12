@@ -1,0 +1,12 @@
+{
+  "dateTime": "2023-01-17T15:17:12",
+  "url": "/v1/auth/sign-up",
+  "correlationId": "4dcd6ddc-e04d-4d3c-b91c-df7f2342d0ac",
+  "error": {
+    "exceptionCode": "ERR_AUTH_MSS_001",
+    "exceptionName": "DataIntegrityViolationException",
+    "status": "BAD_REQUEST",
+    "exceptionMessage": "could not execute statement; SQL [n/a]; constraint [\"PUBLIC.UK_6DOTKOTT2KJSP8VW4D0M25FB7_INDEX_4 ON PUBLIC.USERS(EMAIL NULLS FIRST) VALUES ( /* 1 */ 'email@gmail.com' )\"; SQL statement:\ninsert into users (id, creation_date, deleted_date, update_date, currency, email, name, password, profile_photo, role, surname, username) values (default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) [23505-214]]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+    "message": " constraint [\"PUBLIC.UK_6DOTKOTT2KJSP8VW4D0M25FB7_INDEX_4 ON PUBLIC.USERS(EMAIL NULLS FIRST) VALUES ( /* 1 */ 'email@gmail.com' )\""
+  }
+}

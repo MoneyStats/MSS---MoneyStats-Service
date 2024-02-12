@@ -1,8 +1,9 @@
 package com.giova.service.moneystats.app.attachments;
 
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.generic.Response;
+import com.giova.service.moneystats.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -27,22 +28,19 @@ public class ImageService {
   @Autowired private ImageMapper mapper;
 
   @Cacheable(cacheNames = "attachment")
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> saveAttachmentDto(MultipartFile file) throws UtilsException {
     Image attachment;
     if (file == null || file.isEmpty()) {
       LOG.error("The file you have been passed is invalid");
-      throw new UtilsException(
-          ImageException.ERR_IMG_MSS_001,
-          "The file you have been passed is invalid",
-          ImageException.ERR_IMG_MSS_001.getMessage());
+      throw new ImageException(
+          "The file you have been passed is invalid", ExceptionMap.ERR_IMG_MSS_001.getMessage());
     }
     try {
       attachment = mapper.fromPartToDto(file);
     } catch (UtilsException e) {
       LOG.error("Error on mapping attachment");
-      throw new UtilsException(
-          ImageException.ERR_IMG_MSS_001, "Error on mapping attachment", e.getMessage());
+      throw new ImageException("Error on mapping attachment", e.getMessage());
     }
     attachmentMap.put(attachment.getFileName(), attachment);
 
@@ -54,12 +52,12 @@ public class ImageService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void removeAttachment(String filename) {
     attachmentMap.remove(filename);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.APP_SERVICE)
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Image getAttachment(String filename) {
     return attachmentMap.get(filename);
   }

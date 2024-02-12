@@ -14,18 +14,48 @@ springdoc:
   packagesToScan: com.giova.service.moneystats
 
 rest:
+  scheduled:
+    marketData:
+      active: true
+      delay:
+        start: 60000
+        #end: 60000
+        end: 3600000
+    forex:
+      active: true
+      delay:
+        start: 5000
+        end: 3600000
+    caching:
+      active: true
+      cron: 0 0 1 * * MON
   client:
     github:
-      issuesUrl: https://api.github.com/repos/MoneyStats/MoneyStats-Service-Application/issues
+      baseUrl: https://api.github.com
+      issuesUrl: /repos/MoneyStats/App/issues
       authToken: token
     emailSender:
       url: http://localhost:8086
       sendEmailUrl: /v1/send-email
+    coinGecko:
+      url: https://api.coingecko.com
+      marketDataUrl: /api/v3/coins/markets
+    exchangeRates:
+      baseUrl: http://api.exchangerate.host
+      rates: /live
+      apiKey: apiKey
+    anyApi:
+      baseUrl: https://anyapi.io/api
+      rates: /v1/exchange/rates
+      apiKey: apiKey
 
 jwt:
-  secret: B710834ECC17FAAC9977FE2980C4604E9AAA59
+  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 3600
 app:
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
+  logTail:
+    active: false
   invitationCode: token
   fe:
     url: http://localhost:4200

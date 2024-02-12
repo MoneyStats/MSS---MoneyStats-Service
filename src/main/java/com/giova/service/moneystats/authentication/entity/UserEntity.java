@@ -1,8 +1,10 @@
 package com.giova.service.moneystats.authentication.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.giova.service.moneystats.authentication.dto.UserRole;
-import com.giova.service.moneystats.generic.GenericEntity;
+import com.giova.service.moneystats.settings.entity.UserSettingEntity;
+import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +19,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "USERS")
 public class UserEntity extends GenericEntity {
+
+  public static final String USER_COOKIE = "user_cookie_application";
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,8 +51,11 @@ public class UserEntity extends GenericEntity {
   private String profilePhoto;
 
   // @Enumerated(EnumType.STRING)
-  @Column(name = "CURRENCY", nullable = false)
+  @Column(name = "CURRENCY")
   private String currency;
+
+  @Column(name = "CRYPTO_CURRENCY")
+  private String cryptoCurrency;
 
   @Lob
   @Column(name = "GITHUB_USER")
@@ -56,4 +63,8 @@ public class UserEntity extends GenericEntity {
 
   @Column(name = "TOKEN_RESET")
   private String tokenReset;
+
+  @JsonManagedReference
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+  private UserSettingEntity settings;
 }
