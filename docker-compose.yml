@@ -37,7 +37,7 @@ services:
           - prod.moneystats.service
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
+      - "traefik.http.routers.backend-service.rule=Host(`prd.moneystats.service`)"
       - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
