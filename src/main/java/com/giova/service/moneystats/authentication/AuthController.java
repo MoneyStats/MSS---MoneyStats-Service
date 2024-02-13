@@ -176,7 +176,7 @@ public class AuthController {
   public ResponseEntity<Response> checkLogin(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken)
-      throws UtilsException {
+      throws UtilsException, JOSEException {
     return authService.checkLoginFE(authToken);
   }
 
