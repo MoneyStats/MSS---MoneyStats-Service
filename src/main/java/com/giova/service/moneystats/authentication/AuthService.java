@@ -185,10 +185,11 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> checkLoginFE(String authToken) {
+  public ResponseEntity<Response> checkLoginFE(String authToken) throws JOSEException {
 
     User userDTO = authMapper.mapUserEntityToUser(user);
     userDTO.setPassword(null);
+    userDTO.setAuthToken(regenerateToken(user));
 
     String message = "Welcome back " + user.getUsername() + "!";
 

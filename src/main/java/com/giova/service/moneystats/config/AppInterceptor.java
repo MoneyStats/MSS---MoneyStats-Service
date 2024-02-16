@@ -17,7 +17,6 @@ import io.github.giovannilamarmora.utils.utilities.FilesUtils;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -89,7 +88,7 @@ public class AppInterceptor extends OncePerRequestFilter {
       return;
     }
     setUserInContext(checkUser);
-    // setUserAndTokenInCookie(checkUser, generateToken, response);
+    // setTokenInCookie(generateToken, response);
     response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
     LOG.debug("Ending Filter Authentication");
     filterChain.doFilter(request, response);
@@ -108,12 +107,8 @@ public class AppInterceptor extends OncePerRequestFilter {
     BeanUtils.copyProperties(user, this.user);
   }
 
-  private void setUserAndTokenInCookie(
-      UserEntity user, AuthToken token, HttpServletResponse response)
+  private void setTokenInCookie(AuthToken token, HttpServletResponse response)
       throws JsonProcessingException {
-    String userAsString =
-        Base64.getEncoder().encodeToString(objectMapper.writeValueAsString(user).getBytes());
-    CookieManager.setCookieInResponse(UserEntity.USER_COOKIE, userAsString, response);
     CookieManager.setCookieInResponse(AuthToken.JWE_TOKEN_COOKIE, token.getAccessToken(), response);
   }
 }
