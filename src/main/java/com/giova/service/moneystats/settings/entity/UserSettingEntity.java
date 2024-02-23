@@ -35,8 +35,8 @@ public class UserSettingEntity extends GenericEntity {
   @Column(name = "GITHUB_USER")
   private String githubUser;
 
-  @Column(name = "DARK_MODE")
-  private String darkMode;
+  @Column(name = "COMPLETE_REQUIREMENT")
+  private String completeRequirement;
 
   @Column(name = "LIVE_WALLETS")
   private String liveWallets;
