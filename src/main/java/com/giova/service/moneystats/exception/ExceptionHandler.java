@@ -26,29 +26,30 @@ public class ExceptionHandler extends UtilsException {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_003);
     String value = "";
-    if (((ConstraintViolationException) e.getCause())
-        .getSQLException()
-        .getMessage()
-        .contains("Duplicate entry")) {
-      value =
-          Objects.requireNonNull(
-              ((ConstraintViolationException) e.getCause())
-                  .getSQLException()
-                  .getMessage()
-                  .split(" for key")[0]);
-      response
-          .getError()
-          .setExceptionMessage(
-              Objects.requireNonNull((ConstraintViolationException) e.getCause())
-                  .getSQLException()
-                  .getMessage());
-    } else {
-      value =
-          "Missing Value for: "
-              + e.getCause()
-                  .getMessage()
-                  .split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
-    }
+    if (e.getCause() instanceof ConstraintViolationException)
+      if (((ConstraintViolationException) e.getCause())
+          .getSQLException()
+          .getMessage()
+          .contains("Duplicate entry")) {
+        value =
+            Objects.requireNonNull(
+                ((ConstraintViolationException) e.getCause())
+                    .getSQLException()
+                    .getMessage()
+                    .split(" for key")[0]);
+        response
+            .getError()
+            .setExceptionMessage(
+                Objects.requireNonNull((ConstraintViolationException) e.getCause())
+                    .getSQLException()
+                    .getMessage());
+      } else {
+        value =
+            "Missing Value for: "
+                + e.getCause()
+                    .getMessage()
+                    .split("\\.")[e.getCause().getMessage().split("\\.").length - 1];
+      }
     response.getError().setMessage(value);
     if (e.getStackTrace().length != 0) {
       response.getError().setStackTrace(Arrays.toString(e.getStackTrace()));
