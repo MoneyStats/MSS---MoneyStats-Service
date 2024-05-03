@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.authentication.dto.User;
+import com.giova.service.moneystats.authentication.token.dto.RefreshToken;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -226,5 +227,36 @@ public class AuthController {
           String authToken,
       @RequestBody @Valid @Schema(description = "User updated") User user) {
     return authService.updateUserData(authToken, user);
+  }
+
+  @PostMapping(
+      value = "/token/refresh",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description = "API to update an account",
+      summary = "Update User",
+      tags = "Authentication")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-jwe.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Expired JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@expired-jwe.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> refreshToken(
+      @RequestBody @Valid @Schema(description = "Authorization Token") RefreshToken authToken)
+      throws JOSEException {
+    return authService.refreshToken(authToken.getAccessToken());
   }
 }

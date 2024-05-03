@@ -85,7 +85,7 @@ app:
   version: @project.version@
   exception:
     stacktrace: ${SHOW_UTILS_EXCEPTION_STACKTRACE}
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
   cors:
     enabled: false # Usando CrossOrigin non ne ho bisogno
   logTail:

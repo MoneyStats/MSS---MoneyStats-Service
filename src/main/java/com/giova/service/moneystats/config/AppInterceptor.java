@@ -114,5 +114,6 @@ public class AppInterceptor extends OncePerRequestFilter {
     response.setStatus(HttpStatus.FORBIDDEN.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.getWriter().write(Utilities.convertObjectToJson(exceptionResponse));
+    // response.reset();
   }
 }

@@ -19,7 +19,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Logged
@@ -237,33 +240,43 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AuthToken refreshToken(String authToken) throws UtilsException, JOSEException {
+  public ResponseEntity<Response> refreshToken(String authToken)
+      throws UtilsException, JOSEException {
     AuthToken token = new AuthToken();
-    token.setAccessToken(authToken);
+    token.setAccessToken(authToken.contains("Bearer") ? authToken : "Bearer " + authToken);
     User user = new User();
     try {
       user = tokenService.parseToken(token);
     } catch (UtilsException e) {
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_007, e.getMessage());
     }
     UserEntity userEntity =
         authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
     // userEntity.setPassword(null);
 
-    if (userEntity == null) {
+    if (ObjectUtils.isEmpty(userEntity)) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
 
     AuthToken refreshToken = tokenService.generateToken(user);
 
-    if (authToken == null) {
-      LOG.error("Token not found");
+    if (ObjectUtils.isEmpty(refreshToken)) {
+      LOG.error("Error on Refresh Token, not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
     }
-    return refreshToken;
+    String message =
+        "Token Refreshed, valid ultil "
+            + LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(refreshToken.getExpirationTime()), ZoneId.systemDefault());
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), refreshToken);
+
+    return ResponseEntity.ok(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
