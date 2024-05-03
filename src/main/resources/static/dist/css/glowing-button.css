@@ -1,0 +1,54 @@
+.glowing {
+	padding: 12px 15px;
+	border-radius: 50px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	display: grid;
+	color: #fff !important;
+	place-content: center;
+	font-weight: 600;
+	font-size: large;
+	/*text-transform: uppercase;*/
+	text-decoration: none !important;
+	box-sizing: border-box;
+	background: linear-gradient(90deg, #03a9f4, #f441a5, #ffeb3b, #03a9f4);
+	background-size: 400%;
+	cursor: pointer;
+}
+
+@keyframes animate {
+	0% {
+		background-position: 0%;
+	}
+
+	100% {
+		background-position: 400%;
+	}
+}
+
+.glowing:hover {
+	animation: animate 8s linear infinite;
+}
+
+.glowing:before {
+	content: "";
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	bottom: -5px;
+	right: -5px;
+	z-index: -1;
+	background: linear-gradient(90deg, #03a9f4, #f441a5, #ffeb3b, #03a9f4);
+	background-size: 400%;
+	border-radius: 40px;
+	opacity: 0;
+	transition: 1s;
+}
+
+.glowing:hover:before {
+	filter: blur(20px);
+	opacity: 1;
+	animation: animate 8s linear infinite;
+}

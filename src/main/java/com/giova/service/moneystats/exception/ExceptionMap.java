@@ -26,6 +26,10 @@ public enum ExceptionMap implements ExceptionCode {
       "INVALID_TOKEN",
       HttpStatus.UNAUTHORIZED,
       "Error on checking the current token provided, wrong token, try again!"),
+  ERR_AUTH_MSS_008(
+      "AUTH_TOKEN_NOT_VALID",
+      HttpStatus.FORBIDDEN,
+      "You cannot make this request cause the auth-token is invalid"),
 
   // Image
   ERR_IMG_MSS_001("FILE_NOT_FOUND", HttpStatus.BAD_REQUEST, "File not found!"),
