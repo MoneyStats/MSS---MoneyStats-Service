@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -59,10 +60,7 @@ public class AppInterceptor extends OncePerRequestFilter {
     LOG.debug("Starting Filter Authentication");
     String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
-    // if (shouldNotFilter(request)) {
-    //  // filterChain.doFilter(request, response);
-    //  return;
-    // }
+
     if (isEmpty(authToken)) {
       LOG.error("Auth-Token not found");
       errorResponse(request, response, exceptionResponse);
@@ -88,6 +86,8 @@ public class AppInterceptor extends OncePerRequestFilter {
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
+    String method = request.getMethod();
+    if (method.equalsIgnoreCase(HttpMethod.OPTIONS.name())) return true;
     String path = request.getRequestURI();
     if (shouldNotFilter.stream()
         .noneMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path)))
