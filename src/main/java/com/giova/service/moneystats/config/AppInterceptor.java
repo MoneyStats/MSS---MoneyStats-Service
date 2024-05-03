@@ -59,10 +59,10 @@ public class AppInterceptor extends OncePerRequestFilter {
     LOG.debug("Starting Filter Authentication");
     String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
-    if (shouldNotFilter(request)) {
-      // filterChain.doFilter(request, response);
-      return;
-    }
+    // if (shouldNotFilter(request)) {
+    //  // filterChain.doFilter(request, response);
+    //  return;
+    // }
     if (isEmpty(authToken)) {
       LOG.error("Auth-Token not found");
       errorResponse(request, response, exceptionResponse);

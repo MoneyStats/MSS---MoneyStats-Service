@@ -238,6 +238,14 @@ public class AuthController {
       summary = "Update User",
       tags = "Authentication")
   @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@refresh-token.json")))
+  @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",
       content =

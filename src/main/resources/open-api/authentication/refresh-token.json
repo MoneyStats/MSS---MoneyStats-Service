@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "message": "Token Refreshed, valid ultil 2024-05-03T19:09:54.717",
+  "correlationId": "53fdea26-1ce0-4914-a2d8-9fa4c8a76e0d",
+  "data": {
+    "expirationTime": 1714756194717,
+    "type": "Bearer",
+    "accessToken": "token"
+  }
+}
