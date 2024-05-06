@@ -7,29 +7,21 @@ public enum ExceptionMap implements ExceptionCode {
   /**
    * @Authentication Exception Map for Authentication
    */
-  ERR_AUTH_MSS_001(
+  ERR_AUTH_MSS_002(
       "WRONG_CREDENTIAL",
       HttpStatus.UNAUTHORIZED,
       "Wrong Credential for username or password. Try again!"),
-  ERR_AUTH_MSS_002("TOKEN_PARSE", HttpStatus.UNAUTHORIZED, "Error during parsing Access-Token"),
   ERR_AUTH_MSS_003("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Generic Error"),
-  ERR_AUTH_MSS_004(
-      "CHECK_LOGIN_FAIL",
-      HttpStatus.UNAUTHORIZED,
-      "Error on checking the current user, Login again!"),
   ERR_AUTH_MSS_005(
       "INVALID_INVITATION_CODE",
       HttpStatus.UNAUTHORIZED,
       "Error on checking the current invitation code provided, wrong code, try again!"),
   ERR_AUTH_MSS_006("INVALID_EMAIL", HttpStatus.BAD_REQUEST, "Invalid email address, Try Again!"),
-  ERR_AUTH_MSS_007(
-      "INVALID_TOKEN",
-      HttpStatus.UNAUTHORIZED,
-      "Error on checking the current token provided, wrong token, try again!"),
   ERR_AUTH_MSS_008(
       "AUTH_TOKEN_NOT_VALID",
       HttpStatus.FORBIDDEN,
       "You cannot make this request cause the auth-token is invalid"),
+  ERR_AUTH_MSS_009("INVALID_REGEX", HttpStatus.BAD_REQUEST, "Invalid regex passed!"),
 
   // Image
   ERR_IMG_MSS_001("FILE_NOT_FOUND", HttpStatus.BAD_REQUEST, "File not found!"),

@@ -98,7 +98,7 @@ public class AuthServiceTest {
   }
 
   @Test
-  public void checkLoginFETest_successfully() throws IOException, UtilsException, JOSEException {
+  public void userInfoTest_successfully() throws IOException, UtilsException, JOSEException {
     User register =
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
@@ -113,7 +113,7 @@ public class AuthServiceTest {
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
 
     ResponseEntity<Response> checkLogin =
-        authService.checkLoginFE(userAc.getAuthToken().getAccessToken());
+        authService.userInfo(userAc.getAuthToken().getAccessToken());
     assertEquals(HttpStatus.OK, checkLogin.getStatusCode());
   }
 

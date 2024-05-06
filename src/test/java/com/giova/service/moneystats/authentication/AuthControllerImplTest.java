@@ -18,9 +18,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ActiveProfiles("test")
-@WebMvcTest(controllers = AuthController.class)
-@ContextConfiguration(classes = AuthController.class)
-public class AuthControllerTest {
+@WebMvcTest(controllers = AuthControllerImpl.class)
+@ContextConfiguration(classes = AuthControllerImpl.class)
+public class AuthControllerImplTest {
 
   @MockBean private AuthService authService;
 

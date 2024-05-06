@@ -81,7 +81,7 @@ public class TokenService {
       body = Jwts.parser().setSigningKey(secret).parseClaimsJws(token.getAccessToken()).getBody();
     } catch (JwtException e) {
       LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());
     }
 
     return new User(
@@ -111,7 +111,7 @@ public class TokenService {
               .build();
     } catch (JsonProcessingException e) {
       LOG.error("Not Authorized, generateToken - Exception -> {}", e.getMessage());
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());
     }
 
     Payload payload = new Payload(claimsSet.toJSONObject());
@@ -153,7 +153,7 @@ public class TokenService {
           settingDTO);
     } catch (JOSEException | ParseException | BadJOSEException | JsonProcessingException e) {
       LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_002, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());
     }
   }
 }

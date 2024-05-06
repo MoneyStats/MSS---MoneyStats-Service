@@ -218,8 +218,10 @@ public class WalletMapper {
 
   private void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
-    if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
-        || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
+    // if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
+    //    || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
+
+    if (!wallet.getCategory().equalsIgnoreCase("Crypto")) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
     if (forex == null) return;

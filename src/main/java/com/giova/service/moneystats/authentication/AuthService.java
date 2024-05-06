@@ -12,6 +12,8 @@ import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.settings.entity.UserSettingEntity;
+import com.giova.service.moneystats.utilities.RegEx;
+import com.giova.service.moneystats.utilities.Utils;
 import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -60,11 +62,22 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
     user.setRole(UserRole.USER);
+    user.setPassword(new String(Base64.getDecoder().decode(user.getPassword())));
 
     if (!registerToken.equalsIgnoreCase(invitationCode)) {
       LOG.error("Invitation code: {}, is wrong", invitationCode);
       throw new AuthException(
           ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
+    }
+
+    if (!Utils.checkCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+      LOG.error("Invalid regex for field password for user {}", user.getUsername());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field password");
+    }
+
+    if (!Utils.checkCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
+      LOG.error("Invalid regex for field email for user {}", user.getUsername());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field email");
     }
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(user);
@@ -87,9 +100,22 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> login(String username, String password)
-      throws UtilsException, JOSEException {
+  public ResponseEntity<Response> login(String basic) throws UtilsException, JOSEException {
+    String username;
+    String password;
+    try {
+      String[] decoded =
+          new String(Base64.getDecoder().decode(basic.split("Basic ")[1])).split(":");
+      username = decoded[0];
+      password = decoded[1];
+    } catch (Exception e) {
+      LOG.error("Error during decoding password, message is {}", e.getMessage());
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
+    }
+
     LOG.debug("Login process started for user {}", username);
+    password = new String(Base64.getDecoder().decode(password));
     logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
@@ -98,13 +124,13 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_002, ExceptionMap.ERR_AUTH_MSS_002.getMessage());
     }
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_002, ExceptionMap.ERR_AUTH_MSS_002.getMessage());
     }
 
     migrateToSettings(userEntity);
@@ -123,6 +149,10 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
+    if (!Utils.checkCharacterAndRegexValid(email, RegEx.EMAIL.getValue())) {
+      LOG.error("Invalid regex for field email");
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field email");
+    }
     UserEntity userEntity = authCacheService.findUserEntityByEmail(email);
     if (userEntity == null) {
       LOG.error("User not found");
@@ -158,16 +188,22 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> resetPassword(String password, String token)
       throws UtilsException {
+    password = new String(Base64.getDecoder().decode(password));
+    if (!Utils.checkCharacterAndRegexValid(password, RegEx.PASSWORD_FULL.getValue())) {
+      LOG.error("Invalid regex for field password");
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field password");
+    }
+
     UserEntity userEntity = authCacheService.findUserEntityByTokenReset(token);
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
     }
     if (userEntity.getUpdateDate().plusDays(1).isBefore(LocalDateTime.now())) {
       LOG.error("Token Expired");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
     }
     userEntity.setPassword(bCryptPasswordEncoder.encode(password));
     userEntity.setTokenReset(null);
@@ -188,19 +224,17 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> checkLoginFE(String authToken) throws JOSEException {
+  public ResponseEntity<Response> userInfo(String authToken) throws JOSEException {
 
     User userDTO = authMapper.mapUserEntityToUser(user);
     userDTO.setPassword(null);
     userDTO.setAuthToken(regenerateToken(user));
 
-    String message = "Welcome back " + user.getUsername() + "!";
+    String message = "Obtained data for user " + user.getUsername() + "!";
 
-    Response response =
+    return ResponseEntity.ok(
         new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), userDTO);
-
-    return ResponseEntity.ok(response);
+            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), userDTO));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -212,7 +246,7 @@ public class AuthService {
     try {
       user = tokenService.parseToken(token);
     } catch (UtilsException e) {
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_004, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());
     }
     UserEntity userEntity =
         authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
@@ -221,7 +255,7 @@ public class AuthService {
     if (userEntity == null) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_002, ExceptionMap.ERR_AUTH_MSS_002.getMessage());
     }
     return userEntity;
   }
@@ -234,7 +268,7 @@ public class AuthService {
     if (authToken == null) {
       LOG.error("Token not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_001, ExceptionMap.ERR_AUTH_MSS_001.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
     }
     return authToken;
   }
@@ -248,7 +282,7 @@ public class AuthService {
     try {
       user = tokenService.parseToken(token);
     } catch (UtilsException e) {
-      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_007, e.getMessage());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());
     }
     UserEntity userEntity =
         authCacheService.findUserEntityByUsernameOrEmail(user.getUsername(), user.getEmail());
@@ -257,7 +291,7 @@ public class AuthService {
     if (ObjectUtils.isEmpty(userEntity)) {
       LOG.error("User not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
     }
 
     AuthToken refreshToken = tokenService.generateToken(user);
@@ -265,7 +299,7 @@ public class AuthService {
     if (ObjectUtils.isEmpty(refreshToken)) {
       LOG.error("Error on Refresh Token, not found");
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_007, ExceptionMap.ERR_AUTH_MSS_007.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
     }
     String message =
         "Token Refreshed, valid ultil "
@@ -281,9 +315,18 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> updateUserData(String authToken, User userToUpdate) {
+    if (!Utils.checkCharacterAndRegexValid(userToUpdate.getEmail(), RegEx.EMAIL.getValue())) {
+      LOG.error("Invalid regex for field email for user {}", userToUpdate.getUsername());
+      throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field email");
+    }
 
     UserEntity userEntity = authMapper.mapUserToUserEntity(userToUpdate);
     if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+      userToUpdate.setPassword(new String(Base64.getDecoder().decode(userToUpdate.getPassword())));
+      if (!Utils.checkCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+        LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
+        throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field password");
+      }
       userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
     } else {
       userEntity.setPassword(user.getPassword());
