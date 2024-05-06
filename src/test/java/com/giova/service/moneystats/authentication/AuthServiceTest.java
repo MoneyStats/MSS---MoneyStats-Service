@@ -12,6 +12,7 @@ import com.nimbusds.jose.JOSEException;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.io.IOException;
+import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -66,7 +67,10 @@ public class AuthServiceTest {
 
     User user = objectMapper.convertValue(expected.getData(), User.class);
 
-    ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+    String encode = registered.getUsername() + ":" + "string";
+    String basic = Base64.getEncoder().encodeToString(encode.getBytes());
+
+    ResponseEntity<Response> actual = authService.login(basic);
 
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
     assertEquals(expected.getStatus(), actual.getBody().getStatus());
@@ -86,7 +90,10 @@ public class AuthServiceTest {
 
     User registered = objectMapper.convertValue(actualR.getBody().getData(), User.class);
 
-    ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+    String encode = registered.getUsername() + ":" + "string";
+    String basic = Base64.getEncoder().encodeToString(encode.getBytes());
+
+    ResponseEntity<Response> actual = authService.login(basic);
 
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
 
@@ -108,7 +115,10 @@ public class AuthServiceTest {
 
     User registered = objectMapper.convertValue(actualR.getBody().getData(), User.class);
 
-    ResponseEntity<Response> actual = authService.login(registered.getUsername(), "string");
+    String encode = registered.getUsername() + ":" + "string";
+    String basic = Base64.getEncoder().encodeToString(encode.getBytes());
+
+    ResponseEntity<Response> actual = authService.login(basic);
 
     User userAc = objectMapper.convertValue(actual.getBody().getData(), User.class);
 
