@@ -9,7 +9,7 @@ public class Utils {
   public static boolean checkCharacterAndRegexValid(String field, String regex) {
     if (ObjectUtils.isEmpty(field) || ObjectUtils.isEmpty(regex)) return false;
     Pattern p = Pattern.compile(regex);
-    Matcher m = p.matcher(field.toUpperCase());
+    Matcher m = p.matcher(field);
     return m.find();
   }
 }

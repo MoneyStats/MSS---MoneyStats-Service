@@ -62,7 +62,7 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
     user.setRole(UserRole.USER);
-    user.setPassword(new String(Base64.getDecoder().decode(user.getPassword())));
+    // user.setPassword(new String(Base64.getDecoder().decode(user.getPassword())));
 
     if (!registerToken.equalsIgnoreCase(invitationCode)) {
       LOG.error("Invitation code: {}, is wrong", invitationCode);
