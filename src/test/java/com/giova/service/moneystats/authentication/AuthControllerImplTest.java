@@ -3,6 +3,7 @@ package com.giova.service.moneystats.authentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.authentication.dto.User;
 import io.github.giovannilamarmora.utils.generic.Response;
+import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ActiveProfiles("test")
-@WebMvcTest(controllers = AuthController.class)
-@ContextConfiguration(classes = AuthController.class)
-public class AuthControllerTest {
+@WebMvcTest(controllers = AuthControllerImpl.class)
+@ContextConfiguration(classes = AuthControllerImpl.class)
+public class AuthControllerImplTest {
 
   @MockBean private AuthService authService;
 
@@ -59,8 +60,10 @@ public class AuthControllerTest {
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
 
-    Mockito.when(authService.login(user.getUsername(), "string"))
-        .thenReturn(ResponseEntity.ok(expected));
+    String encode = user.getUsername() + ":" + "string";
+    String basic = Base64.getEncoder().encodeToString(encode.getBytes());
+
+    Mockito.when(authService.login(basic)).thenReturn(ResponseEntity.ok(expected));
 
     mockMvc
         .perform(
