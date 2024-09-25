@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.settings.entity.UserSettingEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

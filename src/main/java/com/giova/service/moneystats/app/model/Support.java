@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.app.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

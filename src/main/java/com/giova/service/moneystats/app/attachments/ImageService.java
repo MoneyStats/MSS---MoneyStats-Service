@@ -2,12 +2,12 @@ package com.giova.service.moneystats.app.attachments;
 
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.exception.ExceptionMap;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -47,8 +47,7 @@ public class ImageService {
     String message = "Attachment " + attachment.getName() + " Successfully uploaded!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), attachment);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), attachment);
     return ResponseEntity.ok(response);
   }
 

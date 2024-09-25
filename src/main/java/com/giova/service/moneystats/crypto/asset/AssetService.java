@@ -11,17 +11,17 @@ import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ public class AssetService {
         new Response(
             HttpStatus.OK.value(),
             message.toString(),
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             Objects.requireNonNull(walletRes));
     return ResponseEntity.ok(response);
   }
@@ -91,7 +91,7 @@ public class AssetService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             Objects.requireNonNull(saveWallet.getBody()).getData());
     return ResponseEntity.ok(response);
   }
@@ -118,7 +118,7 @@ public class AssetService {
     }
 
     Response response =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), assets);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), assets);
     return ResponseEntity.ok(response);
   }
 
@@ -140,8 +140,7 @@ public class AssetService {
 
     String message = "Data for " + identifier;
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), asset);
+    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), asset);
     return ResponseEntity.ok(response);
   }
 }

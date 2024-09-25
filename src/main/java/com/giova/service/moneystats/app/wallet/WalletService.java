@@ -8,17 +8,17 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.settings.dto.Status;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,8 +98,7 @@ public class WalletService {
     String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
   }
 
@@ -124,8 +123,7 @@ public class WalletService {
         walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet, getAllCryptoDates);
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
   }
 
@@ -149,8 +147,7 @@ public class WalletService {
         walletMapper.fromWalletEntitiesToWallets(walletEntity, live, getAllCryptoDates);
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), walletToReturn);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
   }
 

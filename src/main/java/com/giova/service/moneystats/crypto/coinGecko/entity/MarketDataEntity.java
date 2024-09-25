@@ -2,7 +2,7 @@ package com.giova.service.moneystats.crypto.coinGecko.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)

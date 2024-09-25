@@ -15,17 +15,16 @@ import com.giova.service.moneystats.settings.entity.UserSettingEntity;
 import com.giova.service.moneystats.utilities.RegEx;
 import com.giova.service.moneystats.utilities.Utils;
 import com.nimbusds.jose.JOSEException;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,6 @@ public class AuthService {
   @Autowired private TokenService tokenService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private ImageService imageService;
-  @Autowired private HttpServletRequest request;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
@@ -93,7 +91,7 @@ public class AuthService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             authMapper.mapUserEntityToUser(saved));
 
     return ResponseEntity.ok(response);
@@ -116,7 +114,6 @@ public class AuthService {
 
     LOG.debug("Login process started for user {}", username);
     password = new String(Base64.getDecoder().decode(password));
-    logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
 
@@ -141,8 +138,7 @@ public class AuthService {
 
     String message = "Login Successfully! Welcome back " + user.getUsername() + "!";
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
+    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), user);
     LOG.debug("Login process ended for user {}", username);
     return ResponseEntity.ok(response);
   }
@@ -179,8 +175,7 @@ public class AuthService {
     String message = "Email Sent! Check your email address!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), responseEm);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), responseEm);
 
     return ResponseEntity.ok(response);
   }
@@ -217,7 +212,7 @@ public class AuthService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             authMapper.mapUserEntityToUser(saved));
 
     return ResponseEntity.ok(response);
@@ -233,13 +228,11 @@ public class AuthService {
     String message = "Obtained data for user " + user.getUsername() + "!";
 
     return ResponseEntity.ok(
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), userDTO));
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), userDTO));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserEntity checkLogin(String authToken) throws UtilsException {
-    logCurrentHostAddress();
     AuthToken token = new AuthToken();
     token.setAccessToken(authToken);
     User user = new User();
@@ -307,8 +300,7 @@ public class AuthService {
                 Instant.ofEpochMilli(refreshToken.getExpirationTime()), ZoneId.systemDefault());
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), refreshToken);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), refreshToken);
 
     return ResponseEntity.ok(response);
   }
@@ -348,8 +340,7 @@ public class AuthService {
 
     String message = "User updated!";
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), saved);
+    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), saved);
 
     return ResponseEntity.ok(response);
   }
@@ -358,24 +349,6 @@ public class AuthService {
   public List<String> getCryptoFiatUsersCurrency() {
     LOG.info("Getting Crypto Fiat Currency");
     return authCacheService.selectDistinctCryptoFiatCurrency();
-  }
-
-  private void logCurrentHostAddress() {
-    String ORIGIN = "origin";
-    if (request.getHeader(ORIGIN) != null)
-      LOG.info(
-          "[ADDRESS] Getting Remote Host Address {}, with correlationID {}",
-          request.getHeader(ORIGIN),
-          CorrelationIdUtils.getCorrelationId() != null
-              ? CorrelationIdUtils.getCorrelationId()
-              : CorrelationIdUtils.generateCorrelationId());
-    else
-      LOG.info(
-          "[ADDRESS] Getting Remote IP Address {}, with correlationID {}",
-          request.getRemoteAddr(),
-          CorrelationIdUtils.getCorrelationId() != null
-              ? CorrelationIdUtils.getCorrelationId()
-              : CorrelationIdUtils.generateCorrelationId());
   }
 
   private void migrateToSettings(UserEntity user) {

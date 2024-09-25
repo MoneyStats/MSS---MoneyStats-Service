@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -19,19 +19,19 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.exception.ExceptionMap;
 import com.giova.service.moneystats.settings.dto.Status;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,11 +65,7 @@ public class AppService {
     String message = "Bug Reported!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            CorrelationIdUtils.getCorrelationId(),
-            issues.getBody());
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), issues.getBody());
     return ResponseEntity.ok(response);
   }
 
@@ -107,7 +103,7 @@ public class AppService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             getData.get(String.valueOf(thisYear)));
     return ResponseEntity.ok(response);
   }
@@ -137,8 +133,7 @@ public class AppService {
     String message = "Data for Resume!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), getData);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), getData);
     return ResponseEntity.ok(response);
   }
 
@@ -165,8 +160,7 @@ public class AppService {
     String message = "Stats Added Successfully!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), wallets);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), wallets);
     return ResponseEntity.ok(response);
   }
 
@@ -189,8 +183,7 @@ public class AppService {
     String message = "Email Sent! Check your email address!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), responseEm);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), responseEm);
 
     return ResponseEntity.ok(response);
   }
@@ -210,7 +203,7 @@ public class AppService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             walletService.deleteWalletIds(wallets));
 
     return ResponseEntity.ok(response);
@@ -227,8 +220,7 @@ public class AppService {
     String message = "Data successfully restored!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), restoreWallets);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), restoreWallets);
 
     return ResponseEntity.ok(response);
   }

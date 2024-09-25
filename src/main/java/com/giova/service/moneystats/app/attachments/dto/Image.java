@@ -2,8 +2,8 @@ package com.giova.service.moneystats.app.attachments.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)

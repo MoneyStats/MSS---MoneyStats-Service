@@ -8,10 +8,9 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Paths;
 import java.util.Map;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,7 +38,7 @@ public class AppConfig {
   }
 
   @Bean
-  public OpenApiCustomiser applyStandardOpenAPIModifications() {
+  public OpenApiCustomizer applyStandardOpenAPIModifications() {
     return openApi -> {
       Paths paths = new Paths();
       openApi.getPaths().entrySet().stream()
