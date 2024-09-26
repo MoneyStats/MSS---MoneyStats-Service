@@ -19,7 +19,7 @@ import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class WalletMapper {
     walletEntity.setInfo(wallet.getInfoString());
     // } else
     if (wallet.getInfo() != null) {
-      walletEntity.setInfo(Utilities.convertMapToString(wallet.getInfo()));
+      walletEntity.setInfo(Mapper.convertMapToString(wallet.getInfo()));
     }
     if (wallet.getHistory() != null) {
       walletEntity.setHistory(

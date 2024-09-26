@@ -50,7 +50,7 @@ rest:
       issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://email-sender.hostwebserver.site/email-sender/
+      url: https://email-sender.giovannilamarmora.com
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com

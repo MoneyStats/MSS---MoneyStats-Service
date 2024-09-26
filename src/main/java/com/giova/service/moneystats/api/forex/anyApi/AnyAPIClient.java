@@ -55,11 +55,7 @@ public class AnyAPIClient {
 
     Mono<ResponseEntity<Rates>> response =
         webClientRest.perform(
-            HttpMethod.GET,
-            UtilsUriBuilder.toBuild().set(getRates, params),
-            null,
-            headers,
-            Rates.class);
+            HttpMethod.GET, UtilsUriBuilder.buildUri(getRates, params), null, headers, Rates.class);
     return validateAndGetExchangeRates(response);
   }
 

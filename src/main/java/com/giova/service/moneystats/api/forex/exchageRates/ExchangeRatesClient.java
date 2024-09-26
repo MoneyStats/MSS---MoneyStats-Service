@@ -58,7 +58,7 @@ public class ExchangeRatesClient {
     Mono<ResponseEntity<ExchangeRates>> response =
         webClientRest.perform(
             HttpMethod.GET,
-            UtilsUriBuilder.toBuild().set(getRates, params),
+            UtilsUriBuilder.buildUri(getRates, params),
             null,
             headers,
             ExchangeRates.class);

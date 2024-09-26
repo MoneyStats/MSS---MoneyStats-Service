@@ -14,16 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 @Component
 @Logged
 public class EmailSenderClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
   private final WebClientRest webClientRest = new WebClientRest();
 
   @Value(value = "${rest.client.emailSender.url}")
@@ -40,39 +37,20 @@ public class EmailSenderClient {
     webClientRest.init(builder);
   }
 
-  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public ResponseEntity<EmailResponse> sendEmailRest(EmailContent emailContent) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Accept", "application/json");
-    HttpEntity<EmailContent> request = new HttpEntity<>(emailContent, headers);
-    String urlTemplate =
-        UriComponentsBuilder.fromHttpUrl(emailSenderUrl + sendEmailUrl)
-            .queryParam("htmlText", true)
-            .encode()
-            .toUriString();
-    ResponseEntity<EmailResponse> response =
-        restTemplate.exchange(urlTemplate, HttpMethod.POST, request, EmailResponse.class);
-
-    return response;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public ResponseEntity<EmailResponse> sendEmail(EmailContent emailContent) {
+  public Mono<ResponseEntity<EmailResponse>> sendEmail(EmailContent emailContent) {
     Map<String, Object> params = new HashMap<>();
     params.put("htmlText", true);
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
-    Mono<ResponseEntity<EmailResponse>> response =
-        webClientRest.perform(
-            HttpMethod.POST,
-            UtilsUriBuilder.toBuild().set(sendEmailUrl, params),
-            emailContent,
-            headers,
-            EmailResponse.class);
-
-    return response.block();
+    return webClientRest.perform(
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(sendEmailUrl, params),
+        emailContent,
+        headers,
+        EmailResponse.class);
   }
 }

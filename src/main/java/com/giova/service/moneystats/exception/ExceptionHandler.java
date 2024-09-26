@@ -4,11 +4,11 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import java.util.Arrays;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
@@ -18,11 +18,9 @@ public class ExceptionHandler extends UtilsException {
   @org.springframework.web.bind.annotation.ExceptionHandler(
       value = DataIntegrityViolationException.class)
   public ResponseEntity<ExceptionResponse> handleException(
-      DataIntegrityViolationException e, HttpServletRequest request) {
+      DataIntegrityViolationException e, ServerHttpRequest request) {
     LOG.error(
-        "An error happened while calling {} Downstream API: {}",
-        request.getRequestURI(),
-        e.getMessage());
+        "An error happened while calling {} Downstream API: {}", request.getPath(), e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_AUTH_MSS_003);
     String value = "";
@@ -61,11 +59,9 @@ public class ExceptionHandler extends UtilsException {
   @org.springframework.web.bind.annotation.ExceptionHandler(
       value = MaxUploadSizeExceededException.class)
   public ResponseEntity<ExceptionResponse> handleException(
-      MaxUploadSizeExceededException e, HttpServletRequest request) {
+      MaxUploadSizeExceededException e, ServerHttpRequest request) {
     LOG.error(
-        "An error happened while calling {} Downstream API: {}",
-        request.getRequestURI(),
-        e.getMessage());
+        "An error happened while calling {} Downstream API: {}", request.getPath(), e.getMessage());
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_IMG_MSS_002);
     response.getError().setMessage(ExceptionMap.ERR_IMG_MSS_002.getMessage());

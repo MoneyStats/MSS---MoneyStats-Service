@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import reactor.core.publisher.Mono;
 
 public interface AuthController {
 
@@ -102,7 +103,7 @@ public interface AuthController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@invalid-email.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  ResponseEntity<Response> forgotPassword(
+  Mono<ResponseEntity<Response>> forgotPassword(
       @RequestParam @Schema(description = "Email Address", example = "email@email.com")
           String email);
 

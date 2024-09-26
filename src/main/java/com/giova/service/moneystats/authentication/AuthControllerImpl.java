@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @Logged
 @RestController
@@ -28,7 +29,7 @@ public class AuthControllerImpl implements AuthController {
     return authService.login(basic);
   }
 
-  public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
+  public Mono<ResponseEntity<Response>> forgotPassword(String email) throws UtilsException {
     return authService.forgotPassword(email);
   }
 

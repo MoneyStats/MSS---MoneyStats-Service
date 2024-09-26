@@ -2,19 +2,19 @@ package com.giova.service.moneystats.crypto;
 
 import com.giova.service.moneystats.scheduler.CronCachingReset;
 import com.giova.service.moneystats.scheduler.CronMarketData;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -137,7 +137,7 @@ public class CryptoController {
         new Response(
             HttpStatus.OK.value(),
             "MarketData Successfully imported",
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             null);
     return ResponseEntity.ok(response);
   }
@@ -175,10 +175,7 @@ public class CryptoController {
     cronCachingReset.scheduleCleanCache();
     Response response =
         new Response(
-            HttpStatus.OK.value(),
-            "Cache cleaned successfully",
-            CorrelationIdUtils.getCorrelationId(),
-            null);
+            HttpStatus.OK.value(), "Cache cleaned successfully", TraceUtils.getSpanID(), null);
     return ResponseEntity.ok(response);
   }
 }

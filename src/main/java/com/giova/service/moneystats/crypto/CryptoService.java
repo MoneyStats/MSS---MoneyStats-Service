@@ -13,12 +13,12 @@ import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.math.MathService;
 import java.time.LocalDate;
 import java.util.*;
@@ -87,7 +87,7 @@ public class CryptoService {
         new Response(
             HttpStatus.OK.value(),
             message,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             getData.get(String.valueOf(thisYear)));
     return ResponseEntity.ok(response);
   }
@@ -119,8 +119,7 @@ public class CryptoService {
     String message = "Data for Crypto Resume!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), getData);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), getData);
     return ResponseEntity.ok(response);
   }
 

@@ -79,10 +79,10 @@ public class WalletEntity extends GenericEntity {
   private UserEntity user;
 
   @OrderBy(value = "rank")
-  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<AssetEntity> assets;
 
   @OrderBy(value = "date")
-  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
 }

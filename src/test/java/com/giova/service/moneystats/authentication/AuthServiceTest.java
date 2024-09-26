@@ -1,9 +1,9 @@
 package com.giova.service.moneystats.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.authentication.dto.User;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -13,6 +13,8 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.io.IOException;
 import java.util.Base64;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,14 +22,31 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @SpringBootTest()
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AuthServiceTest {
 
+  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private AuthService authService;
+  private WireMockServer wireMockServer;
 
-  private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+  @BeforeEach
+  public void setUp() {
+    wireMockServer = new WireMockServer(8086);
+    wireMockServer.start();
+    WireMock.configureFor(wireMockServer.port());
+  }
+
+  @AfterEach
+  public void tearDown() {
+    if (wireMockServer != null) {
+      wireMockServer.stop();
+    }
+  }
+
 
   @Test
   public void registerTest_successfully() throws IOException, UtilsException {
@@ -129,9 +148,6 @@ public class AuthServiceTest {
 
   @Test
   public void testForgotPassword() throws Exception {
-    WireMockServer wireMockServer = new WireMockServer(8086);
-    wireMockServer.start();
-    WireMock.configureFor(wireMockServer.port());
     User register =
         objectMapper.readValue(
             new ClassPathResource("mock/request/user.json").getInputStream(), User.class);
@@ -147,13 +163,20 @@ public class AuthServiceTest {
                     .withHeader("Content-Type", "application/json")
                     .withBody(objectMapper.writeValueAsString(userAc))));
 
-    EmailResponse emailResponse = new EmailResponse();
-    emailResponse.setToken(token);
+    // Mock di invocazione al servizio di forgotPassword
+    Mono<ResponseEntity<Response>> responseMono = authService.forgotPassword(userAc.getEmail());
 
-    ResponseEntity<Response> response = authService.forgotPassword(userAc.getEmail());
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals("Email Sent! Check your email address!", response.getBody().getMessage());
-    wireMockServer.stop();
+    // Verifica reattiva con StepVerifier
+    StepVerifier.create(responseMono)
+        .expectNextMatches(
+            response -> {
+              assertNotNull(response);
+              assertEquals(HttpStatus.OK, response.getStatusCode());
+              assertEquals(
+                  "Email Sent! Check your email address!", response.getBody().getMessage());
+              return true;
+            })
+        .expectComplete()
+        .verify();
   }
 }

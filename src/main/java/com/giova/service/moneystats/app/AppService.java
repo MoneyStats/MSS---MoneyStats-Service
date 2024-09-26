@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.emailSender.EmailSenderService;
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
-import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.api.github.GithubClient;
 import com.giova.service.moneystats.app.category.CategoryService;
 import com.giova.service.moneystats.app.category.dto.Category;
@@ -40,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import reactor.core.publisher.Mono;
 
 @Logged
 @Service
@@ -57,16 +58,21 @@ public class AppService {
   @Autowired private AppMapper appMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> reportBug(GithubIssues githubIssues)
+  public Mono<ResponseEntity<Response>> reportBug(GithubIssues githubIssues)
       throws JsonProcessingException {
     LOG.info("Bug to report: {}", objectMapper.writeValueAsString(githubIssues));
 
-    ResponseEntity<Object> issues = githubClient.openGithubIssues(githubIssues);
-    String message = "Bug Reported!";
+    return githubClient
+        .openGithubIssues(githubIssues)
+        .flatMap(
+            issues -> {
+              String message = "Bug Reported!";
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), issues.getBody());
-    return ResponseEntity.ok(response);
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), issues.getBody());
+              return Mono.just(ResponseEntity.ok(response));
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -165,7 +171,7 @@ public class AppService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> contactSupport(Support support) throws UtilsException {
+  public Mono<ResponseEntity<Response>> contactSupport(Support support) throws UtilsException {
     // Send Email
     EmailContent emailContent =
         EmailContent.builder()
@@ -177,21 +183,34 @@ public class AppService {
     Map<String, String> param = new HashMap<>();
     param.put("{{NAME}}", support.getName());
     param.put("{{MESSAGE}}", support.getMessage());
-    EmailResponse responseEm =
-        emailSenderService.sendEmail(EmailContent.CONTACT_TEMPLATE, param, emailContent);
+    return emailSenderService
+        .sendEmail(EmailContent.CONTACT_TEMPLATE, param, emailContent)
+        .flatMap(
+            emailResponse -> {
+              String message = "Email Sent! Check your email address!";
 
-    String message = "Email Sent! Check your email address!";
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), emailResponse);
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), responseEm);
-
-    return ResponseEntity.ok(response);
+              return Mono.just(ResponseEntity.ok(response));
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> backupData() throws UtilsException {
 
     ResponseEntity<Response> getWallets = walletService.getWallets();
+    if (ObjectUtils.isEmpty(getWallets.getBody())) {
+      LOG.error("There is no Wallet saved, backup aborted");
+      Response response =
+          new Response(
+              HttpStatus.OK.value(),
+              "There is no wallet to be saved, backup aborted",
+              TraceUtils.getSpanID(),
+              null);
+      return ResponseEntity.ok(response);
+    }
 
     List<Wallet> wallets =
         objectMapper.convertValue(

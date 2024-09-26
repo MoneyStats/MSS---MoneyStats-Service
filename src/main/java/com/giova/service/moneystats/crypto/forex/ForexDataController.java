@@ -1,21 +1,21 @@
 package com.giova.service.moneystats.crypto.forex;
 
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
-import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -67,7 +67,7 @@ public class ForexDataController {
         new Response(
             HttpStatus.OK.value(),
             "Founded " + forex.size() + " Forex Coins!",
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             forex));
   }
 
@@ -107,7 +107,7 @@ public class ForexDataController {
         new Response(
             HttpStatus.OK.value(),
             "Got Forex Data For " + currency,
-            CorrelationIdUtils.getCorrelationId(),
+            TraceUtils.getSpanID(),
             forexDataService.getForexData(currency)));
   }
 }

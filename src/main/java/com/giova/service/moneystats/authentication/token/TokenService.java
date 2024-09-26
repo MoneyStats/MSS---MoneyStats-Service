@@ -23,13 +23,12 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import jakarta.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.util.Date;
+import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,29 +55,30 @@ public class TokenService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateJWTToken(User user) {
-    Claims claims = Jwts.claims().setSubject(user.getUsername());
-    claims.put(FIRSTNAME, user.getName());
-    claims.put(LASTNAME, user.getSurname());
-    claims.put(EMAIL, user.getEmail());
-    claims.put(ROLE, user.getRole());
+    ClaimsBuilder claims = Jwts.claims().subject(user.getUsername());
+    claims.add(FIRSTNAME, user.getName());
+    claims.add(LASTNAME, user.getSurname());
+    claims.add(EMAIL, user.getEmail());
+    claims.add(ROLE, user.getRole());
     // claims.put(PROFILE_PHOTO, user.getProfilePhoto());
-    claims.put(SETTINGS, user.getSettings());
+    claims.add(SETTINGS, user.getSettings());
     long dateExp = Long.parseLong(expirationTime);
     Date exp = new Date(System.currentTimeMillis() + dateExp);
-    String token =
-        Jwts.builder()
-            .setClaims(claims)
-            .signWith(SignatureAlgorithm.HS512, secret)
-            .setExpiration(exp)
-            .compact();
+
+    SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
+
+    String token = Jwts.builder().claims(claims.build()).signWith(key).expiration(exp).compact();
     return new AuthToken(dateExp, "Bearer", token);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public User parseJWTToken(AuthToken token) throws UtilsException {
     Claims body;
+    SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
     try {
-      body = Jwts.parser().setSigningKey(secret).parseClaimsJws(token.getAccessToken()).getBody();
+      Jws<Claims> jwt =
+          Jwts.parser().verifyWith(key).build().parseSignedClaims(token.getAccessToken());
+      body = jwt.getPayload();
     } catch (JwtException e) {
       LOG.error("Not Authorized, parseToken - Exception -> {}", e.getMessage());
       throw new AuthException(ExceptionMap.ERR_AUTH_MSS_008, e.getMessage());

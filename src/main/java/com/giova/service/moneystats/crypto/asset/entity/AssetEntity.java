@@ -62,7 +62,7 @@ public class AssetEntity extends GenericEntity {
   private Double trend;
 
   @OrderBy(value = "exitDate DESC")
-  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<OperationsEntity> operations;
 
   @ManyToOne
@@ -74,6 +74,6 @@ public class AssetEntity extends GenericEntity {
   private WalletEntity wallet;
 
   @OrderBy(value = "date")
-  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
 }

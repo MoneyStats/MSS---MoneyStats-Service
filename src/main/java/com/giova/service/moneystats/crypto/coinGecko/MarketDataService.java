@@ -20,8 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Logged
 @Service
@@ -36,51 +37,75 @@ public class MarketDataService {
   @Autowired private IMarketDataDAO marketDataDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<MarketData> getCoinGeckoMarketData(String currency, Integer quantity) {
+  public Mono<List<MarketData>> getCoinGeckoMarketData(String currency, Integer quantity) {
     LOG.info("Getting {} MarketData for {}", quantity, currency);
-    List<CoinGeckoMarketData> getMarketData = new ArrayList<>();
-    getPage(quantity).stream()
-        .peek(
-            page -> {
-              ResponseEntity<List<CoinGeckoMarketData>> marketData =
-                  coinGeckoClient.getMarketData(currency, page, false);
 
-              if (marketData.getBody() == null) {
-                LOG.error("Error on fetching MarketData");
-                throw new CoinGeckoException(
-                    "An error occurred during calling CoinGecko, empty body");
-              }
-              getMarketData.addAll(marketData.getBody());
-            })
-        .collect(Collectors.toList());
+    // Ottieni tutte le pagine in modo reattivo usando un Flux
+    Flux<CoinGeckoMarketData> marketDataFlux =
+        Flux.fromIterable(getPage(quantity))
+            .flatMap(
+                page ->
+                    coinGeckoClient
+                        .getMarketData(currency, page, false)
+                        .flatMapMany(
+                            response -> {
+                              if (response.getBody() == null) {
+                                LOG.error("Error on fetching MarketData for page {}", page);
+                                return Mono.error(
+                                    new CoinGeckoException(
+                                        "An error occurred during calling CoinGecko, empty body"));
+                              }
+                              return Flux.fromIterable(response.getBody());
+                            }));
 
-    ResponseEntity<List<CoinGeckoMarketData>> getStableData =
-        coinGeckoClient.getMarketData(currency, 1, true);
+    // Ottieni i stablecoin come Mono
+    Mono<List<CoinGeckoMarketData>> stablecoinMono =
+        coinGeckoClient
+            .getMarketData(currency, 1, true)
+            .flatMap(
+                response -> {
+                  if (response.getBody() == null) {
+                    LOG.error("Error on fetching Stablecoin MarketData");
+                    return Mono.error(
+                        new CoinGeckoException(
+                            "An error occurred during calling CoinGecko, empty body"));
+                  }
+                  return Mono.just(response.getBody());
+                });
 
-    if (getStableData.getBody() == null) {
-      LOG.error("Error on fetching MarketData");
-      throw new CoinGeckoException("An error occurred during calling CoinGecko, empty body");
-    }
+    // Combina market data e stablecoin
+    return marketDataFlux
+        .collectList()
+        .zipWith(stablecoinMono)
+        .map(
+            tuple -> {
+              List<CoinGeckoMarketData> marketData = tuple.getT1();
+              List<CoinGeckoMarketData> stablecoinData = tuple.getT2();
 
-    List<CoinGeckoMarketData> geckoStablecoin = getStableData.getBody();
-    getMarketData.removeAll(geckoStablecoin);
+              // Rimuovi i stablecoin dai dati delle criptovalute
+              marketData.removeAll(stablecoinData);
 
-    List<MarketData> cryptocurrency =
-        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(getMarketData, "Cryptocurrency");
-    List<MarketData> stablecoin =
-        mapper.fromCoinGeckoMarketDataListToCoinGeckoList(geckoStablecoin, "Stablecoin");
+              // Mappa i dati
+              List<MarketData> cryptocurrency =
+                  mapper.fromCoinGeckoMarketDataListToCoinGeckoList(marketData, "Cryptocurrency");
+              List<MarketData> stablecoin =
+                  mapper.fromCoinGeckoMarketDataListToCoinGeckoList(stablecoinData, "Stablecoin");
 
-    Predicate<MarketData> hasRankOrCurrentPriceNull =
-        md -> md.getRank() == null || md.getCurrent_price() == null;
-    cryptocurrency.removeIf(hasRankOrCurrentPriceNull);
-    stablecoin.removeIf(hasRankOrCurrentPriceNull);
+              // Rimuovi i dati con Rank o CurrentPrice null
+              Predicate<MarketData> hasRankOrCurrentPriceNull =
+                  md -> md.getRank() == null || md.getCurrent_price() == null;
+              cryptocurrency.removeIf(hasRankOrCurrentPriceNull);
+              stablecoin.removeIf(hasRankOrCurrentPriceNull);
 
-    cryptocurrency.removeAll(stablecoin);
-    cryptocurrency.addAll(stablecoin);
+              // Unisci i dati criptovaluta e stablecoin
+              cryptocurrency.removeAll(stablecoin);
+              cryptocurrency.addAll(stablecoin);
 
-    cryptocurrency.sort(Comparator.comparing(MarketData::getRank));
+              // Ordina per Rank
+              cryptocurrency.sort(Comparator.comparing(MarketData::getRank));
 
-    return cryptocurrency;
+              return cryptocurrency;
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

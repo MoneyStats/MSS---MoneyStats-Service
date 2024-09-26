@@ -2,7 +2,6 @@ package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.api.emailSender.EmailSenderService;
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
-import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.authentication.dto.User;
@@ -35,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import reactor.core.publisher.Mono;
 
 @Service
 @Logged
@@ -144,7 +144,7 @@ public class AuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> forgotPassword(String email) throws UtilsException {
+  public Mono<ResponseEntity<Response>> forgotPassword(String email) throws UtilsException {
     if (!Utils.checkCharacterAndRegexValid(email, RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email");
       throw new AuthException(ExceptionMap.ERR_AUTH_MSS_009, "Invalid regex for field email");
@@ -168,16 +168,20 @@ public class AuthService {
             .build();
     Map<String, String> param = new HashMap<>();
     param.put("{{RESET_URL}}", feUrl + "/auth/resetPassword/token/" + token);
-    EmailResponse responseEm =
-        emailSenderService.sendEmail(EmailContent.RESET_TEMPLATE, param, emailContent);
-    responseEm.setToken(token);
+    return emailSenderService
+        .sendEmail(EmailContent.RESET_TEMPLATE, param, emailContent)
+        .flatMap(
+            emailResponse -> {
+              emailResponse.setToken(token);
 
-    String message = "Email Sent! Check your email address!";
+              String message = "Email Sent! Check your email address!";
 
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), responseEm);
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), emailResponse);
 
-    return ResponseEntity.ok(response);
+              return Mono.just(ResponseEntity.ok(response));
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -24,14 +24,17 @@ public class WalletCacheService {
   @Autowired private CacheManager cacheManager;
   @Autowired private IWalletDAO walletDAO;
 
-  @Caching(cacheable = @Cacheable(value = WALLET_CACHE, key = "#userId"))
+  @Caching(
+      cacheable = @Cacheable(value = WALLET_CACHE, key = "#userId", condition = "#userId!=null"))
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserId(Long userId) {
     LOG.info("[Caching] WalletEntity into Database by userId {}", userId);
     return walletDAO.findAllByUserId(userId);
   }
 
-  @Caching(cacheable = @Cacheable(value = CRYPTO_WALLET_CACHE, key = "#userId"))
+  @Caching(
+      cacheable =
+          @Cacheable(value = CRYPTO_WALLET_CACHE, key = "#userId", condition = "#userId!=null"))
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
     LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);

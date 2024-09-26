@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @Logged
 @RestController
@@ -60,11 +61,11 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> getDashboard(
+  public Mono<ResponseEntity<Response>> getDashboard(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken)
       throws UtilsException, JsonProcessingException {
-    return appService.getDashboardData(authToken);
+    return Mono.just(appService.getDashboardData(authToken));
   }
 
   @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,11 +95,11 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> getResume(
+  public Mono<ResponseEntity<Response>> getResume(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken)
       throws UtilsException {
-    return appService.getResumeData(authToken);
+    return Mono.just(appService.getResumeData(authToken));
   }
 
   @PostMapping(
@@ -123,13 +124,13 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> addStats(
+  public Mono<ResponseEntity<Response>> addStats(
       @RequestBody @Valid @Schema(description = "List of wallet with stats added")
           List<Wallet> wallets,
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken)
       throws UtilsException {
-    return appService.addStats(wallets, authToken);
+    return Mono.just(appService.addStats(wallets, authToken));
   }
 
   @PostMapping(
@@ -146,7 +147,7 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@unprocessable-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> bugReport( // @RequestHeader("authToken") String authToken,
+  public Mono<ResponseEntity<Response>> bugReport( // @RequestHeader("authToken") String authToken,
       @RequestBody @Valid @Schema(description = "Github Issues body") GithubIssues githubIssues)
       throws JsonProcessingException {
     return appService.reportBug(githubIssues);
@@ -158,7 +159,7 @@ public class AppController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to contact us", summary = "Contact US", tags = "App")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> contactUs( // @RequestHeader("authToken") String authToken,
+  public Mono<ResponseEntity<Response>> contactUs( // @RequestHeader("authToken") String authToken,
       @RequestBody @Valid @Schema(description = "Support Body") Support support)
       throws UtilsException {
     return appService.contactSupport(support);
@@ -194,11 +195,11 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> backupData(
+  public Mono<ResponseEntity<Response>> backupData(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken)
       throws UtilsException {
-    return appService.backupData();
+    return Mono.just(appService.backupData());
   }
 
   @PostMapping(
@@ -223,10 +224,10 @@ public class AppController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> restoreData(
+  public Mono<ResponseEntity<Response>> restoreData(
       @RequestBody @Valid @Schema(description = "Wallets to restore") List<Wallet> wallets,
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken) {
-    return appService.restoreData(wallets);
+    return Mono.just(appService.restoreData(wallets));
   }
 }
