@@ -2,7 +2,6 @@ package com.giova.service.moneystats.crypto.forex;
 
 import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.forex.anyApi.AnyAPIClient;
-import com.giova.service.moneystats.api.forex.anyApi.dto.Rates;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
@@ -16,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Logged
 @Service
@@ -26,24 +25,28 @@ public class ForexDataService {
 
   private final UserEntity user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  // @Autowired private ExchangeRatesClient exchangeRatesClient;
   @Autowired private AnyAPIClient anyAPIClient;
   @Autowired private ForexDataMapper mapper;
   @Autowired private ForexDataCacheService forexDataCacheService;
   @Autowired private IForexDAO iForexDataDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ForexData getFromExchangeRateForexData(String currency) {
+  public Mono<ForexData> getFromExchangeRateForexData(String currency) {
     LOG.info("Getting MarketData for {}", currency);
     // ResponseEntity<ExchangeRates> exchangeRatesList = exchangeRatesClient.getForexData(currency);
-    ResponseEntity<Rates> exchangeRatesList = anyAPIClient.getAnyApiForexData(currency);
 
-    if (exchangeRatesList.getBody() == null) {
-      LOG.error("Error on fetching Exchange Rates");
-      throw new CoinGeckoException("An error occurred during calling Exchange Rates, empty body");
-    }
-    // return mapper.fromExchangeRatesToForexData(exchangeRatesList.getBody());
-    return mapper.fromRatesToForexData(exchangeRatesList.getBody());
+    return anyAPIClient
+        .getAnyApiForexData(currency)
+        .flatMap(
+            exchangeRatesList -> {
+              if (exchangeRatesList.getBody() == null) {
+                LOG.error("Error on fetching Exchange Rates");
+                throw new CoinGeckoException(
+                    "An error occurred during calling Exchange Rates, empty body");
+              }
+              // return mapper.fromExchangeRatesToForexData(exchangeRatesList.getBody());
+              return Mono.just(mapper.fromRatesToForexData(exchangeRatesList.getBody()));
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

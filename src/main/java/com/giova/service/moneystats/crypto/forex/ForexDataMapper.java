@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.forex.anyApi.dto.Rates;
-import com.giova.service.moneystats.api.forex.exchageRates.dto.ExchangeRates;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -23,12 +22,6 @@ public class ForexDataMapper {
 
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public ForexData fromExchangeRatesToForexData(ExchangeRates exchangeRates) {
-    return new ForexData(LocalDateTime.now(), exchangeRates.getSource(), exchangeRates.getQuotes());
-  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public ForexData fromRatesToForexData(Rates exchangeRates) {

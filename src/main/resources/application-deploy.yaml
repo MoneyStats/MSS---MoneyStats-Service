@@ -1,3 +1,4 @@
+env: ${APP_ENV:Deploy} # Used for Google Cloud LOG
 server:
   servlet:
     context-path: ${CONTEXT_PATH}
@@ -68,6 +69,7 @@ rest:
       apiKey: ${REST_CLIENT_ANY_API_TOKEN}
 
 logging:
+  config: classpath:logback-google.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
   level:
     com.giova.service.moneystats: ${LOGGING_LEVEL}
     io.github.giovannilamarmora.utils: ${LOGGING_LEVEL}
@@ -77,6 +79,11 @@ logging:
       springframework:
         web: INFO
       hibernate: ERROR
+
+filter:
+  requestResponse:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*/css/*,*/js/*,*/images/*,*/favicon.ico,/index.html"
 
 jwt:
   secret: ${JWT_SECRET}
@@ -88,8 +95,6 @@ app:
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
   cors:
     enabled: false # Usando CrossOrigin non ne ho bisogno
-  logTail:
-    active: true
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: ${FE_URL}

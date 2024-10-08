@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.api.emailSender.EmailSenderService;
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.api.github.GithubClient;
-import com.giova.service.moneystats.app.category.CategoryService;
-import com.giova.service.moneystats.app.category.dto.Category;
 import com.giova.service.moneystats.app.model.Dashboard;
 import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.model.Support;
@@ -24,6 +22,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.*;
@@ -51,7 +50,6 @@ public class AppService {
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private WalletService walletService;
-  @Autowired private CategoryService categoryService;
   @Autowired private StatsService statsService;
   @Autowired private GithubClient githubClient;
   @Autowired private EmailSenderService emailSenderService;
@@ -60,7 +58,7 @@ public class AppService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> reportBug(GithubIssues githubIssues)
       throws JsonProcessingException {
-    LOG.info("Bug to report: {}", objectMapper.writeValueAsString(githubIssues));
+    LOG.info("Bug to report: {}", Mapper.writeObjectToString(githubIssues));
 
     return githubClient
         .openGithubIssues(githubIssues)
@@ -91,15 +89,10 @@ public class AppService {
       getData = mapDashBoard(filter, authToken);
     } else {
       Dashboard dashboard = new Dashboard();
-      List<Category> getAllCategory =
-          objectMapper.convertValue(
-              categoryService.getAllCategories().getBody().getData(),
-              new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
               walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
-      dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
     }
 
@@ -124,15 +117,10 @@ public class AppService {
       getData = mapDashBoard(getAllDates, authToken);
     } else {
       Dashboard dashboard = new Dashboard();
-      List<Category> getAllCategory =
-          objectMapper.convertValue(
-              categoryService.getAllCategories().getBody().getData(),
-              new TypeReference<List<Category>>() {});
       List<Wallet> getAllWallet =
           objectMapper.convertValue(
               walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
-      dashboard.setCategories(getAllCategory);
       getData.put(String.valueOf(thisYear), dashboard);
     }
 
@@ -248,12 +236,6 @@ public class AppService {
       throws UtilsException {
     Map<String, Dashboard> response = new HashMap<>();
 
-    // Category List
-    List<Category> getAllCategory =
-        objectMapper.convertValue(
-            Objects.requireNonNull(categoryService.getAllCategories().getBody()).getData(),
-            new TypeReference<List<Category>>() {});
-
     List<Integer> distinctDatesByYear =
         dates.stream().map(LocalDate::getYear).distinct().collect(Collectors.toList());
 
@@ -266,7 +248,7 @@ public class AppService {
     AtomicInteger index = new AtomicInteger(0);
     distinctDatesByYear.stream()
         .sorted(Collections.reverseOrder())
-        .collect(Collectors.toList())
+        .toList()
         .forEach(
             year -> {
               LOG.info("Mapping Data for year {}", year);
@@ -274,7 +256,6 @@ public class AppService {
               List<LocalDate> filterDateByYear =
                   dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
               Dashboard dashboard = new Dashboard();
-              dashboard.setCategories(getAllCategory);
               dashboard.setStatsWalletDays(filterDateByYear);
               dashboard.setPerformanceLastDate(filterDateByYear.get(filterDateByYear.size() - 1));
               dashboard.setPerformanceSince(filterDateByYear.get(0));

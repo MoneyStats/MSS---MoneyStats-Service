@@ -1,3 +1,4 @@
+env: Local # Used for Google Cloud LOG
 server:
   servlet:
     context-path:
@@ -62,7 +63,9 @@ rest:
       apiKey: ${REST_CLIENT_ANY_API_TOKEN}
 
 logging:
+  config: classpath:logback-spring.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
   level:
+    io.github.giovannilamarmora: DEBUG
     com.giova.service.moneystats: INFO
     web: INFO
     root: INFO
@@ -71,6 +74,18 @@ logging:
         web: INFO
       hibernate: ERROR
 
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+
+filter:
+  requestResponse:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
+
 jwt:
   secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
   time: 360000
@@ -78,5 +93,7 @@ app:
   version: @project.version@
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
+  cors: # Disabled
+    enabled: false
   fe:
     url: http://localhost:4200

@@ -56,13 +56,14 @@ public class CronForexData {
           .forEach(
               index -> {
                 LOG.info("Getting and Saving ForexData for currency {}", fiatCurrencies.get(index));
-                ForexData forexData;
-
-                forexData =
-                    forexDataService.getFromExchangeRateForexData(fiatCurrencies.get(index));
-                LOG.info("Found {} rates of Forex Data", forexData.getQuotes().size());
-                forexDataService.saveForexData(forexData);
-                if (index != fiatCurrencies.size() - 1) ThreadManager.threadSeep(5000);
+                forexDataService
+                    .getFromExchangeRateForexData(fiatCurrencies.get(index))
+                    .subscribe(
+                        forexData -> {
+                          LOG.info("Found {} rates of Forex Data", forexData.getQuotes().size());
+                          forexDataService.saveForexData(forexData);
+                          if (index != fiatCurrencies.size() - 1) ThreadManager.threadSeep(5000);
+                        });
               });
     } catch (Exception e) {
       LOG.error(
