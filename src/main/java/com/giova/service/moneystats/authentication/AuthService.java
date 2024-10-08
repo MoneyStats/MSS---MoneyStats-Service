@@ -115,7 +115,7 @@ public class AuthService {
     }
 
     LOG.debug("Login process started for user {}", username);
-    password = new String(Base64.getDecoder().decode(password));
+    // password = new String(Base64.getDecoder().decode(password));
     logCurrentHostAddress();
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
