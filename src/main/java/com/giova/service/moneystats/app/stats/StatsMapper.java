@@ -7,7 +7,6 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,19 @@ import org.springframework.stereotype.Component;
 public class StatsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<StatsEntity> fromStatsToEntity(
+  public static List<Stats> fromEntityToStats(List<StatsEntity> statsEntities) {
+    return statsEntities.stream()
+        .map(
+            statsEntity -> {
+              Stats stats2 = new Stats();
+              BeanUtils.copyProperties(statsEntity, stats2);
+              return stats2;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<StatsEntity> fromStatsToEntity(
       List<Stats> stats, WalletEntity wallet, UserEntity user) {
     return stats.stream()
         .map(
@@ -26,18 +37,6 @@ public class StatsMapper {
               statsEntity.setUser(user);
               return statsEntity;
             })
-        .collect(Collectors.toList());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Stats> fromEntityToStats(List<StatsEntity> statsEntities) {
-    return statsEntities.stream()
-        .map(
-            statsEntity -> {
-              Stats stats2 = new Stats();
-              BeanUtils.copyProperties(statsEntity, stats2);
-              return stats2;
-            })
-        .collect(Collectors.toList());
+        .toList();
   }
 }

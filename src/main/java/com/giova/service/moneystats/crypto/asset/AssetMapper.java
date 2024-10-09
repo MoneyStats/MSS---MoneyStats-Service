@@ -32,9 +32,7 @@ public class AssetMapper {
   public List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     LocalDate lastDate =
-        (getAllDates != null && !getAllDates.isEmpty())
-            ? getAllDates.get(getAllDates.size() - 1)
-            : LocalDate.now();
+        (getAllDates != null && !getAllDates.isEmpty()) ? getAllDates.getLast() : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -70,10 +68,9 @@ public class AssetMapper {
               if (assetEntity.getOperations() != null && !assetEntity.getOperations().isEmpty())
                 asset.setOperations(
                     operationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
-
               return asset;
             })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

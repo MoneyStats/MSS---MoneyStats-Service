@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Logged
@@ -34,10 +35,54 @@ public class WalletService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final UserEntity user;
   @Autowired private WalletCacheService walletCacheService;
+  @Autowired private IWalletDAO walletDAO;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
   @Autowired private StatsService statsService;
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getAllWallets(
+      Boolean live, Boolean includeHistory, Boolean includeAssets) throws UtilsException {
+    /**
+     * We give the priority to the param "Boolean live", if the param is null we check the User
+     * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
+     * value as Null
+     */
+    Boolean isLiveWallet =
+        !ObjectUtils.isEmpty(live)
+            ? live
+            : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+                && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+
+    // TODO: Collega includeHistory
+    List<WalletEntity> walletEntity =
+        walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+
+    // TODO: findAllByUserId Non ritorna gli Asset per la nuova impostazione ma bisogna controllare
+    // in caso di Cache Attiva come si comporta
+    // TODO: Collegare Redis Cache e rimuovere l'attuale cache
+    // List<WalletEntity> walletEntity = walletDAO.findAllByUserId(user.getId());
+
+    // List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
+
+    String message = "";
+    if (walletEntity.isEmpty()) {
+      message = "Wallet Empty, insert new Wallet to get it!";
+    } else {
+      message = "Found " + walletEntity.size() + " Wallets";
+    }
+
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<Wallet> walletToReturn =
+        walletMapper.fromWalletEntitiesToWalletList(
+            walletEntity, isLiveWallet, includeAssets, getAllCryptoDates);
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  /* OLD DATA */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
@@ -104,8 +149,6 @@ public class WalletService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getWallets() throws UtilsException {
-    // UserEntity user = authService.checkLogin(authToken);
-
     List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
 
     String message = "";
