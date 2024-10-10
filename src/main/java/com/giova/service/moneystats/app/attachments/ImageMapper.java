@@ -15,10 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Component
 public class ImageMapper {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(ImageMapper.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public Image fromPartToDto(MultipartFile file) throws UtilsException {
+  public static Image fromPartToDto(MultipartFile file) throws UtilsException {
     try {
       return new Image(
           file.getName(),
@@ -37,10 +37,8 @@ public class ImageMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public MultipartFile fromDtoToPart(Image image) {
-    MultipartFile file =
-        new MockMultipartFile(
-            image.getName(), image.getFileName(), image.getContentType(), image.getBody());
-    return file;
+  public static MultipartFile fromDtoToPart(Image image) {
+    return new MockMultipartFile(
+        image.getName(), image.getFileName(), image.getContentType(), image.getBody());
   }
 }

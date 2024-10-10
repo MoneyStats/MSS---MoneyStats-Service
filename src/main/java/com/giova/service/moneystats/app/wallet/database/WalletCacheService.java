@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.app.wallet;
+package com.giova.service.moneystats.app.wallet.database;
 
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;

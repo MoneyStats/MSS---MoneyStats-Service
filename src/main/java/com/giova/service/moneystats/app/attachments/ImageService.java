@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,6 @@ public class ImageService {
 
   public static Map<String, Image> attachmentMap = new HashMap<>();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  @Autowired private ImageMapper mapper;
 
   @Cacheable(cacheNames = "attachment")
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -37,7 +35,7 @@ public class ImageService {
           "The file you have been passed is invalid", ExceptionMap.ERR_IMG_MSS_001.getMessage());
     }
     try {
-      attachment = mapper.fromPartToDto(file);
+      attachment = ImageMapper.fromPartToDto(file);
     } catch (UtilsException e) {
       LOG.error("Error on mapping attachment");
       throw new ImageException("Error on mapping attachment", e.getMessage());

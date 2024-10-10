@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
 
 @Logged
 @RestController
@@ -70,9 +69,9 @@ public class ImageController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> uploadAttachment(
+  public ResponseEntity<Response> uploadAttachment(
       @RequestPart(name = "file") @Valid @Schema(description = "Image File") MultipartFile file)
       throws UtilsException {
-    return Mono.just(imageService.saveAttachmentDto(file));
+    return imageService.saveAttachmentDto(file);
   }
 }

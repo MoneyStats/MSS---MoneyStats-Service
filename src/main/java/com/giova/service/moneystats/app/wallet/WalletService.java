@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.app.stats.StatsService;
+import com.giova.service.moneystats.app.wallet.database.IWalletDAO;
+import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;

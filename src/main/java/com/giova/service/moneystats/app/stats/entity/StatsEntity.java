@@ -47,6 +47,6 @@ public class StatsEntity extends GenericEntity {
   private AssetEntity asset;
 
   @ManyToOne
-  @JoinColumn(name = "WALLET_ID", nullable = true)
+  @JoinColumn(name = "WALLET_ID")
   private WalletEntity wallet;
 }

@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.scheduler;
 
-import com.giova.service.moneystats.app.wallet.WalletCacheService;
+import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
 import com.giova.service.moneystats.crypto.forex.ForexDataCacheService;

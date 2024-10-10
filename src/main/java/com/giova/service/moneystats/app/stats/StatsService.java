@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 public class StatsService {
 
   @Autowired private IStatsDAO iStatsDAO;
-  @Autowired private StatsMapper statsMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<LocalDate> getDistinctDates(UserEntity user) {
@@ -32,11 +31,11 @@ public class StatsService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {
-    List<StatsEntity> statsEntities = statsMapper.fromStatsToEntity(stats, wallet, user);
+    List<StatsEntity> statsEntities = StatsMapper.fromStatsToEntity(stats, wallet, user);
 
     List<StatsEntity> saved = iStatsDAO.saveAll(statsEntities);
 
-    return statsMapper.fromEntityToStats(saved);
+    return StatsMapper.fromEntityToStats(saved);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -45,7 +44,7 @@ public class StatsService {
     List<StatsEntity> stats = iStatsDAO.findStatsEntitiesByWalletId(walletId);
     List<Stats> response = new ArrayList<>();
     if (!stats.isEmpty()) {
-      response = statsMapper.fromEntityToStats(stats);
+      response = StatsMapper.fromEntityToStats(stats);
     }
 
     return response;
