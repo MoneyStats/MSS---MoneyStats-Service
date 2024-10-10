@@ -54,9 +54,11 @@ public class WalletService {
             : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
                 && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
+    List<WalletEntity> walletEntity;
     // TODO: Collega includeHistory
-    List<WalletEntity> walletEntity =
-        walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+    if (!includeHistory)
+      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+    else walletEntity = walletCacheService.findAllByUserId(user.getId());
 
     // TODO: findAllByUserId Non ritorna gli Asset per la nuova impostazione ma bisogna controllare
     // in caso di Cache Attiva come si comporta

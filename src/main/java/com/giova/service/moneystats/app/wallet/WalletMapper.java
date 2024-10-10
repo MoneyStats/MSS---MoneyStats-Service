@@ -44,7 +44,6 @@ public class WalletMapper {
   @Autowired private MarketDataService marketDataService;
   @Autowired private ForexDataService forexDataService;
 
-  // TODO: Metodo deve essere statico
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Wallet> fromWalletEntitiesToWalletList(
       List<WalletEntity> walletEntities,
@@ -76,9 +75,8 @@ public class WalletMapper {
                 List<MarketData> marketData =
                     marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
-                // TODO: Modifica AssetMapper in static
                 wallet.setAssets(
-                    assetMapper.fromAssetEntitiesToAssets(
+                    AssetMapper.fromAssetEntitiesToAssets(
                         walletEntity.getAssets(), marketData, getAllCryptoDates));
               }
               /*

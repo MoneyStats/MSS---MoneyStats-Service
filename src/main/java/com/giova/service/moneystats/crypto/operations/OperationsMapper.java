@@ -15,6 +15,19 @@ import org.springframework.stereotype.Component;
 public class OperationsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<Operations> fromOperationsEntitiesToDTOS(
+      List<OperationsEntity> operationsEntities) {
+    return operationsEntities.stream()
+        .map(
+            operationsEntity -> {
+              Operations operations = new Operations();
+              BeanUtils.copyProperties(operationsEntity, operations);
+              return operations;
+            })
+        .collect(Collectors.toList());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public Operations fromOperationEntityToDTO(OperationsEntity operationsEntity) {
     Operations operations = new Operations();
     BeanUtils.copyProperties(operationsEntity, operations);
@@ -29,18 +42,6 @@ public class OperationsMapper {
     operationsEntity.setUser(user);
     operationsEntity.setAsset(asset);
     return operationsEntity;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Operations> fromOperationsEntitiesToDTOS(List<OperationsEntity> operationsEntities) {
-    return operationsEntities.stream()
-        .map(
-            operationsEntity -> {
-              Operations operations = new Operations();
-              BeanUtils.copyProperties(operationsEntity, operations);
-              return operations;
-            })
-        .collect(Collectors.toList());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

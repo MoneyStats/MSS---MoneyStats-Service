@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 @Component
 @AllArgsConstructor
@@ -29,10 +30,12 @@ public class AssetMapper {
   @Autowired private OperationsMapper operationsMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Asset> fromAssetEntitiesToAssets(
+  public static List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     LocalDate lastDate =
-        (getAllDates != null && !getAllDates.isEmpty()) ? getAllDates.getLast() : LocalDate.now();
+        (!ObjectUtils.isEmpty(getAllDates) && !getAllDates.isEmpty())
+            ? getAllDates.getLast()
+            : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -65,12 +68,29 @@ public class AssetMapper {
                             2)
                         : 0.0);
               }
-              if (assetEntity.getOperations() != null && !assetEntity.getOperations().isEmpty())
+              if (!ObjectUtils.isEmpty(assetEntity.getOperations())
+                  && !assetEntity.getOperations().isEmpty())
                 asset.setOperations(
-                    operationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
+                    OperationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
               return asset;
             })
         .toList();
+  }
+
+  private static Double getAssetValue(List<MarketData> marketData, Asset asset) {
+    if (marketData.isEmpty()) {
+      return 1D;
+    } else {
+      return MathService.round(
+          marketData.stream()
+              .filter(
+                  marketData1 ->
+                      marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
+              .findFirst()
+              .map(MarketData::getCurrent_price)
+              .orElse(1D),
+          2);
+    }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -337,21 +357,5 @@ public class AssetMapper {
     return response.stream()
         .sorted(Comparator.comparing(Asset::getRank))
         .collect(Collectors.toList());
-  }
-
-  private Double getAssetValue(List<MarketData> marketData, Asset asset) {
-    if (marketData.isEmpty()) {
-      return 1D;
-    } else {
-      return MathService.round(
-          marketData.stream()
-              .filter(
-                  marketData1 ->
-                      marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
-              .findFirst()
-              .map(MarketData::getCurrent_price)
-              .orElse(1D),
-          2);
-    }
   }
 }
