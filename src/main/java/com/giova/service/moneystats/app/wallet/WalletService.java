@@ -9,6 +9,15 @@ import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.IAssetDAO;
+import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
+import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
+import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
+import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.forex.ForexDataService;
+import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -38,13 +47,25 @@ public class WalletService {
   private final UserEntity user;
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private IWalletDAO walletDAO;
+  @Autowired private IAssetDAO assetDAO;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
   @Autowired private StatsService statsService;
+  @Autowired private ForexDataService forexDataService;
+  @Autowired private MarketDataService marketDataService;
 
+  /**
+   * Method that Return the list of Wallets
+   *
+   * @param live Used to Get the live price of the wallet
+   * @param includeHistory Used to get the full History of the Wallet
+   * @param includeAssets Used to get only the Asset without Operation and History
+   * @param includeFullAssets Used to get the full Assets included with Operation and History
+   * @return The list of the Wallets
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAllWallets(
-      Boolean live, Boolean includeHistory, Boolean includeAssets) throws UtilsException {
+      Boolean live, Boolean includeHistory, Boolean includeAssets, Boolean includeFullAssets) {
     /**
      * We give the priority to the param "Boolean live", if the param is null we check the User
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
@@ -57,10 +78,56 @@ public class WalletService {
                 && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
     List<WalletEntity> walletEntity;
-    // TODO: Collega includeHistory
-    if (!includeHistory)
+    /* If you have the live included you can get the Forex Data, otherwise we do not need it */
+    ForexData forexData =
+        isLiveWallet ? forexDataService.getForexData(user.getSettings().getCryptoCurrency()) : null;
+    List<MarketData> marketData =
+        (isLiveWallet || includeAssets || includeFullAssets)
+            ? marketDataService.getMarketData(user.getSettings().getCryptoCurrency())
+            : null;
+    List<LocalDate> getAllCryptoDates =
+        includeAssets ? statsService.getCryptoDistinctDates(user) : null;
+    if (!isLiveWallet && !includeHistory && !includeAssets && !includeFullAssets)
       walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
-    else walletEntity = walletCacheService.findAllByUserId(user.getId());
+    else if (isLiveWallet && !includeHistory && !includeAssets) {
+      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
+      List<AssetLivePrice> livePrices = assetDAO.findAssetsByWalletIds(walletIds);
+      walletEntity =
+          walletEntity.stream()
+              .peek(
+                  walletEntity1 ->
+                      walletEntity1.setAssets(
+                          AssetMapper.fromAssetLivePricesToAssetEntities(
+                              livePrices, walletEntity1.getId())))
+              .toList();
+    } else if (!includeHistory && !includeFullAssets) {
+      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
+      List<AssetWithoutOpAndStats> assetFulls = assetDAO.findAllAssetsByWalletIds(walletIds);
+      walletEntity =
+          walletEntity.stream()
+              .peek(
+                  walletEntity1 ->
+                      walletEntity1.setAssets(
+                          AssetMapper.fromAssetToAssetEntities(assetFulls, walletEntity1.getId())))
+              .toList();
+    } else if (!includeHistory) {
+      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
+      List<AssetEntity> assetFulls = assetDAO.findAllByWalletIds(walletIds);
+      walletEntity =
+          walletEntity.stream()
+              .peek(
+                  walletEntity1 ->
+                      walletEntity1.setAssets(
+                          assetFulls.stream()
+                              .filter(
+                                  assetEntity ->
+                                      assetEntity.getWallet().getId().equals(walletEntity1.getId()))
+                              .toList()))
+              .toList();
+    } else walletEntity = walletCacheService.findAllByUserId(user.getId());
 
     // TODO: findAllByUserId Non ritorna gli Asset per la nuova impostazione ma bisogna controllare
     // in caso di Cache Attiva come si comporta
@@ -76,10 +143,16 @@ public class WalletService {
       message = "Found " + walletEntity.size() + " Wallets";
     }
 
-    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     List<Wallet> walletToReturn =
-        walletMapper.fromWalletEntitiesToWalletList(
-            walletEntity, isLiveWallet, includeAssets, getAllCryptoDates);
+        WalletMapper.mapFromWalletEntitiesToWalletList(
+            walletEntity,
+            isLiveWallet,
+            includeAssets,
+            includeFullAssets,
+            getAllCryptoDates,
+            forexData,
+            marketData,
+            user.getSettings().getCurrency());
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);

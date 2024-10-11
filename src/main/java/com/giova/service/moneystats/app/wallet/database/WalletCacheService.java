@@ -12,18 +12,34 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WalletCacheService {
-
+public class WalletCacheService implements WalletRepository {
+  /* OLD DATA */
   private static final String WALLET_CACHE = "Wallets-Cache";
   private static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
   private static final String DETAILS_WALLET = "Details-Wallet-Cache";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
   @Autowired private IWalletDAO walletDAO;
+  /* END OLD DATA */
 
+  @Autowired private ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate;
+
+  /**
+   * Obtain Wallet without Stats and Assets, You Just Got the last Stats as Default
+   *
+   * @param userId User of the Wallet
+   * @return Wallet with only the last Stats
+   */
+  @Override
+  public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
+    return List.of();
+  }
+
+  /* OLD DATA */
   @Caching(
       cacheable = @Cacheable(value = WALLET_CACHE, key = "#userId", condition = "#userId!=null"))
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)

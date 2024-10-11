@@ -22,19 +22,17 @@ public class WalletControllerImpl implements WalletController {
 
   @Autowired private WalletService walletService;
 
-  /**
-   * @param token
-   * @param live
-   * @param includeHistory
-   * @param includeAssets
-   * @return
-   */
   @Override
   public ResponseEntity<Response> getAllWallet(
-      String token, Boolean live, Boolean includeHistory, Boolean includeAssets) {
-    return walletService.getAllWallets(live, includeHistory, includeAssets);
+      String token,
+      Boolean live,
+      Boolean includeHistory,
+      Boolean includeAssets,
+      Boolean includeFullAssets) {
+    return walletService.getAllWallets(live, includeHistory, includeAssets, includeFullAssets);
   }
 
+  /* OLD DATA */
   @Override
   public ResponseEntity<Response> insertOrUpdateWallet(
       @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,

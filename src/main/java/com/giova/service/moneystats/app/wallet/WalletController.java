@@ -64,9 +64,17 @@ public interface WalletController {
               example = "true")
           Boolean includeHistory,
       @RequestParam(value = "includeAssets", required = false, defaultValue = "false")
-          @Schema(description = "Param to get the Assets", example = "true")
-          Boolean includeAssets);
+          @Schema(
+              description = "Param to get the Assets without operation and history",
+              example = "true")
+          Boolean includeAssets,
+      @RequestParam(value = "includeFullAssets", required = false, defaultValue = "false")
+          @Schema(
+              description = "Param to get the Full Assets with operation and history",
+              example = "true")
+          Boolean includeFullAssets);
 
+  /* OLD DATA */
   @PostMapping(
       value = "/insert-update",
       consumes = {MediaType.APPLICATION_JSON_VALUE})

@@ -1,10 +1,13 @@
 package com.giova.service.moneystats.crypto.asset;
 
+import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
+import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.OperationsMapper;
@@ -46,15 +49,7 @@ public class AssetMapper {
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
               if (assetEntity.getHistory() != null && !assetEntity.getHistory().isEmpty()) {
-                asset.setHistory(
-                    assetEntity.getHistory().stream()
-                        .map(
-                            statsEntity -> {
-                              Stats stats = new Stats();
-                              BeanUtils.copyProperties(statsEntity, stats);
-                              return stats;
-                            })
-                        .collect(Collectors.toList()));
+                asset.setHistory(StatsMapper.fromEntityToStats(assetEntity.getHistory()));
                 Stats lastStats =
                     asset.getHistory().stream()
                         .filter(a -> a.getDate().isEqual(lastDate))
@@ -77,6 +72,51 @@ public class AssetMapper {
         .toList();
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<Asset> fromAssetEntitiesLivePriceToAssets(
+      List<AssetEntity> assetEntityList, List<MarketData> marketData) {
+    return assetEntityList.stream()
+        .map(
+            assetEntity -> {
+              Asset asset = new Asset();
+              BeanUtils.copyProperties(assetEntity, asset);
+              asset.setCurrent_price(getAssetValue(marketData, asset));
+              asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
+              return asset;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<AssetEntity> fromAssetLivePricesToAssetEntities(
+      List<AssetLivePrice> assetLivePrices, Long walletID) {
+    return Optional.ofNullable(assetLivePrices).orElse(Collections.emptyList()).stream()
+        .filter(assetLivePrice -> Objects.equals(assetLivePrice.getWalletId(), walletID))
+        .map(
+            assetLivePrice -> {
+              AssetEntity assetEntity = new AssetEntity();
+              BeanUtils.copyProperties(assetLivePrice, assetEntity);
+              return assetEntity;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<AssetEntity> fromAssetToAssetEntities(
+      List<AssetWithoutOpAndStats> assetWithoutOpAndStatsList, Long walletID) {
+    return Optional.ofNullable(assetWithoutOpAndStatsList).orElse(Collections.emptyList()).stream()
+        .filter(
+            assetWithoutOpAndStats ->
+                Objects.equals(assetWithoutOpAndStats.getWalletId(), walletID))
+        .map(
+            assetWithoutOpAndStats -> {
+              AssetEntity assetEntity = new AssetEntity();
+              BeanUtils.copyProperties(assetWithoutOpAndStats, assetEntity);
+              return assetEntity;
+            })
+        .toList();
+  }
+
   private static Double getAssetValue(List<MarketData> marketData, Asset asset) {
     if (marketData.isEmpty()) {
       return 1D;
@@ -93,6 +133,7 @@ public class AssetMapper {
     }
   }
 
+  /* OLD DATA */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<AssetEntity> fromAssetToAssetsEntities(
       List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {

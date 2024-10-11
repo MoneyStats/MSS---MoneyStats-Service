@@ -1,10 +1,14 @@
 package com.giova.service.moneystats.config.cache;
 
+import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
+import com.giova.service.moneystats.app.wallet.database.WalletDAOAdapter;
+import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -21,20 +25,9 @@ public class CacheConfig {
     LOG.info("[CACHE] Redis cache status {}", redisCacheEnabled ? "ACTIVE" : "NOT ACTIVE");
   }
 
-  // @Bean(name = "walletRepository")
-  // @ConditionalOnProperty(prefix = "spring.data.redis", name = "enabled", havingValue = "true")
-  // public WalletRepository getWalletRepository() {
-  //  return new WalletCacheService();
-  // }
-  //
-  // @Bean(name = "cmsService")
-  // @ConditionalOnProperty(
-  //    prefix = "spring.data.cache",
-  //    name = "active",
-  //    havingValue = "false",
-  //    matchIfMissing = true)
-  // public CmsService getData() {
-  //  LOG.info("[CACHE] Cache Service Disabled");
-  //  return new ExternalService();
-  // }
+  @Bean(name = "walletRepository")
+  public WalletRepository getWalletRepository() {
+    if (redisCacheEnabled) return new WalletCacheService();
+    return new WalletDAOAdapter();
+  }
 }

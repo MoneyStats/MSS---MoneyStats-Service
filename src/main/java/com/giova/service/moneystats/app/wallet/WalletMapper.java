@@ -3,7 +3,6 @@ package com.giova.service.moneystats.app.wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.app.attachments.ImageMapper;
 import com.giova.service.moneystats.app.model.Category;
 import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
@@ -39,22 +38,20 @@ public class WalletMapper {
 
   private final UserEntity user;
   private final ObjectMapper mapper = new ObjectMapper();
-  @Autowired ImageMapper imageMapper;
   @Autowired private AssetMapper assetMapper;
   @Autowired private MarketDataService marketDataService;
   @Autowired private ForexDataService forexDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Wallet> fromWalletEntitiesToWalletList(
+  public static List<Wallet> mapFromWalletEntitiesToWalletList(
       List<WalletEntity> walletEntities,
       Boolean live,
       Boolean includeAssets,
-      List<LocalDate> getAllCryptoDates) {
-    ForexData forex = null;
-    /* If you have the Asset included you can get the Forex Data, otherwise we do not need it */
-    if (live && includeAssets)
-      forex = forexDataService.getForexData(user.getSettings().getCryptoCurrency());
-    ForexData finalForex = forex;
+      Boolean includeFullAssets,
+      List<LocalDate> getAllCryptoDates,
+      ForexData forex,
+      List<MarketData> marketData,
+      String userCurrency) {
     AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()
         .map(
@@ -69,23 +66,59 @@ public class WalletMapper {
                 lastBalance.set(walletEntity.getHistory().getLast().getBalance());
                 wallet.setHistory(StatsMapper.fromEntityToStats(walletEntity.getHistory()));
               }
-              if (includeAssets
+              if ((includeAssets || includeFullAssets)
                   && !ObjectUtils.isEmpty(walletEntity.getAssets())
                   && !walletEntity.getAssets().isEmpty()) {
-                List<MarketData> marketData =
-                    marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
                 wallet.setAssets(
                     AssetMapper.fromAssetEntitiesToAssets(
                         walletEntity.getAssets(), marketData, getAllCryptoDates));
+              } else if (live
+                  && !includeAssets
+                  && !includeFullAssets
+                  && !ObjectUtils.isEmpty(walletEntity.getAssets())
+                  && !walletEntity.getAssets().isEmpty()) {
+
+                wallet.setAssets(
+                    AssetMapper.fromAssetEntitiesLivePriceToAssets(
+                        walletEntity.getAssets(), marketData));
               }
-              /*
-               * If you have the Asset included you can get the Live Price, otherwise we do not need it
-               */
-              if (live && includeAssets) setLivePriceInWallet(wallet, finalForex, lastBalance);
+              if (live) setLivePriceInWallet(wallet, forex, lastBalance, userCurrency);
+              if (live && !includeAssets && !includeFullAssets) wallet.setAssets(null);
               return wallet;
             }))
         .toList();
+  }
+
+  private static void setLivePriceInWallet(
+      Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance, String userCurrency) {
+    if (forex == null) return;
+    // if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
+    //    || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
+
+    if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
+    AtomicReference<Double> balance = new AtomicReference<>(0D);
+    wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
+    double converter = forex.getQuotes().get(userCurrency);
+    wallet.setBalance(MathService.round(balance.get() * converter, 2));
+    wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
+    wallet.setPerformanceLastStats(
+        wallet.getBalance() == 0 && lastBalance.get() == 0
+            ? 0D
+            : MathService.round(
+                ((wallet.getBalance() - lastBalance.get()) / lastBalance.get()) * 100, 2));
+    if (wallet.getBalance() > wallet.getHighPrice()) {
+      wallet.setHighPrice(wallet.getBalance());
+      wallet.setHighPriceDate(LocalDate.now());
+    }
+    if (wallet.getBalance() < wallet.getLowPrice()) {
+      wallet.setLowPrice(wallet.getBalance());
+      wallet.setLowPriceDate(LocalDate.now());
+    }
+    if (wallet.getBalance() > wallet.getAllTimeHigh()) {
+      wallet.setAllTimeHigh(wallet.getBalance());
+      wallet.setAllTimeHighDate(LocalDate.now());
+    }
   }
 
   /* @important OLD DATA */
@@ -266,13 +299,13 @@ public class WalletMapper {
 
   private void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
+    if (forex == null) return;
     // if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
     //    || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
 
     if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);
     wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
-    if (forex == null) return;
     double converter = forex.getQuotes().get(user.getSettings().getCurrency());
     wallet.setBalance(MathService.round(balance.get() * converter, 2));
     wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
