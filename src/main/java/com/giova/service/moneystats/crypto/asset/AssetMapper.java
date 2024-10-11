@@ -29,7 +29,6 @@ import org.springframework.util.ObjectUtils;
 @AllArgsConstructor
 public class AssetMapper {
 
-  private final UserEntity user;
   @Autowired private OperationsMapper operationsMapper;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

@@ -28,6 +28,18 @@ spring:
     multipart:
       max-file-size: 1MB
       max-request-size: 1MB
+  data:
+    redis:
+      enabled: ${REDIS_CACHE_ENABLE}
+      cron: 0 0 1 * * *
+      host: ${REDIS_CACHE_HOST}
+      json: true
+      password: ${REDIS_CACHE_PASSWORD}
+      port: ${REDIS_CACHE_PORT}
+      sslEnabled: false
+      #sslTruststore: path of the truststore (.jks file)
+      #sslTruststorePassword: password of the trustore
+      username: ${REDIS_CACHE_USERNAME}
 
 rest:
   scheduled:
