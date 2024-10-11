@@ -6,11 +6,12 @@ import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.database.IWalletDAO;
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
+import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
-import com.giova.service.moneystats.crypto.asset.IAssetDAO;
+import com.giova.service.moneystats.crypto.asset.database.IAssetDAO;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -53,6 +54,7 @@ public class WalletService {
   @Autowired private StatsService statsService;
   @Autowired private ForexDataService forexDataService;
   @Autowired private MarketDataService marketDataService;
+  @Autowired private WalletRepository walletRepository;
 
   /**
    * Method that Return the list of Wallets
@@ -88,9 +90,9 @@ public class WalletService {
     List<LocalDate> getAllCryptoDates =
         includeAssets ? statsService.getCryptoDistinctDates(user) : null;
     if (!isLiveWallet && !includeHistory && !includeAssets && !includeFullAssets)
-      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
     else if (isLiveWallet && !includeHistory && !includeAssets) {
-      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetLivePrice> livePrices = assetDAO.findAssetsByWalletIds(walletIds);
       walletEntity =
@@ -102,7 +104,7 @@ public class WalletService {
                               livePrices, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory && !includeFullAssets) {
-      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetWithoutOpAndStats> assetFulls = assetDAO.findAllAssetsByWalletIds(walletIds);
       walletEntity =
@@ -113,7 +115,7 @@ public class WalletService {
                           AssetMapper.fromAssetToAssetEntities(assetFulls, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory) {
-      walletEntity = walletDAO.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetEntity> assetFulls = assetDAO.findAllByWalletIds(walletIds);
       walletEntity =
@@ -127,14 +129,7 @@ public class WalletService {
                                       assetEntity.getWallet().getId().equals(walletEntity1.getId()))
                               .toList()))
               .toList();
-    } else walletEntity = walletCacheService.findAllByUserId(user.getId());
-
-    // TODO: findAllByUserId Non ritorna gli Asset per la nuova impostazione ma bisogna controllare
-    // in caso di Cache Attiva come si comporta
-    // TODO: Collegare Redis Cache e rimuovere l'attuale cache
-    // List<WalletEntity> walletEntity = walletDAO.findAllByUserId(user.getId());
-
-    // List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
+    } else walletEntity = walletRepository.findAllByUserId(user.getId());
 
     String message = "";
     if (walletEntity.isEmpty()) {

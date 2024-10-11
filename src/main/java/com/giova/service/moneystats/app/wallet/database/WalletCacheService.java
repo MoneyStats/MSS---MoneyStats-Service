@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 @Component
 public class WalletCacheService implements WalletRepository {
@@ -21,12 +23,14 @@ public class WalletCacheService implements WalletRepository {
   private static final String WALLET_CACHE = "Wallets-Cache";
   private static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
   private static final String DETAILS_WALLET = "Details-Wallet-Cache";
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  @Autowired private CacheManager cacheManager;
-  @Autowired private IWalletDAO walletDAO;
   /* END OLD DATA */
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired private ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate;
+  @Autowired private CacheManager cacheManager; // OLD DATA
+  @Autowired private IWalletDAO walletDAO;
+  @Autowired private RedisTemplate<String, List<WalletEntity>> walletEntityTemplate;
+
+  // @Autowired private ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate;
 
   /**
    * Obtain Wallet without Stats and Assets, You Just Got the last Stats as Default
@@ -35,19 +39,40 @@ public class WalletCacheService implements WalletRepository {
    * @return Wallet with only the last Stats
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
-    return List.of();
+    String cacheKey = userId + "_wallets_without_assets_and_history";
+    return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+        .orElseGet(
+            () -> {
+              LOG.info("[Caching] Wallet into Database for userId {}", userId);
+              List<WalletEntity> wallets = walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+
+              if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
+                walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+              }
+              return wallets;
+            });
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public List<WalletEntity> findAllByUserId(Long userId) {
+    String cacheKey = userId + "_full_wallets_list";
+    return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+        .orElseGet(
+            () -> {
+              LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
+              List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
+
+              if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
+                walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+              }
+              return wallets;
+            });
   }
 
   /* OLD DATA */
-  @Caching(
-      cacheable = @Cacheable(value = WALLET_CACHE, key = "#userId", condition = "#userId!=null"))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserId(Long userId) {
-    LOG.info("[Caching] WalletEntity into Database by userId {}", userId);
-    return walletDAO.findAllByUserId(userId);
-  }
-
   @Caching(
       cacheable =
           @Cacheable(value = CRYPTO_WALLET_CACHE, key = "#userId", condition = "#userId!=null"))

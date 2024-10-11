@@ -17,4 +17,15 @@ public class WalletDAOAdapter implements WalletRepository {
   public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
     return iWalletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
   }
+
+  /**
+   * Obtain the Full Wallet list
+   *
+   * @param userId User of the Wallet
+   * @return Wallet with the full data
+   */
+  @Override
+  public List<WalletEntity> findAllByUserId(Long userId) {
+    return iWalletDAO.findAllByUserId(userId);
+  }
 }

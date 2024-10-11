@@ -24,9 +24,15 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
           + "ORDER BY w.id")
   List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId);
 
-  /* OLD QUERY */
+  /**
+   * Obtaining the full wallet list with all data
+   *
+   * @param userId User of the Wallet
+   * @return Full Wallet list
+   */
   List<WalletEntity> findAllByUserId(Long userId);
 
+  /* OLD QUERY */
   List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
 
   WalletEntity findWalletEntityById(Long id);
