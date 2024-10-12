@@ -13,6 +13,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisCacheConfig {
 
+  public static final String REDIS_ERROR_LOG =
+      "[Redis] Unable to connect to Redis, falling back to database: {}";
+
   @Bean
   public RedisTemplate<String, List<WalletEntity>> walletEntityTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {

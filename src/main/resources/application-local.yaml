@@ -30,6 +30,8 @@ spring:
       max-request-size: 1MB
   data:
     redis:
+      repositories:
+        enabled: false
       enabled: false
       cron: 0 0 1 * * *
       host: pc-giovanni

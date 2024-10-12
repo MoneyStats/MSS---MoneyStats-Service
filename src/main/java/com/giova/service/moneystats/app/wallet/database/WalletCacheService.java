@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.app.wallet.database;
 
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
@@ -20,9 +21,9 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class WalletCacheService implements WalletRepository {
   /* OLD DATA */
-  private static final String WALLET_CACHE = "Wallets-Cache";
-  private static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
-  private static final String DETAILS_WALLET = "Details-Wallet-Cache";
+  public static final String WALLET_CACHE = "Wallets-Cache";
+  public static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
+  public static final String DETAILS_WALLET = "Details-Wallet-Cache";
   /* END OLD DATA */
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -42,34 +43,45 @@ public class WalletCacheService implements WalletRepository {
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
     String cacheKey = userId + "_wallets_without_assets_and_history";
-    return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
-        .orElseGet(
-            () -> {
-              LOG.info("[Caching] Wallet into Database for userId {}", userId);
-              List<WalletEntity> wallets = walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+    try {
+      return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] Wallet into Database for userId {}", userId);
+                List<WalletEntity> wallets =
+                    walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
 
-              if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                walletEntityTemplate.opsForValue().set(cacheKey, wallets);
-              }
-              return wallets;
-            });
+                if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
+                  walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+                }
+                return wallets;
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+    }
   }
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserId(Long userId) {
     String cacheKey = userId + "_full_wallets_list";
-    return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
-        .orElseGet(
-            () -> {
-              LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
-              List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
+    try {
+      return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
+                List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
 
-              if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                walletEntityTemplate.opsForValue().set(cacheKey, wallets);
-              }
-              return wallets;
-            });
+                if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
+                  walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+                }
+                return wallets;
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return walletDAO.findAllByUserId(userId);
+    }
   }
 
   /* OLD DATA */

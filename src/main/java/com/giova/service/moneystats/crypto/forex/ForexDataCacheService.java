@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ForexDataCacheService {
 
-  private static final String FOREX_DATA_CACHE = "ForexData-Cache";
+  public static final String FOREX_DATA_CACHE = "ForexData-Cache";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
   @Autowired private IForexDAO forexDataDAO;

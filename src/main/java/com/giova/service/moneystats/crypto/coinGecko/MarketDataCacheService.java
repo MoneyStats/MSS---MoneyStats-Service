@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MarketDataCacheService {
 
-  private static final String MARKET_DATA_CACHE = "MarketData-Cache";
+  public static final String MARKET_DATA_CACHE = "MarketData-Cache";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
   @Autowired private IMarketDataDAO marketDataDAO;

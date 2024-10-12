@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthCacheService {
 
-  private static final String USER_CACHE = "Users-Cache";
+  public static final String USER_CACHE = "Users-Cache";
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CacheManager cacheManager;
