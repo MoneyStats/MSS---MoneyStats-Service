@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,16 @@ import org.springframework.web.bind.annotation.*;
 
 public interface WalletController {
 
+  /**
+   * Api to get all the wallets and relative data
+   *
+   * @param token User Access Token
+   * @param live Getting the live price
+   * @param includeHistory Include Full History Stats into data, otherwise only the last stats
+   * @param includeAssets Include all Assets into the Wallets, without Operations and History
+   * @param includeFullAssets Include all Assets into the Wallets
+   * @return List of Wallets
+   */
   @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get all wallet", summary = "List of Wallet", tags = "Wallet")
   @ApiResponse(
@@ -73,6 +84,57 @@ public interface WalletController {
               description = "Param to get the Full Assets with operation and history",
               example = "true")
           Boolean includeFullAssets);
+
+  /**
+   * Api to get the wallet and relative data
+   *
+   * @param token User Access Token
+   * @param live Getting the live price
+   * @return List of Wallets
+   */
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(description = "API to get the wallet by id", summary = "Wallet by Id", tags = "Wallet")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@wallet.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-jwe.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Expired JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@expired-jwe.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  ResponseEntity<Response> getWallet(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestParam(value = "live", required = false)
+          @Schema(
+              description =
+                  "Live Price Of the Wallets. For the FrontEnd is Recommended to use this value as Null",
+              example = "true")
+          Boolean live,
+      @PathVariable(value = "id")
+          @Schema(description = "Id of the Wallet to be searched", example = "1")
+          @Valid
+          @NotNull(message = "ID is a required field")
+          Long id);
 
   /* OLD DATA */
   @PostMapping(

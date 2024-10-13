@@ -10,23 +10,26 @@ public interface AssetRepository {
    * Getting only the identifier, balance and wallet id, used to get the live price of the wallet
    *
    * @param walletIds list of the wallet id
+   * @param userId User ID used for cache
    * @return Assets with only the identifier, balance and wallet id
    */
-  List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds);
+  List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, Long userId);
 
   /**
    * Used to get the full asset list, included with operations and histories
    *
    * @param walletIds param of the wallet id to be searched
+   * @param userId User ID used for cache
    * @return Full asset list
    */
-  List<AssetEntity> findAllByWalletIds(List<Long> walletIds);
+  List<AssetEntity> findAllByWalletIds(List<Long> walletIds, Long userId);
 
   /**
    * Used to get the Asset list without operation and history
    *
    * @param walletIds param of the wallet id to be searched
+   * @param userId User ID used for cache
    * @return Assets list without operations and histories
    */
-  List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds);
+  List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId);
 }

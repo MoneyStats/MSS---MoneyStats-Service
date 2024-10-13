@@ -32,10 +32,16 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
    */
   List<WalletEntity> findAllByUserId(Long userId);
 
+  /**
+   * Obtaining the Wallet data by ID
+   *
+   * @param id ID of the wallet to be searched
+   * @return Full Wallet data
+   */
+  WalletEntity findWalletEntityById(Long id);
+
   /* OLD QUERY */
   List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
-
-  WalletEntity findWalletEntityById(Long id);
 
   void deleteAllByUserId(Long userId);
 }

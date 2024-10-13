@@ -85,4 +85,8 @@ public class WalletEntity extends GenericEntity {
   @OrderBy(value = "date")
   @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
+
+  public WalletEntity empty() {
+    return null;
+  }
 }

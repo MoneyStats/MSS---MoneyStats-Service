@@ -22,6 +22,16 @@ public class WalletControllerImpl implements WalletController {
 
   @Autowired private WalletService walletService;
 
+  /**
+   * Api to get all the wallets and relative data
+   *
+   * @param token User Access Token
+   * @param live Getting the live price
+   * @param includeHistory Include Full History Stats into data, otherwise only the last stats
+   * @param includeAssets Include all Assets into the Wallets, without Operations and History
+   * @param includeFullAssets Include all Assets into the Wallets
+   * @return List of Wallets
+   */
   @Override
   public ResponseEntity<Response> getAllWallet(
       String token,
@@ -30,6 +40,19 @@ public class WalletControllerImpl implements WalletController {
       Boolean includeAssets,
       Boolean includeFullAssets) {
     return walletService.getAllWallets(live, includeHistory, includeAssets, includeFullAssets);
+  }
+
+  /**
+   * Api to get the wallet and relative data
+   *
+   * @param token User Access Token
+   * @param live Getting the live price
+   * @param id
+   * @return List of Wallets
+   */
+  @Override
+  public ResponseEntity<Response> getWallet(String token, Boolean live, Long id) {
+    return walletService.getWalletById(live, id);
   }
 
   /* OLD DATA */

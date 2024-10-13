@@ -19,4 +19,13 @@ public interface WalletRepository {
    * @return Full Wallet list
    */
   List<WalletEntity> findAllByUserId(Long userId);
+
+  /**
+   * Obtaining the Wallet data by ID
+   *
+   * @param id ID of the wallet to be searched
+   * @param userId User ID used for cache
+   * @return Full Wallet data
+   */
+  WalletEntity findWalletEntityById(Long id, Long userId);
 }

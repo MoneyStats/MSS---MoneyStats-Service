@@ -4,6 +4,9 @@ import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletDAOAdapter;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.authentication.AuthCacheService;
+import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
+import com.giova.service.moneystats.crypto.asset.database.AssetDAOAdapter;
+import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
 import com.giova.service.moneystats.crypto.forex.ForexDataCacheService;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -39,6 +42,12 @@ public class CacheConfig {
   public WalletRepository getWalletRepository() {
     if (redisCacheEnabled) return new WalletCacheService();
     return new WalletDAOAdapter();
+  }
+
+  @Bean(name = "assetRepository")
+  public AssetRepository getAssetRepository() {
+    if (redisCacheEnabled) return new AssetCacheService();
+    return new AssetDAOAdapter();
   }
 
   @Bean

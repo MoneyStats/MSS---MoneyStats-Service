@@ -29,7 +29,8 @@ public class WalletCacheService implements WalletRepository {
 
   @Autowired private CacheManager cacheManager; // OLD DATA
   @Autowired private IWalletDAO walletDAO;
-  @Autowired private RedisTemplate<String, List<WalletEntity>> walletEntityTemplate;
+  @Autowired private RedisTemplate<String, List<WalletEntity>> walletEntitiesTemplate;
+  @Autowired private RedisTemplate<String, WalletEntity> walletEntityTemplate;
 
   // @Autowired private ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate;
 
@@ -44,7 +45,7 @@ public class WalletCacheService implements WalletRepository {
   public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
     String cacheKey = userId + "_wallets_without_assets_and_history";
     try {
-      return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+      return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Wallet into Database for userId {}", userId);
@@ -52,7 +53,7 @@ public class WalletCacheService implements WalletRepository {
                     walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                  walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
                 }
                 return wallets;
               });
@@ -62,25 +63,61 @@ public class WalletCacheService implements WalletRepository {
     }
   }
 
+  /**
+   * Obtaining the full wallet list with all data
+   *
+   * @param userId User of the Wallet
+   * @return Full Wallet list
+   */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserId(Long userId) {
     String cacheKey = userId + "_full_wallets_list";
     try {
-      return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+      return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
                 List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                  walletEntityTemplate.opsForValue().set(cacheKey, wallets);
+                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
                 }
                 return wallets;
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
       return walletDAO.findAllByUserId(userId);
+    }
+  }
+
+  /**
+   * Obtaining the Wallet data by ID
+   *
+   * @param id ID of the wallet to be searched
+   * @param userId User ID used for cache
+   * @return Full Wallet data
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  @Caching(cacheable = @Cacheable(value = DETAILS_WALLET, key = "#id"))
+  public WalletEntity findWalletEntityById(Long id, Long userId) {
+    String cacheKey = userId + "_wallet_" + id;
+    try {
+      return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] WalletEntity from Database by id {}", id);
+                WalletEntity wallet = walletDAO.findWalletEntityById(id);
+
+                if (!ObjectUtils.isEmpty(wallet))
+                  walletEntityTemplate.opsForValue().set(cacheKey, wallet);
+
+                return wallet;
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return walletDAO.findWalletEntityById(id);
     }
   }
 
@@ -121,11 +158,5 @@ public class WalletCacheService implements WalletRepository {
   public void deleteAllByUserId(Long userId) {
     deleteWalletsCache();
     walletDAO.deleteAllByUserId(userId);
-  }
-
-  @Caching(cacheable = @Cacheable(value = DETAILS_WALLET, key = "#id"))
-  public WalletEntity findWalletEntityById(Long id) {
-    LOG.info("[Caching] WalletEntity from Database by and id {}", id);
-    return walletDAO.findWalletEntityById(id);
   }
 }

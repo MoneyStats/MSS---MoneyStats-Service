@@ -24,18 +24,18 @@ spring:
     multipart:
       max-file-size: 2MB
       max-request-size: 2MB
-  #data:
-  #  redis:
-  #    enabled: false
-  #    cron: 0 0 1 * * *
-  #    host: pc-giovanni
-  #    json: false
-  #    password: password
-  #    port: 6379
-  #    sslEnabled: false
-  #    #sslTruststore: path of the truststore (.jks file)
-  #    #sslTruststorePassword: password of the trustore
-  #    username: username
+  data:
+    redis:
+      enabled: false
+      cron: 0 0 1 * * *
+      host: pc-giovanni
+      json: false
+      password: password
+      port: 6379
+      sslEnabled: false
+      #sslTruststore: path of the truststore (.jks file)
+      #sslTruststorePassword: password of the trustore
+      username: username
 
 rest:
   scheduled:

@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.app.stats.StatsService;
-import com.giova.service.moneystats.app.wallet.database.IWalletDAO;
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
-import com.giova.service.moneystats.crypto.asset.database.IAssetDAO;
+import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -47,14 +46,13 @@ public class WalletService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final UserEntity user;
   @Autowired private WalletCacheService walletCacheService;
-  @Autowired private IWalletDAO walletDAO;
-  @Autowired private IAssetDAO assetDAO;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
   @Autowired private StatsService statsService;
   @Autowired private ForexDataService forexDataService;
   @Autowired private MarketDataService marketDataService;
   @Autowired private WalletRepository walletRepository;
+  @Autowired private AssetRepository assetRepository;
 
   /**
    * Method that Return the list of Wallets
@@ -94,7 +92,8 @@ public class WalletService {
     else if (isLiveWallet && !includeHistory && !includeAssets) {
       walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
-      List<AssetLivePrice> livePrices = assetDAO.findAssetsByWalletIds(walletIds);
+      List<AssetLivePrice> livePrices =
+          assetRepository.findAssetsByWalletIds(walletIds, user.getId());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -106,7 +105,8 @@ public class WalletService {
     } else if (!includeHistory && !includeFullAssets) {
       walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
-      List<AssetWithoutOpAndStats> assetFulls = assetDAO.findAllAssetsByWalletIds(walletIds);
+      List<AssetWithoutOpAndStats> assetFulls =
+          assetRepository.findAllAssetsByWalletIds(walletIds, user.getId());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -117,7 +117,7 @@ public class WalletService {
     } else if (!includeHistory) {
       walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
-      List<AssetEntity> assetFulls = assetDAO.findAllByWalletIds(walletIds);
+      List<AssetEntity> assetFulls = assetRepository.findAllByWalletIds(walletIds, user.getId());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -154,6 +154,58 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
+  /**
+   * Method that Return the list of Wallets
+   *
+   * @param live Used to Get the live price of the wallet
+   * @param id Wallet ID to be searched
+   * @return The list of the Wallets
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getWalletById(Boolean live, Long id) {
+    /**
+     * We give the priority to the param "Boolean live", if the param is null we check the User
+     * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
+     * value as Null
+     */
+    Boolean isLiveWallet =
+        !ObjectUtils.isEmpty(live)
+            ? live
+            : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+                && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+
+    /* If you have the live included you can get the Forex Data, otherwise we do not need it */
+    ForexData forexData =
+        isLiveWallet ? forexDataService.getForexData(user.getSettings().getCryptoCurrency()) : null;
+    List<MarketData> marketData =
+        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
+
+    Wallet walletToReturn =
+        WalletMapper.mapFromWalletEntitiesToWalletList(
+                List.of(walletEntity),
+                isLiveWallet,
+                true,
+                true,
+                getAllCryptoDates,
+                forexData,
+                marketData,
+                user.getSettings().getCurrency())
+            .getFirst();
+
+    String message = "";
+    if (ObjectUtils.isEmpty(walletEntity)) {
+      message = "No Wallet found, insert new Wallet to get it!";
+    } else {
+      message = "Found " + walletEntity.getName() + " Wallet";
+    }
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
   /* OLD DATA */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -179,7 +231,8 @@ public class WalletService {
     WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
 
     if (wallet.getId() != null && isWalletLive) {
-      WalletEntity getFromDB = walletCacheService.findWalletEntityById(wallet.getId());
+      WalletEntity getFromDB =
+          walletCacheService.findWalletEntityById(wallet.getId(), user.getId());
       if (getFromDB != null) {
         walletEntity.setBalance(getFromDB.getBalance());
         walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
