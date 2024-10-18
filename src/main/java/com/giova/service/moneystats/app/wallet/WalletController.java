@@ -40,23 +40,15 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@list-wallet.json")))
+              examples = @ExampleObject(value = "@wallets-full-list.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> getAllWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
@@ -101,23 +93,15 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallet.json")))
+              examples = @ExampleObject(value = "@wallet-by-id.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> getWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
@@ -184,7 +168,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@list-wallet.json")))
+              examples = @ExampleObject(value = "@wallets-full-list.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",
@@ -222,7 +206,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@list-wallet.json")))
+              examples = @ExampleObject(value = "@wallets-full-list.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",

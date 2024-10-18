@@ -1,0 +1,11 @@
+{
+  "dateTime": "2024-10-18T17:35:41",
+  "url": "<endpoint>",
+  "spanId": "e8b677e0-d21f-432b-a321-1b37f67b8675",
+  "error": {
+    "errorCode": "ERR_AUTH_MSS_008",
+    "exception": "com.giova.service.moneystats.authentication.AuthException",
+    "status": "FORBIDDEN",
+    "exceptionMessage": "You cannot make this request cause the auth-token is invalid"
+  }
+}

@@ -68,8 +68,8 @@ public class AppInterceptor implements WebFilter {
       LOG.error("Auth-Token not found");
       return errorResponse(request, response, exceptionResponse);
     }
-    UserEntity checkUser = new UserEntity();
-    AuthToken generateToken = new AuthToken();
+    UserEntity checkUser;
+    AuthToken generateToken;
     try {
       checkUser = authService.checkLogin(authToken);
       generateToken = authService.regenerateToken(checkUser);

@@ -66,6 +66,7 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  @Deprecated
   public ResponseEntity<Response> listWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken,
