@@ -120,6 +120,42 @@ public interface WalletController {
           @NotNull(message = "ID is a required field")
           Long id);
 
+  /**
+   * API to add a new Wallet
+   *
+   * @param wallet Valid Wallet to be added
+   * @param token User Access Token
+   * @return The Wallet added
+   */
+  @PostMapping(
+      value = "",
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @Operation(description = "API to insert a wallet", summary = "Add Wallet", tags = "Wallet")
+  // TODO: Modifica JSON con dati reali
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@add-update-wallet.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  ResponseEntity<Response> addWallet(
+      @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token);
+
   /* OLD DATA */
   @PostMapping(
       value = "/insert-update",

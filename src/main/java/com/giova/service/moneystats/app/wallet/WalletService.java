@@ -19,6 +19,7 @@ import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.settings.dto.Status;
+import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -28,6 +29,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -182,24 +184,64 @@ public class WalletService {
     List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
 
-    Wallet walletToReturn =
-        WalletMapper.mapFromWalletEntitiesToWalletList(
-                List.of(walletEntity),
-                isLiveWallet,
-                true,
-                true,
-                getAllCryptoDates,
-                forexData,
-                marketData,
-                user.getSettings().getCurrency())
-            .getFirst();
+    Wallet walletToReturn = null;
 
     String message = "";
-    if (ObjectUtils.isEmpty(walletEntity)) {
+    if (Utils.isNullOrEmpty(walletEntity)) {
       message = "No Wallet found, insert new Wallet to get it!";
     } else {
       message = "Found " + walletEntity.getName() + " Wallet";
+      List<Wallet> walletsToReturn =
+          WalletMapper.mapFromWalletEntitiesToWalletList(
+              List.of(walletEntity),
+              isLiveWallet,
+              true,
+              true,
+              getAllCryptoDates,
+              forexData,
+              marketData,
+              user.getSettings().getCurrency());
+      walletToReturn = walletsToReturn == null ? null : walletsToReturn.getFirst();
     }
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> addWallet(Wallet wallet, Boolean isWalletLive) {
+    WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
+
+    if (!Utils.isNullOrEmpty(wallet.getId()) && isWalletLive) {
+      WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getId());
+      WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
+    }
+
+    if (!Utils.isNullOrEmpty(wallet.getImgName())) {
+      LOG.info("Building image with filename {}", wallet.getImgName());
+      Image image = imageService.getAttachment(wallet.getImgName());
+      imageService.removeAttachment(wallet.getImgName());
+      walletEntity.setImg(
+          "data:"
+              + image.getContentType()
+              + ";base64,"
+              + Base64.getEncoder().encodeToString(image.getBody()));
+    }
+
+    WalletEntity saved = walletRepository.save(walletEntity);
+    List<MarketData> marketData = Collections.emptyList();
+    if (!Utils.isNullOrEmpty(saved.getAssets()))
+      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+
+    // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
+    // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
+    //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
+    // }
+
+    String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
@@ -259,8 +301,12 @@ public class WalletService {
 
     WalletEntity saved = walletCacheService.save(walletEntity);
 
+    List<MarketData> marketData = Collections.emptyList();
+    if (!Utils.isNullOrEmpty(saved.getAssets()))
+      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+
     // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
-    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null);
+    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null, marketData);
     // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
     //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
     // }
@@ -353,11 +399,7 @@ public class WalletService {
         .map(
             walletEntity -> {
               Wallet wallet = new Wallet();
-              try {
-                walletMapper.fromWalletEntityToWallet(walletEntity, null);
-              } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-              }
+              walletMapper.fromWalletEntityToWallet(walletEntity, null, null);
 
               return wallet;
             })

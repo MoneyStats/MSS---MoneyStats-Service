@@ -55,6 +55,18 @@ public class WalletControllerImpl implements WalletController {
     return walletService.getWalletById(live, id);
   }
 
+  /**
+   * API to add a new Wallet
+   *
+   * @param wallet Valid Wallet to be added
+   * @param token User Access Token
+   * @return The Wallet added
+   */
+  @Override
+  public ResponseEntity<Response> addWallet(Wallet wallet, String token) {
+    return null;
+  }
+
   /* OLD DATA */
   @Override
   public ResponseEntity<Response> insertOrUpdateWallet(

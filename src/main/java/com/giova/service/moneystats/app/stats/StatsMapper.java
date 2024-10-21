@@ -4,11 +4,10 @@ import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,8 @@ public class StatsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Stats> fromEntityToStats(List<StatsEntity> statsEntities) {
-    return Optional.ofNullable(statsEntities).orElse(Collections.emptyList()).stream()
+    if (Utils.isNullOrEmpty(statsEntities)) return null;
+    return statsEntities.stream()
         .map(
             statsEntity -> {
               Stats stats2 = new Stats();
@@ -30,6 +30,7 @@ public class StatsMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<StatsEntity> fromStatsToEntity(
       List<Stats> stats, WalletEntity wallet, UserEntity user) {
+    if (Utils.isNullOrEmpty(stats)) return null;
     return stats.stream()
         .map(
             stats1 -> {

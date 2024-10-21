@@ -40,4 +40,15 @@ public class WalletDAOAdapter implements WalletRepository {
   public WalletEntity findWalletEntityById(Long id, Long userId) {
     return iWalletDAO.findWalletEntityById(id);
   }
+
+  /**
+   * Saving the Wallet
+   *
+   * @param walletEntity To be saved
+   * @return Wallet Saved
+   */
+  @Override
+  public WalletEntity save(WalletEntity walletEntity) {
+    return iWalletDAO.save(walletEntity);
+  }
 }

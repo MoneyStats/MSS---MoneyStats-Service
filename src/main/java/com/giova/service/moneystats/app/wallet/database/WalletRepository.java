@@ -28,4 +28,12 @@ public interface WalletRepository {
    * @return Full Wallet data
    */
   WalletEntity findWalletEntityById(Long id, Long userId);
+
+  /**
+   * Saving the Wallet
+   *
+   * @param walletEntity To be saved
+   * @return Wallet Saved
+   */
+  WalletEntity save(WalletEntity walletEntity);
 }
