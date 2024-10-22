@@ -9,7 +9,7 @@ import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.AuthService;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.utilities.Mapper;

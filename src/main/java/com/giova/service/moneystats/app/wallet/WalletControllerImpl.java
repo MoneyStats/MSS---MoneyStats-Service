@@ -64,7 +64,7 @@ public class WalletControllerImpl implements WalletController {
    */
   @Override
   public ResponseEntity<Response> addWallet(Wallet wallet, String token) {
-    return null;
+    return walletService.addWallet(wallet, null);
   }
 
   /* OLD DATA */

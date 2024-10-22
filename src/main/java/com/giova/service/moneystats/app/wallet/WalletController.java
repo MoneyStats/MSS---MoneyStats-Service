@@ -40,7 +40,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallets-full-list.json")))
+              examples = @ExampleObject(value = "@wallets-full-list_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -93,7 +93,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallet-by-id.json")))
+              examples = @ExampleObject(value = "@wallet-by-id_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -131,7 +131,6 @@ public interface WalletController {
       value = "",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   @Operation(description = "API to insert a wallet", summary = "Add Wallet", tags = "Wallet")
-  // TODO: Modifica JSON con dati reali
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",
@@ -139,7 +138,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@add-update-wallet.json")))
+              examples = @ExampleObject(value = "@add-wallet_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -150,7 +149,8 @@ public interface WalletController {
               examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> addWallet(
-      @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,
+      @RequestBody @Valid @Schema(description = "Wallet To Add", implementation = Wallet.class)
+          Wallet wallet,
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
@@ -171,7 +171,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@add-update-wallet.json")))
+              examples = @ExampleObject(value = "@add-update-wallet_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",
@@ -204,7 +204,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallets-full-list.json")))
+              examples = @ExampleObject(value = "@wallets-full-list_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",
@@ -242,7 +242,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallets-full-list.json")))
+              examples = @ExampleObject(value = "@wallets-full-list_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid JWE",

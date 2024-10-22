@@ -1,9 +1,13 @@
-package com.giova.service.moneystats.exception;
+package com.giova.service.moneystats.exception.config;
 
 import io.github.giovannilamarmora.utils.exception.ExceptionCode;
 import org.springframework.http.HttpStatus;
 
 public enum ExceptionMap implements ExceptionCode {
+  /**
+   * @Validation Exception Map for Validation Input
+   */
+  ERR_VALID_MSS_001("VALIDATION_ERROR", HttpStatus.BAD_REQUEST, "Required input are null or Empty"),
   /**
    * @Authentication Exception Map for Authentication
    */

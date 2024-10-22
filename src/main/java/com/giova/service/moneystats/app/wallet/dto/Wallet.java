@@ -5,7 +5,6 @@ import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,10 @@ public class Wallet extends GenericDTO {
 
   private String type;
   private Double balance;
+
+  @NotBlank(message = "Image cannot be null or empty")
   private String img;
+
   private String imgName;
   private Double allTimeHigh;
   private LocalDate allTimeHighDate;

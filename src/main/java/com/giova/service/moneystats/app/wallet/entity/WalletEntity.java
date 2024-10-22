@@ -36,35 +36,35 @@ public class WalletEntity extends GenericEntity {
   @Column(name = "TYPE")
   private String type;
 
-  @Column(name = "BALANCE")
+  @Column(name = "BALANCE", nullable = false)
   private Double balance;
 
   @Lob
-  @Column(name = "IMG")
+  @Column(name = "IMG", nullable = false)
   private String img;
 
-  @Column(name = "ALL_TIME_HIGH")
+  @Column(name = "ALL_TIME_HIGH", nullable = false)
   private Double allTimeHigh;
 
-  @Column(name = "ALL_TIME_HIGH_DATE")
+  @Column(name = "ALL_TIME_HIGH_DATE", nullable = false)
   private LocalDate allTimeHighDate;
 
-  @Column(name = "HIGH_PRICE")
+  @Column(name = "HIGH_PRICE", nullable = false)
   private Double highPrice;
 
-  @Column(name = "HIGH_PRICE_DATE")
+  @Column(name = "HIGH_PRICE_DATE", nullable = false)
   private LocalDate highPriceDate;
 
-  @Column(name = "LOW_PRICE")
+  @Column(name = "LOW_PRICE", nullable = false)
   private Double lowPrice;
 
-  @Column(name = "LOW_PRICE_DATE")
+  @Column(name = "LOW_PRICE_DATE", nullable = false)
   private LocalDate lowPriceDate;
 
-  @Column(name = "PERFORMANCE_LAST_STATS")
+  @Column(name = "PERFORMANCE_LAST_STATS", nullable = false)
   private Double performanceLastStats;
 
-  @Column(name = "DIFFERENCE_LAST_STATS")
+  @Column(name = "DIFFERENCE_LAST_STATS", nullable = false)
   private Double differenceLastStats;
 
   @Column(name = "DATE_LAST_STATS")

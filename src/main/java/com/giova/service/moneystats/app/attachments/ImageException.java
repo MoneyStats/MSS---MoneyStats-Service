@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.app.attachments;
 
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.ExceptionCode;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 

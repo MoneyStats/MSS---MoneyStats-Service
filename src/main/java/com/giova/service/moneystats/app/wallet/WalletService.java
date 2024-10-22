@@ -73,11 +73,7 @@ public class WalletService {
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
      * value as Null
      */
-    Boolean isLiveWallet =
-        !ObjectUtils.isEmpty(live)
-            ? live
-            : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
-                && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+    Boolean isLiveWallet = isLiveWallet(live);
 
     List<WalletEntity> walletEntity;
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
@@ -170,11 +166,7 @@ public class WalletService {
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
      * value as Null
      */
-    Boolean isLiveWallet =
-        !ObjectUtils.isEmpty(live)
-            ? live
-            : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
-                && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+    Boolean isLiveWallet = isLiveWallet(live);
 
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
     ForexData forexData =
@@ -211,10 +203,14 @@ public class WalletService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> addWallet(Wallet wallet, Boolean isWalletLive) {
+  public ResponseEntity<Response> addWallet(Wallet wallet, Boolean live) {
     WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
 
-    if (!Utils.isNullOrEmpty(wallet.getId()) && isWalletLive) {
+    /**
+     * I need to check if is an Update Wallet, if the wallet is live I need to prevent the data to
+     * return the wrong balance, caused because of the live wallet
+     */
+    if (!Utils.isNullOrEmpty(wallet.getId()) && live) {
       WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getId());
       WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
     }
@@ -235,17 +231,25 @@ public class WalletService {
     if (!Utils.isNullOrEmpty(saved.getAssets()))
       marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
-    // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
-    // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
-    //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
-    // }
 
     String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
+  }
+
+  private Boolean isLiveWallet(Boolean live) {
+    /**
+     * We give the priority to the param "Boolean live", if the param is null we check the User
+     * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
+     * value as Null
+     */
+    return !ObjectUtils.isEmpty(live)
+        ? live
+        : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
   }
 
   /* OLD DATA */

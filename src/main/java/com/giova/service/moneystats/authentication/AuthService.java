@@ -9,7 +9,7 @@ import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
 import com.giova.service.moneystats.settings.entity.UserSettingEntity;
 import com.giova.service.moneystats.utilities.RegEx;
 import com.giova.service.moneystats.utilities.Utils;

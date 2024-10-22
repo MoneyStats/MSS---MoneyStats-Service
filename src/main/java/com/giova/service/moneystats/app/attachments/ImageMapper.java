@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.app.attachments;
 
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

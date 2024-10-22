@@ -120,6 +120,7 @@ public class WalletMapper {
   public static WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
     WalletEntity walletEntity = new WalletEntity();
     BeanUtils.copyProperties(wallet, walletEntity);
+    mapEmptyDataWalletEntity(walletEntity);
     walletEntity.setUser(userEntity);
 
     // if (wallet.getInfoString() != null && !wallet.getInfoString().isEmpty()) {
@@ -136,6 +137,12 @@ public class WalletMapper {
     return walletEntity;
   }
 
+  /**
+   * Used to Prevent Live wallet to update data into the Database
+   *
+   * @param walletEntity Edited with Database Data
+   * @param getFromDB Database Wallet
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void mapWalletEntityToBeSaved(WalletEntity walletEntity, WalletEntity getFromDB) {
     if (Utils.isNullOrEmpty(getFromDB)) return;
@@ -148,6 +155,29 @@ public class WalletMapper {
     walletEntity.setLowPriceDate(getFromDB.getLowPriceDate());
     walletEntity.setAllTimeHigh(getFromDB.getAllTimeHigh());
     walletEntity.setAllTimeHighDate(getFromDB.getAllTimeHighDate());
+  }
+
+  /**
+   * Used to map Empty Field during the Save Wallet
+   *
+   * @param walletEntity Edited with empty data
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static void mapEmptyDataWalletEntity(WalletEntity walletEntity) {
+    if (Utils.isNullOrEmpty(walletEntity.getBalance())) walletEntity.setBalance(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getPerformanceLastStats()))
+      walletEntity.setPerformanceLastStats(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getDifferenceLastStats()))
+      walletEntity.setDifferenceLastStats(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getHighPrice())) walletEntity.setHighPrice(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getHighPriceDate()))
+      walletEntity.setHighPriceDate(LocalDate.now());
+    if (Utils.isNullOrEmpty(walletEntity.getLowPrice())) walletEntity.setLowPrice(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getLowPriceDate()))
+      walletEntity.setLowPriceDate(LocalDate.now());
+    if (Utils.isNullOrEmpty(walletEntity.getAllTimeHigh())) walletEntity.setAllTimeHigh(0D);
+    if (Utils.isNullOrEmpty(walletEntity.getAllTimeHighDate()))
+      walletEntity.setAllTimeHighDate(LocalDate.now());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
