@@ -2,9 +2,9 @@ package com.giova.service.moneystats.app.wallet.database;
 
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
-import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -152,20 +152,20 @@ public class WalletCacheService implements WalletRepository {
       // Cache key per full wallets list
       String keyFullWallets = userId + CACHE_FULL_WALLET_LIST;
 
-      if (!Utils.isNullOrEmpty(
+      if (!Utilities.isNullOrEmpty(
           walletEntitiesTemplate.opsForValue().get(keyWithoutAssetsAndHistory))) {
         walletEntitiesTemplate.delete(keyWithoutAssetsAndHistory);
         LOG.info("Cache evicted for key: {}", keyWithoutAssetsAndHistory);
       }
 
-      if (!Utils.isNullOrEmpty(walletEntitiesTemplate.opsForValue().get(keyFullWallets))) {
+      if (!Utilities.isNullOrEmpty(walletEntitiesTemplate.opsForValue().get(keyFullWallets))) {
         walletEntitiesTemplate.delete(keyFullWallets);
         LOG.info("Cache evicted for key: {}", keyFullWallets);
       }
 
       String keyWalletById = userId + CACHE_WALLET_BY_ID + wallet.getId();
 
-      if (!Utils.isNullOrEmpty(walletEntityTemplate.opsForValue().get(keyWalletById))) {
+      if (!Utilities.isNullOrEmpty(walletEntityTemplate.opsForValue().get(keyWalletById))) {
         walletEntityTemplate.delete(keyWalletById);
         LOG.info("Cache evicted for wallet key: {}", keyWalletById);
       }

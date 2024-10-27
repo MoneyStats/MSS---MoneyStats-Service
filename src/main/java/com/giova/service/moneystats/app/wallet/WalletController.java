@@ -31,7 +31,7 @@ public interface WalletController {
    * @param includeFullAssets Include all Assets into the Wallets
    * @return List of Wallets
    */
-  @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/wallets", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get all wallet", summary = "List of Wallet", tags = "Wallet")
   @ApiResponse(
       responseCode = "200",
@@ -84,7 +84,7 @@ public interface WalletController {
    * @param live Getting the live price
    * @return List of Wallets
    */
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/wallets/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get the wallet by id", summary = "Wallet by Id", tags = "Wallet")
   @ApiResponse(
       responseCode = "200",
@@ -128,7 +128,7 @@ public interface WalletController {
    * @return The Wallet added
    */
   @PostMapping(
-      value = "",
+      value = "/wallets",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   @Operation(description = "API to insert a wallet", summary = "Add Wallet", tags = "Wallet")
   @ApiResponse(
@@ -156,9 +156,90 @@ public interface WalletController {
           @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
           String token);
 
+  /**
+   * API to update a Wallet
+   *
+   * @param wallet Valid Wallet to be updated
+   * @param token User Access Token
+   * @return The Wallet update
+   */
+  @PutMapping(
+      value = "/wallets",
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @Operation(description = "API to update a wallet", summary = "Update Wallet", tags = "Wallet")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@add-wallet_response.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  ResponseEntity<Response> updateWallet(
+      @RequestBody @Valid @Schema(description = "Wallet To Update", implementation = Wallet.class)
+          Wallet wallet,
+      @RequestParam(value = "live", required = false)
+          @Schema(
+              description =
+                  "Live Price Of the Wallets. For the FrontEnd is Recommended to use this value as Null",
+              example = "true")
+          Boolean live,
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token);
+
+  /**
+   * API to delete a Wallet
+   *
+   * @param id Valid Wallet to be deleted
+   * @param token User Access Token
+   * @return The Wallet deleted
+   */
+  @DeleteMapping(
+      value = "/wallets/{id}",
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @Operation(description = "API to delete a wallet", summary = "Delete Wallet", tags = "Wallet")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@add-wallet_response.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  ResponseEntity<Response> deleteWallet(
+      @PathVariable(value = "id")
+          @Schema(description = "Id of the Wallet to be deleted", example = "1")
+          @Valid
+          @NotNull(message = "ID is a required field")
+          Long id,
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token);
+
   /* OLD DATA */
   @PostMapping(
-      value = "/insert-update",
+      value = "/wallet/insert-update",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   @Operation(
       description = "API to insert a wallet",
@@ -195,7 +276,7 @@ public interface WalletController {
           String authToken)
       throws UtilsException, JsonProcessingException;
 
-  @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/wallet/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get all wallet", summary = "List of Wallet", tags = "Wallet")
   @ApiResponse(
       responseCode = "200",
@@ -230,7 +311,7 @@ public interface WalletController {
           Boolean live)
       throws UtilsException;
 
-  @GetMapping(value = "/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/wallet/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to get all Crypto wallet",
       summary = "List of Crypto Wallet",

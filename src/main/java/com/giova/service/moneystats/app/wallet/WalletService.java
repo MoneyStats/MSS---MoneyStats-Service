@@ -19,15 +19,17 @@ import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.settings.dto.Status;
-import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -179,7 +181,7 @@ public class WalletService {
     Wallet walletToReturn = null;
 
     String message = "";
-    if (Utils.isNullOrEmpty(walletEntity)) {
+    if (Utilities.isNullOrEmpty(walletEntity)) {
       message = "No Wallet found, insert new Wallet to get it!";
     } else {
       message = "Found " + walletEntity.getName() + " Wallet";
@@ -201,21 +203,81 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
+  /**
+   * Api to Add Wallet
+   *
+   * @param wallet to be added
+   * @return wallet saved
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> addWallet(Wallet wallet, Boolean live) {
+  public ResponseEntity<Response> addWallet(Wallet wallet) {
+    String message = "Wallet " + wallet.getName() + " Successfully saved!";
+    return addOrUpdateWallet(wallet, false, message);
+  }
+
+  /**
+   * Api to Update Wallet
+   *
+   * @param wallet to be updated
+   * @return wallet updated
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> updateWallet(Wallet wallet, Boolean live) {
+    String message = "Wallet " + wallet.getName() + " Successfully updated!";
+    return addOrUpdateWallet(wallet, isLiveWallet(live), message);
+  }
+
+  /**
+   * Delete a Wallet
+   *
+   * @param id Wallet to be deleted
+   * @return wallet deleted
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  public ResponseEntity<Response> deleteWallet(Long id) {
+    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
+    walletEntity.setDeletedDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+
+    WalletEntity saved = walletRepository.save(walletEntity);
+    List<MarketData> marketData = Collections.emptyList();
+    if (!Utilities.isNullOrEmpty(saved.getAssets()))
+      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+
+    Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
+
+    String message = "Wallet " + walletToReturn.getName() + " Successfully deleted!";
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
+    return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Add, Update or Delete a Wallet
+   *
+   * @param wallet to be edited
+   * @param live param for live data
+   * @return wallet edited
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
+  private ResponseEntity<Response> addOrUpdateWallet(Wallet wallet, Boolean live, String message) {
     WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
 
     /**
      * I need to check if is an Update Wallet, if the wallet is live I need to prevent the data to
      * return the wrong balance, caused because of the live wallet
      */
-    if (!Utils.isNullOrEmpty(wallet.getId()) && live) {
+    if (!Utilities.isNullOrEmpty(wallet.getId()) && live) {
       WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getId());
       WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
     }
 
-    if (!Utils.isNullOrEmpty(wallet.getImgName())) {
+    /** If the wallet is to delete I need to get the full wallet to be deleted from the database */
+    if (!Utilities.isNullOrEmpty(wallet.getImgName())) {
       LOG.info("Building image with filename {}", wallet.getImgName());
       Image image = imageService.getAttachment(wallet.getImgName());
       imageService.removeAttachment(wallet.getImgName());
@@ -228,12 +290,10 @@ public class WalletService {
 
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
-    if (!Utils.isNullOrEmpty(saved.getAssets()))
+    if (!Utilities.isNullOrEmpty(saved.getAssets()))
       marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
-
-    String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
@@ -253,6 +313,7 @@ public class WalletService {
   }
 
   /* OLD DATA */
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
@@ -263,6 +324,7 @@ public class WalletService {
     return insertOrUpdate(wallet, isLiveWallet);
   }
 
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> notFilterInsertOrUpdateWallet(Wallet wallet)
@@ -270,6 +332,7 @@ public class WalletService {
     return insertOrUpdate(wallet, false);
   }
 
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> insertOrUpdate(Wallet wallet, Boolean isWalletLive)
@@ -306,7 +369,7 @@ public class WalletService {
     WalletEntity saved = walletCacheService.save(walletEntity);
 
     List<MarketData> marketData = Collections.emptyList();
-    if (!Utils.isNullOrEmpty(saved.getAssets()))
+    if (!Utilities.isNullOrEmpty(saved.getAssets()))
       marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
@@ -322,6 +385,7 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getWallets() throws UtilsException {
     List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());

@@ -11,7 +11,6 @@ import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.OperationsMapper;
-import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
@@ -29,9 +28,9 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
-    if (Utils.isNullOrEmpty(assetEntityList)) return null;
+    if (Utilities.isNullOrEmpty(assetEntityList)) return null;
     LocalDate lastDate =
-        (!Utils.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
+        (!Utilities.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -41,7 +40,7 @@ public class AssetMapper {
               asset.setCurrent_price(getAssetValue(marketData, asset));
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
-              if (!Utils.isNullOrEmpty(assetEntity.getHistory())) {
+              if (!Utilities.isNullOrEmpty(assetEntity.getHistory())) {
                 asset.setHistory(StatsMapper.fromEntityToStats(assetEntity.getHistory()));
                 Stats lastStats =
                     asset.getHistory().stream()
@@ -66,7 +65,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Asset> fromAssetEntitiesLivePriceToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData) {
-    if (Utils.isNullOrEmpty(assetEntityList)) return null;
+    if (Utilities.isNullOrEmpty(assetEntityList)) return null;
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -82,7 +81,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetLivePricesToAssetEntities(
       List<AssetLivePrice> assetLivePrices, Long walletID) {
-    if (Utils.isNullOrEmpty(assetLivePrices)) return null;
+    if (Utilities.isNullOrEmpty(assetLivePrices)) return null;
     return assetLivePrices.stream()
         .filter(assetLivePrice -> Objects.equals(assetLivePrice.getWalletId(), walletID))
         .map(
@@ -97,7 +96,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetToAssetEntities(
       List<AssetWithoutOpAndStats> assetWithoutOpAndStatsList, Long walletID) {
-    if (Utils.isNullOrEmpty(assetWithoutOpAndStatsList)) return null;
+    if (Utilities.isNullOrEmpty(assetWithoutOpAndStatsList)) return null;
     return assetWithoutOpAndStatsList.stream()
         .filter(
             assetWithoutOpAndStats ->
@@ -130,7 +129,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetToAssetsEntities(
       List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
-    if (Utils.isNullOrEmpty(assetList)) return null;
+    if (Utilities.isNullOrEmpty(assetList)) return null;
     return assetList.stream()
         .map(
             asset -> {

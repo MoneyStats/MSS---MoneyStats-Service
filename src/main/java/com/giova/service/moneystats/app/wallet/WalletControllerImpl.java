@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 @Logged
 @RestController
-@RequestMapping("/v1/wallet")
+@RequestMapping("/v1")
+// @RequestMapping("/v1/wallets")
 @CrossOrigin(origins = "*")
 @Tag(name = "Wallet", description = "API for wallet")
 public class WalletControllerImpl implements WalletController {
@@ -47,7 +48,7 @@ public class WalletControllerImpl implements WalletController {
    *
    * @param token User Access Token
    * @param live Getting the live price
-   * @param id
+   * @param id of the wallet
    * @return List of Wallets
    */
   @Override
@@ -64,11 +65,36 @@ public class WalletControllerImpl implements WalletController {
    */
   @Override
   public ResponseEntity<Response> addWallet(Wallet wallet, String token) {
-    return walletService.addWallet(wallet, null);
+    return walletService.addWallet(wallet);
+  }
+
+  /**
+   * API to update a Wallet
+   *
+   * @param wallet Valid Wallet to be updated
+   * @param token User Access Token
+   * @return The Wallet update
+   */
+  @Override
+  public ResponseEntity<Response> updateWallet(Wallet wallet, Boolean live, String token) {
+    return walletService.updateWallet(wallet, live);
+  }
+
+  /**
+   * API to delete a Wallet
+   *
+   * @param id Valid Wallet to be deleted
+   * @param token User Access Token
+   * @return The Wallet deleted
+   */
+  @Override
+  public ResponseEntity<Response> deleteWallet(Long id, String token) {
+    return walletService.deleteWallet(id);
   }
 
   /* OLD DATA */
   @Override
+  @Deprecated
   public ResponseEntity<Response> insertOrUpdateWallet(
       @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
@@ -90,6 +116,7 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  @Deprecated
   public ResponseEntity<Response> listCryptoWallet(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken,

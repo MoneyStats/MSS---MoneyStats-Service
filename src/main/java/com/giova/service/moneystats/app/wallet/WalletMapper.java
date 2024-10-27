@@ -16,11 +16,11 @@ import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
-import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -51,22 +51,22 @@ public class WalletMapper {
       ForexData forex,
       List<MarketData> marketData,
       String userCurrency) {
-    if (Utils.isNullOrEmpty(walletEntities)) return null;
+    if (Utilities.isNullOrEmpty(walletEntities)) return null;
     AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()
         .map(
             (walletEntity -> {
               Wallet wallet = new Wallet();
               BeanUtils.copyProperties(walletEntity, wallet);
-              if (!Utils.isNullOrEmpty(walletEntity.getInfo())) {
+              if (!Utilities.isNullOrEmpty(walletEntity.getInfo())) {
                 wallet.setInfo(Mapper.readObject(walletEntity.getInfo(), new TypeReference<>() {}));
               }
-              if (!Utils.isNullOrEmpty(walletEntity.getHistory())) {
+              if (!Utilities.isNullOrEmpty(walletEntity.getHistory())) {
                 lastBalance.set(walletEntity.getHistory().getLast().getBalance());
                 wallet.setHistory(StatsMapper.fromEntityToStats(walletEntity.getHistory()));
               }
               if ((includeAssets || includeFullAssets)
-                  && !Utils.isNullOrEmpty(walletEntity.getAssets())) {
+                  && !Utilities.isNullOrEmpty(walletEntity.getAssets())) {
 
                 wallet.setAssets(
                     AssetMapper.fromAssetEntitiesToAssets(
@@ -74,7 +74,7 @@ public class WalletMapper {
               } else if (live
                   && !includeAssets
                   && !includeFullAssets
-                  && !Utils.isNullOrEmpty(walletEntity.getAssets())) {
+                  && !Utilities.isNullOrEmpty(walletEntity.getAssets())) {
 
                 wallet.setAssets(
                     AssetMapper.fromAssetEntitiesLivePriceToAssets(
@@ -89,7 +89,7 @@ public class WalletMapper {
 
   private static void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance, String userCurrency) {
-    if (Utils.isNullOrEmpty(forex) || Utils.isNullOrEmpty(wallet.getAssets())) return;
+    if (Utilities.isNullOrEmpty(forex) || Utilities.isNullOrEmpty(wallet.getAssets())) return;
 
     if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);
@@ -126,7 +126,7 @@ public class WalletMapper {
     // if (wallet.getInfoString() != null && !wallet.getInfoString().isEmpty()) {
     walletEntity.setInfo(wallet.getInfoString());
     // } else
-    if (!Utils.isNullOrEmpty(wallet.getInfo())) {
+    if (!Utilities.isNullOrEmpty(wallet.getInfo())) {
       walletEntity.setInfo(Mapper.convertMapToString(wallet.getInfo()));
     }
     walletEntity.setHistory(
@@ -145,7 +145,7 @@ public class WalletMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void mapWalletEntityToBeSaved(WalletEntity walletEntity, WalletEntity getFromDB) {
-    if (Utils.isNullOrEmpty(getFromDB)) return;
+    if (Utilities.isNullOrEmpty(getFromDB)) return;
     walletEntity.setBalance(getFromDB.getBalance());
     walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
     walletEntity.setDifferenceLastStats(getFromDB.getDifferenceLastStats());
@@ -164,19 +164,19 @@ public class WalletMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void mapEmptyDataWalletEntity(WalletEntity walletEntity) {
-    if (Utils.isNullOrEmpty(walletEntity.getBalance())) walletEntity.setBalance(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getPerformanceLastStats()))
+    if (Utilities.isNullOrEmpty(walletEntity.getBalance())) walletEntity.setBalance(0D);
+    if (Utilities.isNullOrEmpty(walletEntity.getPerformanceLastStats()))
       walletEntity.setPerformanceLastStats(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getDifferenceLastStats()))
+    if (Utilities.isNullOrEmpty(walletEntity.getDifferenceLastStats()))
       walletEntity.setDifferenceLastStats(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getHighPrice())) walletEntity.setHighPrice(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getHighPriceDate()))
+    if (Utilities.isNullOrEmpty(walletEntity.getHighPrice())) walletEntity.setHighPrice(0D);
+    if (Utilities.isNullOrEmpty(walletEntity.getHighPriceDate()))
       walletEntity.setHighPriceDate(LocalDate.now());
-    if (Utils.isNullOrEmpty(walletEntity.getLowPrice())) walletEntity.setLowPrice(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getLowPriceDate()))
+    if (Utilities.isNullOrEmpty(walletEntity.getLowPrice())) walletEntity.setLowPrice(0D);
+    if (Utilities.isNullOrEmpty(walletEntity.getLowPriceDate()))
       walletEntity.setLowPriceDate(LocalDate.now());
-    if (Utils.isNullOrEmpty(walletEntity.getAllTimeHigh())) walletEntity.setAllTimeHigh(0D);
-    if (Utils.isNullOrEmpty(walletEntity.getAllTimeHighDate()))
+    if (Utilities.isNullOrEmpty(walletEntity.getAllTimeHigh())) walletEntity.setAllTimeHigh(0D);
+    if (Utilities.isNullOrEmpty(walletEntity.getAllTimeHighDate()))
       walletEntity.setAllTimeHighDate(LocalDate.now());
   }
 
@@ -188,7 +188,7 @@ public class WalletMapper {
     Wallet wallet = new Wallet();
     BeanUtils.copyProperties(walletEntity, wallet);
 
-    if (!Utils.isNullOrEmpty(walletEntity.getInfo()))
+    if (!Utilities.isNullOrEmpty(walletEntity.getInfo()))
       wallet.setInfo(
           Mapper.readObject(walletEntity.getInfo(), new TypeReference<Map<String, String>>() {}));
 
@@ -314,7 +314,7 @@ public class WalletMapper {
 
   private void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
-    if (Utils.isNullOrEmpty(forex) || Utils.isNullOrEmpty(wallet.getAssets())) return;
+    if (Utilities.isNullOrEmpty(forex) || Utilities.isNullOrEmpty(wallet.getAssets())) return;
     // if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
     //    || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
 
