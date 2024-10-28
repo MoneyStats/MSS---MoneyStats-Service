@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.app.wallet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -93,28 +92,6 @@ public class WalletControllerImpl implements WalletController {
   }
 
   /* OLD DATA */
-  @Override
-  @Deprecated
-  public ResponseEntity<Response> insertOrUpdateWallet(
-      @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException, JsonProcessingException {
-    return walletService.insertOrUpdateWallet(wallet);
-  }
-
-  @Override
-  @Deprecated
-  public ResponseEntity<Response> listWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestParam(value = "live", required = false, defaultValue = "true")
-          @Schema(description = "Live Price")
-          Boolean live)
-      throws UtilsException {
-    return walletService.getWallets();
-  }
-
   @Override
   @Deprecated
   public ResponseEntity<Response> listCryptoWallet(

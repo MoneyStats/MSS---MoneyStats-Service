@@ -14,10 +14,10 @@ import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
+import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -83,7 +83,7 @@ public class WalletService {
         isLiveWallet ? forexDataService.getForexData(user.getSettings().getCryptoCurrency()) : null;
     List<MarketData> marketData =
         (isLiveWallet || includeAssets || includeFullAssets)
-            ? marketDataService.getMarketData(user.getSettings().getCryptoCurrency())
+            ? marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency())
             : null;
     List<LocalDate> getAllCryptoDates =
         includeAssets ? statsService.getCryptoDistinctDates(user) : null;
@@ -174,7 +174,7 @@ public class WalletService {
     ForexData forexData =
         isLiveWallet ? forexDataService.getForexData(user.getSettings().getCryptoCurrency()) : null;
     List<MarketData> marketData =
-        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+        marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
 
@@ -244,7 +244,7 @@ public class WalletService {
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
     if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
 
@@ -278,7 +278,7 @@ public class WalletService {
 
     /** If the wallet is to delete I need to get the full wallet to be deleted from the database */
     if (!Utilities.isNullOrEmpty(wallet.getImgName())) {
-      LOG.info("Building image with filename {}", wallet.getImgName());
+      LOG.debug("Building image with filename {}", wallet.getImgName());
       Image image = imageService.getAttachment(wallet.getImgName());
       imageService.removeAttachment(wallet.getImgName());
       walletEntity.setImg(
@@ -291,7 +291,7 @@ public class WalletService {
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
     if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
 
@@ -370,7 +370,7 @@ public class WalletService {
 
     List<MarketData> marketData = Collections.emptyList();
     if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
 
     // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null, marketData);

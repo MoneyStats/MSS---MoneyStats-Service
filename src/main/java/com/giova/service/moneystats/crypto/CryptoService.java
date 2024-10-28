@@ -9,8 +9,8 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetService;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -54,7 +54,7 @@ public class CryptoService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() {
     List<MarketData> marketData =
-        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+        marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
 
     List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
     List<LocalDate> filter = new ArrayList<>();
@@ -95,7 +95,7 @@ public class CryptoService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoResumeData() {
     List<MarketData> marketData =
-        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+        marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = LocalDate.now().getYear();

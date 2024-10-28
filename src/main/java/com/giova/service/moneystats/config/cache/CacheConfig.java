@@ -7,8 +7,10 @@ import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetDAOAdapter;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataCacheService;
 import com.giova.service.moneystats.crypto.forex.ForexDataCacheService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataDAOAdapter;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataRepository;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -50,6 +52,12 @@ public class CacheConfig {
     return new AssetDAOAdapter();
   }
 
+  @Bean(name = "walletRepository")
+  public MarketDataRepository getMarketDataRepository() {
+    if (redisCacheEnabled) return new MarketDataCacheService();
+    return new MarketDataDAOAdapter();
+  }
+
   @Bean
   public CacheManager cacheManager() {
     if (redisCacheEnabled) {
@@ -60,7 +68,6 @@ public class CacheConfig {
           WalletCacheService.CRYPTO_WALLET_CACHE,
           WalletCacheService.WALLET_CACHE,
           WalletCacheService.DETAILS_WALLET,
-          MarketDataCacheService.MARKET_DATA_CACHE,
           ForexDataCacheService.FOREX_DATA_CACHE); // Usa cache in-memory
     }
   }

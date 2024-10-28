@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.server.MissingRequestValueException;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
@@ -42,6 +44,42 @@ public class ExceptionHandler extends UtilsException {
     response.getError().setMessage(message);
     response.getError().setExceptionMessage(null);
     return Mono.just(new ResponseEntity<>(response, ex.getStatusCode()));
+  }
+
+  /**
+   * Handle MissingRequestValueException
+   *
+   * @param ex ServerWebInputException to be handled
+   * @param request ServerHttpRequest
+   * @return ValidationException
+   */
+  @org.springframework.web.bind.annotation.ExceptionHandler(MissingRequestValueException.class)
+  public Mono<ResponseEntity<?>> handleMissingRequestValueException(
+      MissingRequestValueException ex, ServerHttpRequest request) {
+    ExceptionResponse response =
+        ValidationException.getExceptionResponse(
+            new ValidationException(ex.getReason()), request, ExceptionMap.ERR_VALID_MSS_001);
+    response.getError().setMessage(ex.getReason());
+    response.getError().setExceptionMessage(null);
+    return Mono.just(new ResponseEntity<>(response, ex.getStatusCode()));
+  }
+
+  /**
+   * Handle DataBufferLimitException
+   *
+   * @param ex DataBufferLimitException to be handled
+   * @param request ServerHttpRequest
+   * @return ValidationException
+   */
+  @org.springframework.web.bind.annotation.ExceptionHandler(DataBufferLimitException.class)
+  public Mono<ResponseEntity<?>> handleDataBufferLimitException(
+      DataBufferLimitException ex, ServerHttpRequest request) {
+    ExceptionResponse response =
+        ValidationException.getExceptionResponse(
+            new ValidationException(ex.getMessage()), request, ExceptionMap.ERR_VALID_MSS_001);
+    response.getError().setMessage(ex.getMessage());
+    response.getError().setExceptionMessage(null);
+    return Mono.just(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
   }
 
   /* OLD DATA */

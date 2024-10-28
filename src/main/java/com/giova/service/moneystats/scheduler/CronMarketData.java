@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.scheduler;
 
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.Duration;

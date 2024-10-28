@@ -8,6 +8,15 @@ public enum ExceptionMap implements ExceptionCode {
    * @Validation Exception Map for Validation Input
    */
   ERR_VALID_MSS_001("VALIDATION_ERROR", HttpStatus.BAD_REQUEST, "Required input are null or Empty"),
+
+  /**
+   * @Image
+   */
+  ERR_IMG_MSS_001("FILE_NOT_FOUND", HttpStatus.BAD_REQUEST, "File not found!"),
+  ERR_IMG_MSS_002(
+      "MaxUploadSizeExceeded",
+      HttpStatus.BAD_REQUEST,
+      "Maximum upload size exceeded! the request was rejected because its size exceeds the configured maximum (512000)"),
   /**
    * @Authentication Exception Map for Authentication
    */
@@ -27,12 +36,6 @@ public enum ExceptionMap implements ExceptionCode {
       "You cannot make this request cause the auth-token is invalid"),
   ERR_AUTH_MSS_009("INVALID_REGEX", HttpStatus.BAD_REQUEST, "Invalid regex passed!"),
 
-  // Image
-  ERR_IMG_MSS_001("FILE_NOT_FOUND", HttpStatus.BAD_REQUEST, "File not found!"),
-  ERR_IMG_MSS_002(
-      "MaxUploadSizeExceeded",
-      HttpStatus.BAD_REQUEST,
-      "Maximum upload size exceeded! the request was rejected because its size exceeds the configured maximum (512000)"),
   // EmailSender
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),
   ERR_EMAIL_SEND_002(

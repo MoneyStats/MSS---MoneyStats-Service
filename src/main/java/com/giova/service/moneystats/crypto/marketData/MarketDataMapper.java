@@ -1,10 +1,12 @@
-package com.giova.service.moneystats.crypto.coinGecko;
+package com.giova.service.moneystats.crypto.marketData;
 
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
-import com.giova.service.moneystats.crypto.coinGecko.entity.MarketDataEntity;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
@@ -14,7 +16,20 @@ import org.springframework.stereotype.Component;
 public class MarketDataMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public MarketData fromCoinGeckoMarketDataToCoinGeckoModel(
+  public static List<MarketData> fromEntityToMarketData(List<MarketDataEntity> marketDataEntities) {
+    if (Utilities.isNullOrEmpty(marketDataEntities)) return Collections.emptyList();
+    return marketDataEntities.stream()
+        .map(
+            marketDataEntity -> {
+              MarketData marketData = new MarketData();
+              BeanUtils.copyProperties(marketDataEntity, marketData);
+              return marketData;
+            })
+        .collect(Collectors.toList());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static MarketData fromCoinGeckoMarketDataToCoinGeckoModel(
       CoinGeckoMarketData coinGeckoMarketData, String category) {
     MarketData marketData = new MarketData();
     marketData.setIdentifier(coinGeckoMarketData.getId());
@@ -37,16 +52,18 @@ public class MarketDataMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<MarketData> fromCoinGeckoMarketDataListToCoinGeckoList(
+  public static List<MarketData> fromCoinGeckoMarketDataListToCoinGeckoList(
       List<CoinGeckoMarketData> coinGeckoMarketData, String category) {
+    if (Utilities.isNullOrEmpty(coinGeckoMarketData)) return Collections.emptyList();
     return coinGeckoMarketData.stream()
         .map(c -> fromCoinGeckoMarketDataToCoinGeckoModel(c, category))
         .collect(Collectors.toList());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<MarketDataEntity> fromMarketDataToEntity(
+  public static List<MarketDataEntity> fromMarketDataToEntity(
       List<MarketData> marketData, String currency) {
+    if (Utilities.isNullOrEmpty(marketData)) return Collections.emptyList();
     return marketData.stream()
         .map(
             marketData1 -> {
@@ -54,18 +71,6 @@ public class MarketDataMapper {
               BeanUtils.copyProperties(marketData1, marketDataEntity);
               marketDataEntity.setCurrency(currency);
               return marketDataEntity;
-            })
-        .collect(Collectors.toList());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<MarketData> fromEntityToMarketData(List<MarketDataEntity> marketDataEntities) {
-    return marketDataEntities.stream()
-        .map(
-            marketDataEntity -> {
-              MarketData marketData = new MarketData();
-              BeanUtils.copyProperties(marketDataEntity, marketData);
-              return marketData;
             })
         .collect(Collectors.toList());
   }

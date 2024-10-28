@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.crypto.coinGecko.entity;
+package com.giova.service.moneystats.crypto.marketData.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;

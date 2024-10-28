@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.app.wallet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -174,7 +173,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@add-wallet_response.json")))
+              examples = @ExampleObject(value = "@update-wallet_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -216,7 +215,7 @@ public interface WalletController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@add-wallet_response.json")))
+              examples = @ExampleObject(value = "@delete-wallet_response.json")))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -238,79 +237,6 @@ public interface WalletController {
           String token);
 
   /* OLD DATA */
-  @PostMapping(
-      value = "/wallet/insert-update",
-      consumes = {MediaType.APPLICATION_JSON_VALUE})
-  @Operation(
-      description = "API to insert a wallet",
-      summary = "Add or Update Wallet",
-      tags = "Wallet")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content =
-          @Content(
-              schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@add-update-wallet_response.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  ResponseEntity<Response> insertOrUpdateWallet(
-      @RequestBody @Valid @Schema(description = "Wallet To Add or Update") Wallet wallet,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException, JsonProcessingException;
-
-  @GetMapping(value = "/wallet/list", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to get all wallet", summary = "List of Wallet", tags = "Wallet")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content =
-          @Content(
-              schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallets-full-list_response.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> listWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestParam(value = "live", required = false, defaultValue = "true")
-          @Schema(description = "Live Price")
-          Boolean live)
-      throws UtilsException;
-
   @GetMapping(value = "/wallet/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to get all Crypto wallet",

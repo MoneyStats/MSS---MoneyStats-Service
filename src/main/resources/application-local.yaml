@@ -24,9 +24,10 @@ spring:
   sql:
     init:
       mode: always
-  servlet:
+  codec:
+    max-in-memory-size: 1MB
+  webflux:
     multipart:
-      max-file-size: 1MB
       max-request-size: 1MB
   data:
     redis:
@@ -111,7 +112,7 @@ app:
   version: @project.version@
   exception:
     stacktrace: true
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,**/swagger-ui/**,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
   invitationCode: ${TOKEN_INVITE}
   fe:
     url: http://localhost:4200

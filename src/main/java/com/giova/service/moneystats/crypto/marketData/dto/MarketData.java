@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.crypto.coinGecko.dto;
+package com.giova.service.moneystats.crypto.marketData.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;

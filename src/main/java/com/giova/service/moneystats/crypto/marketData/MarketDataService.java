@@ -1,16 +1,19 @@
-package com.giova.service.moneystats.crypto.coinGecko;
+package com.giova.service.moneystats.crypto.marketData;
 
 import com.giova.service.moneystats.api.coingecko.CoinGeckoClient;
 import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
-import com.giova.service.moneystats.crypto.coinGecko.entity.MarketDataEntity;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataRepository;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.math.MathService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -32,15 +35,59 @@ public class MarketDataService {
   private final UserEntity user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CoinGeckoClient coinGeckoClient;
-  @Autowired private MarketDataMapper mapper;
   @Autowired private MarketDataCacheService marketDataCacheService;
-  @Autowired private IMarketDataDAO marketDataDAO;
+  @Autowired private MarketDataRepository marketDataRepository;
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<MarketData> getMarketData(String currency) {
+    LOG.info("Getting MarketData for currency {}", currency);
+    List<MarketDataEntity> getMarketData = marketDataRepository.findAllByCurrency(currency);
+
+    if (getMarketData.isEmpty()) {
+      LOG.error("No MarketData found into the Database");
+      return Collections.emptyList();
+    }
+    return MarketDataMapper.fromEntityToMarketData(getMarketData).stream()
+        .sorted(Comparator.comparing(MarketData::getRank))
+        .collect(Collectors.toList());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<MarketData> getAllMarketData() {
+    LOG.info("Getting All MarketData from Database");
+    List<MarketDataEntity> getMarketData = marketDataRepository.findAll();
+
+    if (getMarketData.isEmpty()) {
+      LOG.error("No MarketData List found into the Database");
+      return Collections.emptyList();
+    }
+    return MarketDataMapper.fromEntityToMarketData(getMarketData);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void deleteMarketData() {
+    LOG.info("Deleting All MarketData from Database");
+    List<String> currencies = marketDataRepository.selectDistinctCurrency();
+    if (!currencies.isEmpty())
+      currencies.forEach(
+          currency -> marketDataRepository.deleteMarketDataEntitiesByCurrency(currency));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<MarketData> saveMarketData(List<MarketData> marketData, String currency) {
+    LOG.info("Saving {} MarketData for currency {}", marketData.size(), currency);
+    List<MarketDataEntity> marketDataEntities =
+        MarketDataMapper.fromMarketDataToEntity(marketData, currency);
+
+    List<MarketDataEntity> saved = marketDataRepository.saveAll(marketDataEntities);
+
+    return MarketDataMapper.fromEntityToMarketData(saved);
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<MarketData>> getCoinGeckoMarketData(String currency, Integer quantity) {
     LOG.info("Getting {} MarketData for {}", quantity, currency);
 
-    // Ottieni tutte le pagine in modo reattivo usando un Flux
     Flux<CoinGeckoMarketData> marketDataFlux =
         Flux.fromIterable(getPage(quantity))
             .flatMap(
@@ -58,14 +105,13 @@ public class MarketDataService {
                               return Flux.fromIterable(response.getBody());
                             }));
 
-    // Ottieni i stablecoin come Mono
     Mono<List<CoinGeckoMarketData>> stablecoinMono =
         coinGeckoClient
             .getMarketData(currency, 1, true)
             .flatMap(
                 response -> {
                   if (response.getBody() == null) {
-                    LOG.error("Error on fetching Stablecoin MarketData");
+                    LOG.error("Error on fetching StableCoin MarketData");
                     return Mono.error(
                         new CoinGeckoException(
                             "An error occurred during calling CoinGecko, empty body"));
@@ -73,53 +119,40 @@ public class MarketDataService {
                   return Mono.just(response.getBody());
                 });
 
-    // Combina market data e stablecoin
     return marketDataFlux
         .collectList()
         .zipWith(stablecoinMono)
         .map(
             tuple -> {
               List<CoinGeckoMarketData> marketData = tuple.getT1();
-              List<CoinGeckoMarketData> stablecoinData = tuple.getT2();
+              List<CoinGeckoMarketData> stableCoinData = tuple.getT2();
 
-              // Rimuovi i stablecoin dai dati delle criptovalute
-              marketData.removeAll(stablecoinData);
+              marketData.removeAll(stableCoinData);
 
-              // Mappa i dati
               List<MarketData> cryptocurrency =
-                  mapper.fromCoinGeckoMarketDataListToCoinGeckoList(marketData, "Cryptocurrency");
-              List<MarketData> stablecoin =
-                  mapper.fromCoinGeckoMarketDataListToCoinGeckoList(stablecoinData, "Stablecoin");
+                  MarketDataMapper.fromCoinGeckoMarketDataListToCoinGeckoList(
+                      marketData, "Cryptocurrency");
+              List<MarketData> stableCoin =
+                  MarketDataMapper.fromCoinGeckoMarketDataListToCoinGeckoList(
+                      stableCoinData, "Stablecoin");
 
-              // Rimuovi i dati con Rank o CurrentPrice null
               Predicate<MarketData> hasRankOrCurrentPriceNull =
                   md -> md.getRank() == null || md.getCurrent_price() == null;
               cryptocurrency.removeIf(hasRankOrCurrentPriceNull);
-              stablecoin.removeIf(hasRankOrCurrentPriceNull);
+              stableCoin.removeIf(hasRankOrCurrentPriceNull);
 
-              // Unisci i dati criptovaluta e stablecoin
-              cryptocurrency.removeAll(stablecoin);
-              cryptocurrency.addAll(stablecoin);
+              cryptocurrency.removeAll(stableCoin);
+              cryptocurrency.addAll(stableCoin);
 
-              // Ordina per Rank
               cryptocurrency.sort(Comparator.comparing(MarketData::getRank));
 
               return cryptocurrency;
             });
   }
 
+  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<MarketData> saveMarketData(List<MarketData> marketData, String currency) {
-    LOG.info("Saving {} MarketData for currency {}", marketData.size(), currency);
-    List<MarketDataEntity> marketDataEntities = mapper.fromMarketDataToEntity(marketData, currency);
-
-    List<MarketDataEntity> saved = marketDataCacheService.saveAll(marketDataEntities, currency);
-
-    return mapper.fromEntityToMarketData(saved);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<MarketData> getMarketData(String currency) {
+  public List<MarketData> getMarketDataOLD(String currency) {
     LOG.info("Getting MarketData from Database for {}", currency);
     List<MarketDataEntity> getMarketData = marketDataCacheService.findAllByCurrency(currency);
 
@@ -127,31 +160,9 @@ public class MarketDataService {
       LOG.error("No MarketData found");
       return new ArrayList<>();
     }
-    return mapper.fromEntityToMarketData(getMarketData).stream()
+    return MarketDataMapper.fromEntityToMarketData(getMarketData).stream()
         .sorted(Comparator.comparing(MarketData::getRank))
         .collect(Collectors.toList());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<MarketData> getAllMarketData() {
-    LOG.info("Getting All MarketData from Database");
-    List<MarketDataEntity> getMarketData = marketDataDAO.findAll();
-
-    if (getMarketData.isEmpty()) {
-      LOG.error("No MarketData found");
-      return new ArrayList<>();
-    }
-    return mapper.fromEntityToMarketData(getMarketData);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteMarketData() {
-    LOG.info("Deleting MarketData from Database");
-    List<String> currencies = marketDataDAO.selectDistinctCurrency();
-    if (!currencies.isEmpty())
-      currencies.stream()
-          .peek(currency -> marketDataCacheService.deleteAllByCurrency(currency))
-          .collect(Collectors.toList());
   }
 
   private List<Integer> getPage(Integer quantity) {

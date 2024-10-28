@@ -10,8 +10,8 @@ import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.database.IAssetDAO;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -109,7 +109,7 @@ public class AssetService {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
       List<MarketData> marketData =
-          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+          marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
       assets =
           assetMapper.mapAssetList(
               assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),

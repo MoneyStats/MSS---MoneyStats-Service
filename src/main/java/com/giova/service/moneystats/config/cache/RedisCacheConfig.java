@@ -5,6 +5,8 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -103,6 +105,31 @@ public class RedisCacheConfig {
                 .constructCollectionType(List.class, AssetWithoutOpAndStats.class));
 
     RedisTemplate<String, List<AssetWithoutOpAndStats>> template = new RedisTemplate<>();
+    template.setConnectionFactory(factory);
+    template.setKeySerializer(keySerializer);
+    template.setValueSerializer(valueSerializer);
+
+    return template;
+  }
+
+  /**
+   * MarketData Cache Config
+   *
+   * @param factory Redis
+   * @param mapper ObjectMapper
+   * @return MarketDataTemplate
+   */
+  @Bean
+  public RedisTemplate<String, List<MarketDataEntity>> marketDataEntityTemplate(
+      RedisConnectionFactory factory, ObjectMapper mapper) {
+
+    StringRedisSerializer keySerializer = new StringRedisSerializer();
+
+    Jackson2JsonRedisSerializer<List<MarketData>> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(
+            mapper.getTypeFactory().constructCollectionType(List.class, MarketDataEntity.class));
+
+    RedisTemplate<String, List<MarketDataEntity>> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);

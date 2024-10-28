@@ -15,4 +15,12 @@ public class ImageException extends UtilsException {
   public ImageException(String message, String exceptionMessage) {
     super(DEFAULT_CODE, message, exceptionMessage);
   }
+
+  public ImageException(ExceptionCode exceptionCode) {
+    super(exceptionCode, exceptionCode.getMessage());
+  }
+
+  public ImageException(ExceptionCode exceptionCode, String message) {
+    super(exceptionCode, message);
+  }
 }
