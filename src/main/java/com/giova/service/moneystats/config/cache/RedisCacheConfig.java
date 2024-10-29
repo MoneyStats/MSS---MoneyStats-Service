@@ -5,6 +5,7 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import java.util.List;
@@ -130,6 +131,55 @@ public class RedisCacheConfig {
             mapper.getTypeFactory().constructCollectionType(List.class, MarketDataEntity.class));
 
     RedisTemplate<String, List<MarketDataEntity>> template = new RedisTemplate<>();
+    template.setConnectionFactory(factory);
+    template.setKeySerializer(keySerializer);
+    template.setValueSerializer(valueSerializer);
+
+    return template;
+  }
+
+  /**
+   * ForexData Cache Config
+   *
+   * @param factory Redis
+   * @param mapper ObjectMapper
+   * @return ForexDataTemplate
+   */
+  @Bean
+  public RedisTemplate<String, ForexDataEntity> forexDataEntityTemplate(
+      RedisConnectionFactory factory, ObjectMapper mapper) {
+
+    StringRedisSerializer keySerializer = new StringRedisSerializer();
+
+    Jackson2JsonRedisSerializer<ForexDataEntity> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, ForexDataEntity.class);
+
+    RedisTemplate<String, ForexDataEntity> template = new RedisTemplate<>();
+    template.setConnectionFactory(factory);
+    template.setKeySerializer(keySerializer);
+    template.setValueSerializer(valueSerializer);
+
+    return template;
+  }
+
+  /**
+   * ForexData List Cache Config
+   *
+   * @param factory Redis
+   * @param mapper ObjectMapper
+   * @return ForexDataTemplate
+   */
+  @Bean
+  public RedisTemplate<String, List<ForexDataEntity>> marketDataEntitiesTemplate(
+      RedisConnectionFactory factory, ObjectMapper mapper) {
+
+    StringRedisSerializer keySerializer = new StringRedisSerializer();
+
+    Jackson2JsonRedisSerializer<List<ForexDataEntity>> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(
+            mapper.getTypeFactory().constructCollectionType(List.class, ForexDataEntity.class));
+
+    RedisTemplate<String, List<ForexDataEntity>> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);

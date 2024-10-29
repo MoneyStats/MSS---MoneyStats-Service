@@ -204,7 +204,8 @@ public class WalletMapper {
   public List<Wallet> fromWalletEntitiesToWallets(
       List<WalletEntity> walletEntities, Boolean live, List<LocalDate> getAllCryptoDates) {
     ForexData forex = null;
-    if (live) forex = forexDataService.getForexData(user.getSettings().getCryptoCurrency());
+    if (live)
+      forex = forexDataService.getForexDataByCurrency(user.getSettings().getCryptoCurrency());
     ForexData finalForex = forex;
     AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()

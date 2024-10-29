@@ -79,7 +79,7 @@ public class MarketDataService {
     List<MarketDataEntity> marketDataEntities =
         MarketDataMapper.fromMarketDataToEntity(marketData, currency);
 
-    List<MarketDataEntity> saved = marketDataRepository.saveAll(marketDataEntities);
+    List<MarketDataEntity> saved = marketDataRepository.saveAll(marketDataEntities, currency);
 
     return MarketDataMapper.fromEntityToMarketData(saved);
   }

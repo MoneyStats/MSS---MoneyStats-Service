@@ -1,18 +1,16 @@
 package com.giova.service.moneystats.app.wallet.database;
 
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,16 +20,13 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class WalletCacheService implements WalletRepository {
   /* OLD DATA */
-  public static final String WALLET_CACHE = "Wallets-Cache";
   public static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
-  public static final String DETAILS_WALLET = "Details-Wallet-Cache";
   /* END OLD DATA */
   private static final String CACHE_WALLETS_WITHOUT_DATA = "_wallets_without_assets_and_history";
   private static final String CACHE_FULL_WALLET_LIST = "_full_wallets_list";
   private static final String CACHE_WALLET_BY_ID = "_wallet_";
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  @Autowired private CacheManager cacheManager; // OLD DATA
   @Autowired private IWalletDAO walletDAO;
   @Autowired private RedisTemplate<String, List<WalletEntity>> walletEntitiesTemplate;
   @Autowired private RedisTemplate<String, WalletEntity> walletEntityTemplate;
@@ -174,6 +169,15 @@ public class WalletCacheService implements WalletRepository {
     }
   }
 
+  /** Method to delete all the cache of the market data of the user. */
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public void clearAllWalletsCache() {
+    LOG.info("Starting to clear all wallet data cache.");
+    CacheUtils.clearCache(walletEntityTemplate, "wallet data");
+    CacheUtils.clearCache(walletEntitiesTemplate, "wallet entities data");
+    LOG.info("Finished clearing wallet data cache.");
+  }
+
   /* OLD DATA */
   @Caching(
       cacheable =
@@ -184,27 +188,13 @@ public class WalletCacheService implements WalletRepository {
     return walletDAO.findAllByUserIdAndCategory(userId, category);
   }
 
-  @Caching(
-      evict = {
-        @CacheEvict(value = WALLET_CACHE),
-        @CacheEvict(value = CRYPTO_WALLET_CACHE),
-        @CacheEvict(value = DETAILS_WALLET)
-      })
-  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public void deleteWalletsCache() {
-    LOG.info("[Caching] Deleting cache for {} and {}", WALLET_CACHE, CRYPTO_WALLET_CACHE);
-    Objects.requireNonNull(cacheManager.getCache(WALLET_CACHE)).clear();
-    Objects.requireNonNull(cacheManager.getCache(CRYPTO_WALLET_CACHE)).clear();
-    Objects.requireNonNull(cacheManager.getCache(DETAILS_WALLET)).clear();
-  }
-
   public List<WalletEntity> saveAll(List<WalletEntity> walletEntities) {
-    deleteWalletsCache();
+    clearAllWalletsCache();
     return walletDAO.saveAll(walletEntities);
   }
 
   public void deleteAllByUserId(Long userId) {
-    deleteWalletsCache();
+    clearAllWalletsCache();
     walletDAO.deleteAllByUserId(userId);
   }
 }

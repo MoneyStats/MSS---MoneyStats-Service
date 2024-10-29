@@ -42,5 +42,5 @@ public interface MarketDataRepository {
    * @param marketDataEntities To be saved
    * @return MarketData
    */
-  List<MarketDataEntity> saveAll(List<MarketDataEntity> marketDataEntities);
+  List<MarketDataEntity> saveAll(List<MarketDataEntity> marketDataEntities, String currency);
 }

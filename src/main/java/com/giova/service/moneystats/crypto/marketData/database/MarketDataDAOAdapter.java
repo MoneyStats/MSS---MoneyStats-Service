@@ -55,7 +55,8 @@ public class MarketDataDAOAdapter implements MarketDataRepository {
    * @return MarketData
    */
   @Override
-  public List<MarketDataEntity> saveAll(List<MarketDataEntity> marketDataEntities) {
+  public List<MarketDataEntity> saveAll(
+      List<MarketDataEntity> marketDataEntities, String currency) {
     return iMarketDataDAO.saveAll(marketDataEntities);
   }
 }
