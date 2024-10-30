@@ -32,4 +32,21 @@ public interface AssetRepository {
    * @return Assets list without operations and histories
    */
   List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId);
+
+  /**
+   * Query to find an asset by his identifier and the user id
+   *
+   * @param identifier to be searched
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId);
+
+  /**
+   * Query to find all asset
+   *
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  List<AssetEntity> findAllByUserIdOrderByRank(Long userId);
 }

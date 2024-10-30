@@ -1,12 +1,12 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.stats.StatsService;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.database.IAssetDAO;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -44,6 +44,74 @@ public class AssetService {
   @Autowired private AssetMapper assetMapper;
   @Autowired private MarketDataService marketDataService;
   @Autowired private StatsService statsService;
+
+  @Autowired private AssetRepository assetRepository;
+
+  /**
+   * Get Asset by his identifier
+   *
+   * @param identifier to be searched
+   * @return Asset
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getAssetByIdentifier(String identifier) {
+    List<AssetEntity> assetEntities =
+        assetRepository.findAllByIdentifierAndUserId(identifier, user.getId());
+    List<Asset> assets;
+    Asset asset = null;
+
+    String message;
+
+    if (assetEntities.isEmpty()) {
+      message = "Asset " + identifier + " not found, insert new Asset to get it!";
+    } else {
+      List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+
+      List<MarketData> marketData =
+          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+      assets =
+          AssetMapper.mapAssetList(
+              AssetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),
+              marketData,
+              getAllDates);
+      asset = assets.getFirst();
+      message = "Data for " + identifier;
+    }
+
+    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), asset);
+    return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Get All Asset
+   *
+   * @return Asset
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getAssets() {
+    List<AssetEntity> assetEntities = assetRepository.findAllByUserIdOrderByRank(user.getId());
+    List<Asset> assets = new ArrayList<>();
+
+    String message = "";
+    if (assetEntities.isEmpty()) {
+      message = "Asset Empty, insert new Asset to get it!";
+    } else {
+      List<MarketData> marketData =
+          marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
+
+      List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+      assets =
+          AssetMapper.mapAssetList(
+              AssetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),
+              marketData,
+              getAllDates);
+      message = "Found " + assets.size() + " Assets";
+    }
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), assets);
+    return ResponseEntity.ok(response);
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
@@ -94,54 +162,6 @@ public class AssetService {
             message,
             TraceUtils.getSpanID(),
             Objects.requireNonNull(saveWallet.getBody()).getData());
-    return ResponseEntity.ok(response);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getAssets() {
-
-    List<AssetEntity> assetEntities = assetDAO.findAllByUserIdOrderByRank(user.getId());
-    List<Asset> assets = new ArrayList<>();
-    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
-
-    String message = "";
-    if (assetEntities.isEmpty()) {
-      message = "Asset Empty, insert new Asset to get it!";
-    } else {
-      List<MarketData> marketData =
-          marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
-      assets =
-          assetMapper.mapAssetList(
-              assetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),
-              marketData,
-              getAllDates);
-      message = "Found " + assets.size() + " Assets";
-    }
-
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), assets);
-    return ResponseEntity.ok(response);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getAsset(String identifier) {
-
-    List<Asset> assets =
-        mapper.convertValue(getAssets().getBody().getData(), new TypeReference<List<Asset>>() {});
-    Asset asset =
-        assets.stream()
-            .filter(a -> a.getIdentifier().equalsIgnoreCase(identifier))
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new AssetException(
-                        "An error happen during filtering assets, asset "
-                            + identifier
-                            + " was not found"));
-
-    String message = "Data for " + identifier;
-
-    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), asset);
     return ResponseEntity.ok(response);
   }
 }

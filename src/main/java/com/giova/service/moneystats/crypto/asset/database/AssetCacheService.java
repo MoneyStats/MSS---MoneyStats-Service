@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AssetCacheService implements AssetRepository {
+
+  private static final String CACHE_ASSETS_BY_IDENTIFIER = "_assets_identifier_";
+  private static final String CACHE_ALL_ASSETS_BY_USER = "_assets_by_user";
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private RedisTemplate<String, List<AssetEntity>> assetEntityTemplate;
   @Autowired private RedisTemplate<String, List<AssetLivePrice>> assetLivePriceTemplate;
@@ -64,7 +67,7 @@ public class AssetCacheService implements AssetRepository {
    */
   @Override
   public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, Long userId) {
-    String cacheKey = userId + "_assets_full_list";
+    String cacheKey = userId + "_assets_full_list_by_wallet_ids";
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
           .orElseGet(
@@ -116,6 +119,68 @@ public class AssetCacheService implements AssetRepository {
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
       return assetDAO.findAllAssetsByWalletIds(walletIds);
+    }
+  }
+
+  /**
+   * Query to find an asset by his identifier and the user id
+   *
+   * @param identifier to be searched
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  @Override
+  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId) {
+    String cacheKey = userId + CACHE_ASSETS_BY_IDENTIFIER + identifier;
+    try {
+      return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] Asset {} into Database for userId {}", identifier, userId);
+
+                return Optional.ofNullable(
+                        assetDAO.findAllByIdentifierAndUserId(identifier, userId))
+                    .map(
+                        assetEntities -> {
+                          if (!assetEntities.isEmpty())
+                            assetEntityTemplate.opsForValue().set(cacheKey, assetEntities);
+                          return assetEntities;
+                        })
+                    .orElse(Collections.emptyList());
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return assetDAO.findAllByIdentifierAndUserId(identifier, userId);
+    }
+  }
+
+  /**
+   * Query to find all asset
+   *
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  @Override
+  public List<AssetEntity> findAllByUserIdOrderByRank(Long userId) {
+    String cacheKey = userId + CACHE_ALL_ASSETS_BY_USER;
+    try {
+      return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] Asset Full list into Database for userId {}", userId);
+
+                return Optional.ofNullable(assetDAO.findAllByUserIdOrderByRank(userId))
+                    .map(
+                        assetEntities -> {
+                          if (!assetEntities.isEmpty())
+                            assetEntityTemplate.opsForValue().set(cacheKey, assetEntities);
+                          return assetEntities;
+                        })
+                    .orElse(Collections.emptyList());
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return assetDAO.findAllByUserIdOrderByRank(userId);
     }
   }
 }

@@ -295,7 +295,7 @@ public class WalletService {
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
     if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
+      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
 

@@ -18,7 +18,6 @@ import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +27,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
-    if (Utilities.isNullOrEmpty(assetEntityList)) return null;
+    if (Utilities.isNullOrEmpty(assetEntityList)) return Collections.emptyList();
     LocalDate lastDate =
         (!Utilities.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
     return assetEntityList.stream()
@@ -158,12 +157,11 @@ public class AssetMapper {
                       asset.getOperations(), userEntity, assetEntity));
               return assetEntity;
             })
-        .collect(Collectors.toList());
+        .toList();
   }
 
-  /* OLD DATA */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Asset> mapAssetList(
+  public static List<Asset> mapAssetList(
       List<Asset> assetList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     Map<String, Asset> assetMap = new HashMap<>();
 
@@ -171,7 +169,7 @@ public class AssetMapper {
         asset -> {
           Asset existingAsset = assetMap.get(asset.getName());
 
-          if (existingAsset != null) {
+          if (!Utilities.isNullOrEmpty(existingAsset)) {
             // Aggiorna l'asset esistente
             updateExistingAsset(existingAsset, asset, getAllDates);
           } else {
@@ -183,7 +181,7 @@ public class AssetMapper {
                 MathService.round(asset.getBalance() * newAsset.getCurrent_price(), 2));
             newAsset.setId(null);
 
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+            if (!Utilities.isNullOrEmpty(asset.getHistory())) {
               newAsset.setHistory(
                   asset.getHistory().stream()
                       .map(
@@ -195,19 +193,15 @@ public class AssetMapper {
                           })
                       .collect(Collectors.toList()));
             }
-
             assetMap.put(asset.getName(), newAsset);
           }
         });
-
-    return assetMap.values().stream()
-        .sorted(Comparator.comparing(Asset::getRank))
-        .collect(Collectors.toList());
+    return assetMap.values().stream().sorted(Comparator.comparing(Asset::getRank)).toList();
   }
 
-  private void updateExistingAsset(
+  private static void updateExistingAsset(
       Asset existingAsset, Asset newAsset, List<LocalDate> getAllDates) {
-    LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
+    LocalDate lastDate = getAllDates.getLast();
     LocalDate beforeLastDate =
         getAllDates.size() >= 2 ? getAllDates.get(getAllDates.size() - 2) : null;
     existingAsset.setBalance(
@@ -230,7 +224,8 @@ public class AssetMapper {
                 .orElse(new Stats(lastDate, 0D, 0D, 0D))
             : new Stats(lastDate, 0D, 0D, 0D);
 
-    if (existingAsset.getPerformance() != null && newAsset.getPerformance() != null) {
+    if (!Utilities.isNullOrEmpty(existingAsset.getPerformance())
+        && !Utilities.isNullOrEmpty(newAsset.getPerformance())) {
       // existingAsset.setPerformance(
       //    MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
       Double lastStatsBalance =
@@ -242,7 +237,8 @@ public class AssetMapper {
               : 0.0);
     }
 
-    if (existingAsset.getTrend() != null && newAsset.getTrend() != null) {
+    if (!Utilities.isNullOrEmpty(existingAsset.getTrend())
+        && !Utilities.isNullOrEmpty(newAsset.getTrend())) {
       existingAsset.setTrend(
           MathService.round(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend(), 2));
     }
@@ -250,146 +246,59 @@ public class AssetMapper {
     existingAsset.setInvested(
         MathService.round(existingAsset.getInvested() + newAsset.getInvested(), 2));
 
-    if (newAsset.getHistory() != null && !newAsset.getHistory().isEmpty()) {
-      for (Stats newStats : newAsset.getHistory()) {
-        if (existingAsset.getHistory() == null) {
-          existingAsset.setHistory(new ArrayList<>());
-        }
+    if (!Utilities.isNullOrEmpty(newAsset.getHistory())) {
+      newAsset
+          .getHistory()
+          .forEach(
+              newStats -> {
+                if (existingAsset.getHistory() == null) {
+                  existingAsset.setHistory(new ArrayList<>());
+                }
 
-        Optional<Stats> existingStatsOptional =
-            existingAsset.getHistory().stream()
-                .filter(h -> h.getDate().isEqual(newStats.getDate()))
-                .findFirst();
+                Optional<Stats> existingStatsOptional =
+                    existingAsset.getHistory().stream()
+                        .filter(h -> h.getDate().isEqual(newStats.getDate()))
+                        .findFirst();
 
-        Optional<Stats> beforeStatsOptional =
-            beforeLastDate != null
-                ? existingAsset.getHistory().stream()
-                    .filter(h -> h.getDate().isEqual(beforeLastDate))
-                    .findFirst()
-                : Optional.empty();
+                Optional<Stats> beforeStatsOptional =
+                    beforeLastDate != null
+                        ? existingAsset.getHistory().stream()
+                            .filter(h -> h.getDate().isEqual(beforeLastDate))
+                            .findFirst()
+                        : Optional.empty();
 
-        if (existingStatsOptional.isPresent()) {
-          // Aggiorna l'elemento esistente nella history
-          Stats existingStats = existingStatsOptional.get();
-          existingStats.setBalance(
-              MathService.round(existingStats.getBalance() + newStats.getBalance(), 2));
-          existingStats.setTrend(
-              MathService.round(existingStats.getTrend() + newStats.getTrend(), 2));
-          if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
-          else
-            existingStats.setPercentage(
-                MathService.round(
-                    ((existingStats.getBalance() - beforeStatsOptional.get().getBalance())
-                            / beforeStatsOptional.get().getBalance())
-                        * 100,
-                    2));
-        } else {
-          // Aggiungi un nuovo elemento alla history
-          Stats newStatsToAdd = new Stats();
-          BeanUtils.copyProperties(newStats, newStatsToAdd);
-          newStatsToAdd.setId(null);
-          existingAsset.getHistory().add(newStatsToAdd);
-        }
-      }
+                if (existingStatsOptional.isPresent()) {
+                  // Aggiorna l'elemento esistente nella history
+                  Stats existingStats = existingStatsOptional.get();
+                  existingStats.setBalance(
+                      MathService.round(existingStats.getBalance() + newStats.getBalance(), 2));
+                  existingStats.setTrend(
+                      MathService.round(existingStats.getTrend() + newStats.getTrend(), 2));
+                  if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
+                  else
+                    existingStats.setPercentage(
+                        MathService.round(
+                            ((existingStats.getBalance() - beforeStatsOptional.get().getBalance())
+                                    / beforeStatsOptional.get().getBalance())
+                                * 100,
+                            2));
+                } else {
+                  // Aggiungi un nuovo elemento alla history
+                  Stats newStatsToAdd = new Stats();
+                  BeanUtils.copyProperties(newStats, newStatsToAdd);
+                  newStatsToAdd.setId(null);
+                  existingAsset.getHistory().add(newStatsToAdd);
+                }
+              });
     }
 
-    if (newAsset.getOperations() != null && !newAsset.getOperations().isEmpty()) {
+    if (!Utilities.isNullOrEmpty(newAsset.getOperations())) {
       // Aggiungi logica per aggiungere le nuove operazioni
-      if (existingAsset.getOperations() != null) {
+      if (!Utilities.isNullOrEmpty(existingAsset.getOperations())) {
         existingAsset.getOperations().addAll(newAsset.getOperations());
       } else {
         existingAsset.setOperations(newAsset.getOperations());
       }
     }
-  }
-
-  @Deprecated
-  public List<Asset> mapAssetListOLD(List<Asset> assetList, List<MarketData> marketData) {
-    List<Asset> response = new ArrayList<>();
-    assetList.forEach(
-        asset -> {
-          Asset assetToReturn = new Asset();
-          if (!response.stream()
-              .filter(a -> a.getName().equalsIgnoreCase(asset.getName()))
-              .findAny()
-              .isEmpty()) {
-            int index =
-                response.indexOf(
-                    response.stream()
-                        .filter(a -> a.getName().equalsIgnoreCase(asset.getName()))
-                        .findFirst()
-                        .get());
-            Asset mapResponse = response.get(index);
-            mapResponse.setBalance(
-                MathService.round(mapResponse.getBalance() + asset.getBalance(), 8));
-            if (mapResponse.getPerformance() != null && asset.getPerformance() != null)
-              mapResponse.setPerformance(
-                  MathService.round(
-                      ((mapResponse.getPerformance() + asset.getPerformance()) / 2), 2));
-            if (mapResponse.getTrend() != null && asset.getTrend() != null)
-              mapResponse.setTrend(mapResponse.getTrend() + asset.getTrend());
-            mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
-            mapResponse.setValue(MathService.round(mapResponse.getValue() + asset.getValue(), 2));
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
-              mapResponse.setHistory(
-                  asset.getHistory().stream()
-                      .map(
-                          stats -> {
-                            if (response.get(index) == null
-                                || response.get(index).getHistory() == null
-                                || response.get(index).getHistory().stream()
-                                    .filter(h -> h.getDate().isEqual(stats.getDate()))
-                                    .findFirst()
-                                    .isEmpty()) {
-                              stats.setId(null);
-                              return stats;
-                            }
-                            Stream<Stats> filter =
-                                response.get(index).getHistory().stream()
-                                    .filter(h -> h.getDate().isEqual(stats.getDate()));
-                            int indexH =
-                                response.get(index).getHistory().indexOf(filter.findFirst().get());
-                            Stats indexed = response.get(index).getHistory().get(indexH);
-
-                            indexed.setId(null);
-                            indexed.setBalance(indexed.getBalance() + stats.getBalance());
-                            indexed.setTrend(indexed.getTrend() + stats.getTrend());
-                            indexed.setPercentage(
-                                MathService.round(
-                                    ((indexed.getPercentage() + stats.getPercentage()) / 2), 2));
-                            return indexed;
-                          })
-                      .collect(Collectors.toList()));
-              if (asset.getOperations() != null && !asset.getOperations().isEmpty())
-                if (mapResponse.getOperations() != null)
-                  mapResponse.getOperations().addAll(asset.getOperations());
-                else mapResponse.setOperations(asset.getOperations());
-            }
-          } else {
-            BeanUtils.copyProperties(asset, assetToReturn);
-            assetToReturn.setCurrent_price(getAssetValue(marketData, asset));
-            assetToReturn.setValue(
-                MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
-            assetToReturn.setId(null);
-
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
-              assetToReturn.setHistory(
-                  asset.getHistory().stream()
-                      .map(
-                          stats -> {
-                            Stats statsToReturn = new Stats();
-                            BeanUtils.copyProperties(stats, statsToReturn);
-                            statsToReturn.setId(null);
-                            return statsToReturn;
-                          })
-                      .collect(Collectors.toList()));
-            }
-
-            response.add(assetToReturn);
-          }
-        });
-    return response.stream()
-        .sorted(Comparator.comparing(Asset::getRank))
-        .collect(Collectors.toList());
   }
 }

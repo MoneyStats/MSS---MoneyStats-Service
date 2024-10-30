@@ -7,53 +7,28 @@ import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-public interface AssetController {
-
-  /**
-   * API to get the full list of the Asset
-   *
-   * @param token Access token of the user
-   * @return Asset List
-   */
-  @GetMapping(value = "/assets", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to get all Crypto Assets",
-      summary = "Crypto Assets",
-      tags = "Asset")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content =
-          @Content(
-              schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@assets.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid Token",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
-  ResponseEntity<Response> getAllAssets(
-      @RequestHeader(HttpHeaders.AUTHORIZATION)
-          @Valid
-          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
-          String token);
+@Logged
+@RestController
+@RequestMapping("/v1/crypto")
+@CrossOrigin(origins = "*")
+@Tag(name = "Asset", description = "API Crypto Asset")
+public class AssetControllerImpl implements AssetController {
+  @Autowired private AssetService assetService;
 
   /**
    * API to get an Asset by his identifier
@@ -62,39 +37,24 @@ public interface AssetController {
    * @param identifier to be searched
    * @return Asset
    */
-  @GetMapping(value = "/assets/{identifier}", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to get Crypto Asset by identifier",
-      summary = "Crypto Asset By Identifier",
-      tags = "Asset")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content =
-          @Content(
-              schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@asset.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid Token",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
-  ResponseEntity<Response> getAssetByIdentifier(
-      @RequestHeader(HttpHeaders.AUTHORIZATION)
-          @Valid
-          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
-          String token,
-      @PathVariable(value = "identifier")
-          @Valid
-          @NotBlank(message = "Insert a valid identifier")
-          @Schema(description = "Identifier", example = "bitcoin")
-          String identifier);
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> getAssetByIdentifier(String token, String identifier) {
+    return assetService.getAssetByIdentifier(identifier);
+  }
 
-  @PostMapping(value = "/asset/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
+  /**
+   * API to get the full list of the Asset
+   *
+   * @param token Access token of the user
+   * @return Asset List
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> getAllAssets(String token) throws UtilsException {
+    return assetService.getAssets();
+  }
+
+  @PostMapping(value = "/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to add or update Crypto Asset",
       summary = "Add or Update Crypto Asset",
@@ -115,14 +75,17 @@ public interface AssetController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
-  ResponseEntity<Response> saveOrUpdateCryptoAsset(
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> saveOrUpdateCryptoAsset(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken,
       @RequestBody @Valid @Schema(description = "Wallet to add or Update with Crypto Assets")
           Wallet wallet)
-      throws UtilsException, JsonProcessingException;
+      throws UtilsException, JsonProcessingException {
+    return assetService.insertOrUpdateAsset(wallet);
+  }
 
-  @PostMapping(value = "/asset/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to add or update Crypto Assets",
       summary = "Add or Update Crypto Assets",
@@ -144,10 +107,12 @@ public interface AssetController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  ResponseEntity<Response> saveOrUpdateCryptoAssets(
+  public ResponseEntity<Response> saveOrUpdateCryptoAssets(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
           String authToken,
       @RequestBody @Valid @Schema(description = "Wallets with Crypto Assets to update or save")
           List<Wallet> wallets)
-      throws UtilsException, JsonProcessingException;
+      throws UtilsException, JsonProcessingException {
+    return assetService.insertOrUpdateAssets(wallets);
+  }
 }

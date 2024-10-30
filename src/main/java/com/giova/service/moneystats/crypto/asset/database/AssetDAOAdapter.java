@@ -44,4 +44,27 @@ public class AssetDAOAdapter implements AssetRepository {
   public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId) {
     return iAssetDAO.findAllAssetsByWalletIds(walletIds);
   }
+
+  /**
+   * Query to find an asset by his identifier and the user id
+   *
+   * @param identifier to be searched
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  @Override
+  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId) {
+    return iAssetDAO.findAllByIdentifierAndUserId(identifier, userId);
+  }
+
+  /**
+   * Query to find all asset
+   *
+   * @param userId o the user
+   * @return AssetEntities
+   */
+  @Override
+  public List<AssetEntity> findAllByUserIdOrderByRank(Long userId) {
+    return iAssetDAO.findAllByUserIdOrderByRank(userId);
+  }
 }
