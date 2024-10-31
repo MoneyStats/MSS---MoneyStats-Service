@@ -124,9 +124,7 @@ public class AssetService {
         wallet -> {
           try {
             ResponseEntity<Response> saveWallet = walletService.insertOrUpdateWallet(wallet);
-            message
-                .append(wallet.getAssets().get(wallet.getAssets().size() - 1).getName())
-                .append(" ");
+            message.append(wallet.getAssets().getLast().getName()).append(" ");
             walletRes.add((Wallet) Objects.requireNonNull(saveWallet.getBody()).getData());
           } catch (JsonProcessingException e) {
             LOG.error("An Error happen during saving asset, message is {}", e.getMessage());

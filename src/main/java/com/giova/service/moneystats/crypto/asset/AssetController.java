@@ -94,6 +94,13 @@ public interface AssetController {
           @Schema(description = "Identifier", example = "bitcoin")
           String identifier);
 
+  /**
+   * API To add a crypto asset
+   *
+   * @param token Of the user
+   * @param wallet Used to update data of the wallets
+   * @return Wallet Updated
+   */
   @PostMapping(value = "/asset/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to add or update Crypto Asset",
@@ -101,24 +108,22 @@ public interface AssetController {
       tags = "Asset")
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  ResponseEntity<Response> saveOrUpdateCryptoAsset(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestBody @Valid @Schema(description = "Wallet to add or Update with Crypto Assets")
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  ResponseEntity<Response> addCryptoAsset(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestBody
+          @Valid
+          @Schema(
+              description =
+                  "Wallet to add or Update with Crypto Assets, used because it needs to update the data of the Wallet")
           Wallet wallet)
       throws UtilsException, JsonProcessingException;
 

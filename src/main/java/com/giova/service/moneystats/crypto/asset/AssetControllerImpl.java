@@ -54,33 +54,15 @@ public class AssetControllerImpl implements AssetController {
     return assetService.getAssets();
   }
 
-  @PostMapping(value = "/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to add or update Crypto Asset",
-      summary = "Add or Update Crypto Asset",
-      tags = "Asset")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+  /**
+   * API To add a crypto asset
+   *
+   * @param token Of the user
+   * @param wallet Used to update data of the wallets
+   * @return Wallet Updated
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> saveOrUpdateCryptoAsset(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestBody @Valid @Schema(description = "Wallet to add or Update with Crypto Assets")
-          Wallet wallet)
+  public ResponseEntity<Response> addCryptoAsset(String token, Wallet wallet)
       throws UtilsException, JsonProcessingException {
     return assetService.insertOrUpdateAsset(wallet);
   }
