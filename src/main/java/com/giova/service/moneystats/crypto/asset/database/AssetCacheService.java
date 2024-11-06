@@ -1,9 +1,12 @@
 package com.giova.service.moneystats.crypto.asset.database;
 
+import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -182,5 +185,15 @@ public class AssetCacheService implements AssetRepository {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
       return assetDAO.findAllByUserIdOrderByRank(userId);
     }
+  }
+
+  /** Method to delete all the cache of the assets of the user. */
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public void clearAllWalletsCache() {
+    LOG.info("Starting to clear all assets data cache.");
+    CacheUtils.clearCache(assetEntityTemplate, "assets data");
+    CacheUtils.clearCache(assetLivePriceTemplate, "assets live data");
+    CacheUtils.clearCache(assetWithoutOpAndStatsTemplate, "assets without operation data");
+    LOG.info("Finished clearing assets data cache.");
   }
 }

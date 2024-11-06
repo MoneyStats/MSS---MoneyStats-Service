@@ -2,6 +2,7 @@ package com.giova.service.moneystats.scheduler;
 
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.authentication.AuthCacheService;
+import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import com.giova.service.moneystats.crypto.forex.database.ForexDataCacheService;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -27,6 +28,7 @@ public class CronCachingReset {
   @Autowired private AuthCacheService authCacheService;
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private ForexDataCacheService forexDataCacheService;
+  @Autowired private AssetCacheService assetCacheService;
 
   @Scheduled(cron = "${rest.scheduled.caching.cron}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
@@ -43,6 +45,7 @@ public class CronCachingReset {
     authCacheService.deleteUserCache();
     marketDataCacheService.clearAllMarketDataCache();
     forexDataCacheService.clearAllForexDataCache();
+    assetCacheService.clearAllWalletsCache();
 
     LOG.info("[Clean-Cache] Scheduler Finished at {}", LocalDateTime.now());
   }

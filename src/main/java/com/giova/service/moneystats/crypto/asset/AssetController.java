@@ -1,8 +1,6 @@
 package com.giova.service.moneystats.crypto.asset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -101,11 +99,8 @@ public interface AssetController {
    * @param wallet Used to update data of the wallets
    * @return Wallet Updated
    */
-  @PostMapping(value = "/asset/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to add or update Crypto Asset",
-      summary = "Add or Update Crypto Asset",
-      tags = "Asset")
+  @PostMapping(value = "/assets", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(description = "API to add Crypto Asset", summary = "Add Crypto Asset", tags = "Asset")
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
@@ -123,36 +118,96 @@ public interface AssetController {
           @Valid
           @Schema(
               description =
-                  "Wallet to add or Update with Crypto Assets, used because it needs to update the data of the Wallet")
-          Wallet wallet)
-      throws UtilsException, JsonProcessingException;
+                  "Wallet to add a Crypto Assets, used because it needs to update the data of the Wallet")
+          Wallet wallet);
 
-  @PostMapping(value = "/asset/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
+  /**
+   * API To update a crypto asset
+   *
+   * @param token Of the user
+   * @param wallet Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @PutMapping(value = "/assets", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description = "API to update Crypto Asset",
+      summary = "Update Crypto Asset",
+      tags = "Asset")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  ResponseEntity<Response> updateCryptoAsset(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestBody
+          @Valid
+          @Schema(
+              description =
+                  "Wallet to Update a Crypto Assets, used because it needs to update the data of the Wallet")
+          Wallet wallet);
+
+  /**
+   * API to add a list of crypto assets
+   *
+   * @param token Of the user
+   * @param wallets Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @PostMapping(value = "/assets/list", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description = "API to add Crypto Assets",
+      summary = "Add Crypto Assets",
+      tags = "Asset")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  ResponseEntity<Response> addCryptoAssets(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestBody @Valid @Schema(description = "Wallets with Crypto Assets to be saved")
+          List<Wallet> wallets);
+
+  /**
+   * API to update a list of crypto assets
+   *
+   * @param token Of the user
+   * @param wallets Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @PutMapping(value = "/assets/list", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to add or update Crypto Assets",
       summary = "Add or Update Crypto Assets",
       tags = "Asset")
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  ResponseEntity<Response> saveOrUpdateCryptoAssets(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestBody @Valid @Schema(description = "Wallets with Crypto Assets to update or save")
-          List<Wallet> wallets)
-      throws UtilsException, JsonProcessingException;
+  ResponseEntity<Response> updateCryptoAssets(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestBody @Valid @Schema(description = "Wallets with Crypto Assets to update")
+          List<Wallet> wallets);
 }

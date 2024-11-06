@@ -1,24 +1,14 @@
 package com.giova.service.moneystats.crypto.asset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
-import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,39 +52,43 @@ public class AssetControllerImpl implements AssetController {
    * @return Wallet Updated
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> addCryptoAsset(String token, Wallet wallet)
-      throws UtilsException, JsonProcessingException {
-    return assetService.insertOrUpdateAsset(wallet);
+  public ResponseEntity<Response> addCryptoAsset(String token, Wallet wallet) {
+    return assetService.addAsset(wallet);
   }
 
-  @PostMapping(value = "/list/addOrUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to add or update Crypto Assets",
-      summary = "Add or Update Crypto Assets",
-      tags = "Asset")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> saveOrUpdateCryptoAssets(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestBody @Valid @Schema(description = "Wallets with Crypto Assets to update or save")
-          List<Wallet> wallets)
-      throws UtilsException, JsonProcessingException {
-    return assetService.insertOrUpdateAssets(wallets);
+  /**
+   * API To update a crypto asset
+   *
+   * @param token Of the user
+   * @param wallet Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @Override
+  public ResponseEntity<Response> updateCryptoAsset(String token, Wallet wallet) {
+    return assetService.updateAsset(wallet);
+  }
+
+  /**
+   * API to add a list of crypto assets
+   *
+   * @param token Of the user
+   * @param wallets Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @Override
+  public ResponseEntity<Response> addCryptoAssets(String token, List<Wallet> wallets) {
+    return assetService.addAssets(wallets);
+  }
+
+  /**
+   * API to update a list of crypto assets
+   *
+   * @param token Of the user
+   * @param wallets Used to update data of the wallets
+   * @return Wallet Updated
+   */
+  @Override
+  public ResponseEntity<Response> updateCryptoAssets(String token, List<Wallet> wallets) {
+    return assetService.updateAssets(wallets);
   }
 }

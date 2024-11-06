@@ -169,7 +169,7 @@ public class WalletCacheService implements WalletRepository {
     }
   }
 
-  /** Method to delete all the cache of the market data of the user. */
+  /** Method to delete all the cache of the wallet of the user. */
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public void clearAllWalletsCache() {
     LOG.info("Starting to clear all wallet data cache.");

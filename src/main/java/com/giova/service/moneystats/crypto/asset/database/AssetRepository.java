@@ -49,4 +49,7 @@ public interface AssetRepository {
    * @return AssetEntities
    */
   List<AssetEntity> findAllByUserIdOrderByRank(Long userId);
+
+  /** Delete All Cache */
+  void clearAllWalletsCache();
 }

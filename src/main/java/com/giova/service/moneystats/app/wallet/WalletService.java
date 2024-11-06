@@ -19,6 +19,7 @@ import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.settings.dto.Status;
+import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -41,7 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 @Service
 @Logged
@@ -75,7 +75,7 @@ public class WalletService {
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
      * value as Null
      */
-    Boolean isLiveWallet = isLiveWallet(live);
+    Boolean isLiveWallet = Utils.isLiveWallet(live, user);
 
     List<WalletEntity> walletEntity;
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
@@ -170,7 +170,7 @@ public class WalletService {
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
      * value as Null
      */
-    Boolean isLiveWallet = isLiveWallet(live);
+    Boolean isLiveWallet = Utils.isLiveWallet(live, user);
 
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
     ForexData forexData =
@@ -178,7 +178,7 @@ public class WalletService {
             ? forexDataService.getForexDataByCurrency(user.getSettings().getCryptoCurrency())
             : null;
     List<MarketData> marketData =
-        marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
+        marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
     WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
 
@@ -230,7 +230,7 @@ public class WalletService {
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> updateWallet(Wallet wallet, Boolean live) {
     String message = "Wallet " + wallet.getName() + " Successfully updated!";
-    return addOrUpdateWallet(wallet, isLiveWallet(live), message);
+    return addOrUpdateWallet(wallet, Utils.isLiveWallet(live, user), message);
   }
 
   /**
@@ -248,7 +248,7 @@ public class WalletService {
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
     if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
+      marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
 
@@ -268,7 +268,7 @@ public class WalletService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  private ResponseEntity<Response> addOrUpdateWallet(Wallet wallet, Boolean live, String message) {
+  public ResponseEntity<Response> addOrUpdateWallet(Wallet wallet, Boolean live, String message) {
     WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
 
     /**
@@ -302,18 +302,6 @@ public class WalletService {
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
-  }
-
-  private Boolean isLiveWallet(Boolean live) {
-    /**
-     * We give the priority to the param "Boolean live", if the param is null we check the User
-     * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
-     * value as Null
-     */
-    return !ObjectUtils.isEmpty(live)
-        ? live
-        : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
-            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
   }
 
   /* OLD DATA */

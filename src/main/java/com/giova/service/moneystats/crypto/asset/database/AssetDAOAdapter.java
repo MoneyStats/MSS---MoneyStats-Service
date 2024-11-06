@@ -67,4 +67,8 @@ public class AssetDAOAdapter implements AssetRepository {
   public List<AssetEntity> findAllByUserIdOrderByRank(Long userId) {
     return iAssetDAO.findAllByUserIdOrderByRank(userId);
   }
+
+  /** Delete All Cache */
+  @Override
+  public void clearAllWalletsCache() {}
 }
