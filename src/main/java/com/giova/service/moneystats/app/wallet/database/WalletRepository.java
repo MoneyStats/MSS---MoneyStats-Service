@@ -36,4 +36,19 @@ public interface WalletRepository {
    * @return Wallet Saved
    */
   WalletEntity save(WalletEntity walletEntity);
+
+  /**
+   * Deleting all Data of the user
+   *
+   * @param userId of the data
+   */
+  void deleteAllByUserId(Long userId);
+
+  /**
+   * Save all walletEntities
+   *
+   * @param walletEntities to be saved
+   * @return wallet saved
+   */
+  List<WalletEntity> saveAll(List<WalletEntity> walletEntities);
 }

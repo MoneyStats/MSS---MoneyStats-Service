@@ -1,9 +1,8 @@
 package com.giova.service.moneystats.app.wallet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
-import com.giova.service.moneystats.app.stats.StatsService;
+import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
@@ -34,7 +33,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +50,7 @@ public class WalletService {
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
-  @Autowired private StatsService statsService;
+  @Autowired private StatsComponent statsComponent;
   @Autowired private ForexDataService forexDataService;
   @Autowired private MarketDataService marketDataService;
   @Autowired private WalletRepository walletRepository;
@@ -85,10 +83,10 @@ public class WalletService {
             : null;
     List<MarketData> marketData =
         (isLiveWallet || includeAssets || includeFullAssets)
-            ? marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency())
+            ? marketDataService.getMarketData(user.getSettings().getCryptoCurrency())
             : null;
     List<LocalDate> getAllCryptoDates =
-        includeAssets ? statsService.getCryptoDistinctDates(user) : null;
+        includeAssets ? statsComponent.getCryptoDistinctDates(user) : null;
     if (!isLiveWallet && !includeHistory && !includeAssets && !includeFullAssets)
       walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
     else if (isLiveWallet && !includeHistory && !includeAssets) {
@@ -179,7 +177,7 @@ public class WalletService {
             : null;
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
-    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
     WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
 
     Wallet walletToReturn = null;
@@ -304,79 +302,54 @@ public class WalletService {
     return ResponseEntity.ok(response);
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
+
+    List<WalletEntity> walletEntities =
+        wallets.stream()
+            .map(
+                wallet -> {
+                  WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
+
+                  if (!Utilities.isNullOrEmpty(wallet.getImgName())) {
+                    LOG.info("Building attachment with filename {}", wallet.getImgName());
+                    Image image = imageService.getAttachment(wallet.getImgName());
+                    imageService.removeAttachment(wallet.getImgName());
+                    walletEntity.setImg(
+                        "data:"
+                            + image.getContentType()
+                            + ";base64,"
+                            + Base64.getEncoder().encodeToString(image.getBody()));
+                  }
+                  return walletEntity;
+                })
+            .toList();
+
+    List<WalletEntity> saved = walletRepository.saveAll(walletEntities);
+
+    return saved.stream()
+        .map(
+            walletEntity -> {
+              Wallet wallet = new Wallet();
+              WalletMapper.fromWalletEntityToWallet(walletEntity, null, null);
+
+              return wallet;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
+    return walletMapper.deleteWalletIds(wallets);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void deleteWalletEntities() {
+    LOG.info("Deleting all wallet data for user {}", user.getUsername());
+    walletRepository.deleteAllByUserId(user.getId());
+  }
+
   /* OLD DATA */
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> insertOrUpdateWallet(Wallet wallet)
-      throws UtilsException, JsonProcessingException {
-    Boolean isLiveWallet =
-        user.getSettings().getLiveWallets() != null
-            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
-    return insertOrUpdate(wallet, isLiveWallet);
-  }
-
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> notFilterInsertOrUpdateWallet(Wallet wallet)
-      throws UtilsException, JsonProcessingException {
-    return insertOrUpdate(wallet, false);
-  }
-
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> insertOrUpdate(Wallet wallet, Boolean isWalletLive)
-      throws UtilsException, JsonProcessingException {
-    WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
-
-    if (wallet.getId() != null && isWalletLive) {
-      WalletEntity getFromDB =
-          walletCacheService.findWalletEntityById(wallet.getId(), user.getId());
-      if (getFromDB != null) {
-        walletEntity.setBalance(getFromDB.getBalance());
-        walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
-        walletEntity.setDifferenceLastStats(getFromDB.getDifferenceLastStats());
-        walletEntity.setHighPrice(getFromDB.getHighPrice());
-        walletEntity.setHighPriceDate(getFromDB.getHighPriceDate());
-        walletEntity.setLowPrice(getFromDB.getLowPrice());
-        walletEntity.setLowPriceDate(getFromDB.getLowPriceDate());
-        walletEntity.setAllTimeHigh(getFromDB.getAllTimeHigh());
-        walletEntity.setAllTimeHighDate(getFromDB.getAllTimeHighDate());
-      }
-    }
-
-    if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
-      LOG.info("Building attachment with filename {}", wallet.getImgName());
-      Image image = imageService.getAttachment(wallet.getImgName());
-      imageService.removeAttachment(wallet.getImgName());
-      walletEntity.setImg(
-          "data:"
-              + image.getContentType()
-              + ";base64,"
-              + Base64.getEncoder().encodeToString(image.getBody()));
-    }
-
-    WalletEntity saved = walletCacheService.save(walletEntity);
-
-    List<MarketData> marketData = Collections.emptyList();
-    if (!Utilities.isNullOrEmpty(saved.getAssets()))
-      marketData = marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
-
-    // List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
-    Wallet walletToReturn = walletMapper.fromWalletEntityToWallet(saved, null, marketData);
-    // if (wallet.getHistory() != null && !wallet.getHistory().isEmpty()) {
-    //  walletToReturn.setHistory(statsService.saveStats(wallet.getHistory(), saved, user));
-    // }
-
-    String message = "Wallet " + walletToReturn.getName() + " Successfully saved!";
-
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
-    return ResponseEntity.ok(response);
-  }
-
   @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getWallets() throws UtilsException {
@@ -392,7 +365,7 @@ public class WalletService {
         user.getSettings().getLiveWallets() != null
             && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
 
-    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
     List<Wallet> walletToReturn =
         walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet, getAllCryptoDates);
 
@@ -416,58 +389,12 @@ public class WalletService {
       message = "Found " + walletEntity.size() + " Crypto Wallets";
     }
 
-    List<LocalDate> getAllCryptoDates = statsService.getCryptoDistinctDates(user);
+    List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
     List<Wallet> walletToReturn =
         walletMapper.fromWalletEntitiesToWallets(walletEntity, live, getAllCryptoDates);
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
     return ResponseEntity.ok(response);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
-    return walletMapper.deleteWalletIds(wallets);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<Wallet> saveWalletEntities(List<Wallet> wallets) {
-
-    List<WalletEntity> walletEntities =
-        wallets.stream()
-            .map(
-                wallet -> {
-                  WalletEntity walletEntity = walletMapper.fromWalletToWalletEntity(wallet, user);
-
-                  if (wallet.getImgName() != null && !wallet.getImgName().isEmpty()) {
-                    LOG.info("Building attachment with filename {}", wallet.getImgName());
-                    Image image = imageService.getAttachment(wallet.getImgName());
-                    imageService.removeAttachment(wallet.getImgName());
-                    walletEntity.setImg(
-                        "data:"
-                            + image.getContentType()
-                            + ";base64,"
-                            + Base64.getEncoder().encodeToString(image.getBody()));
-                  }
-                  return walletEntity;
-                })
-            .collect(Collectors.toList());
-
-    List<WalletEntity> saved = walletCacheService.saveAll(walletEntities);
-
-    return saved.stream()
-        .map(
-            walletEntity -> {
-              Wallet wallet = new Wallet();
-              walletMapper.fromWalletEntityToWallet(walletEntity, null, null);
-
-              return wallet;
-            })
-        .collect(Collectors.toList());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteWalletEntities() {
-    walletCacheService.deleteAllByUserId(user.getId());
   }
 }

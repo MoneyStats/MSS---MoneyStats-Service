@@ -1,20 +1,12 @@
 package com.giova.service.moneystats.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.api.emailSender.EmailSenderService;
-import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
-import com.giova.service.moneystats.api.github.GithubClient;
 import com.giova.service.moneystats.app.model.Dashboard;
-import com.giova.service.moneystats.app.model.GithubIssues;
-import com.giova.service.moneystats.app.model.Support;
-import com.giova.service.moneystats.app.stats.StatsService;
+import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.exception.config.ExceptionMap;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -23,13 +15,12 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import jakarta.transaction.Transactional;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import reactor.core.publisher.Mono;
 
 @Logged
 @Service
@@ -47,81 +36,69 @@ import reactor.core.publisher.Mono;
 public class AppService {
 
   private final UserEntity user;
-  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private WalletService walletService;
-  @Autowired private StatsService statsService;
-  @Autowired private GithubClient githubClient;
-  @Autowired private EmailSenderService emailSenderService;
-  @Autowired private AppMapper appMapper;
+  @Autowired private StatsComponent statsComponent;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> reportBug(GithubIssues githubIssues)
-      throws JsonProcessingException {
-    LOG.info("Bug to report: {}", Mapper.writeObjectToString(githubIssues));
-
-    return githubClient
-        .openGithubIssues(githubIssues)
-        .flatMap(
-            issues -> {
-              String message = "Bug Reported!";
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), issues.getBody());
-              return Mono.just(ResponseEntity.ok(response));
-            });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getDashboardData(String authToken) throws UtilsException {
-
-    List<LocalDate> getAllDates = statsService.getDistinctDates(user);
-    List<LocalDate> filter = new ArrayList<>();
-    Map<String, Dashboard> getData = new HashMap<>();
-    int thisYear = 0;
+  public ResponseEntity<Response> getDashboardData() {
+    LOG.info("Starting getting data for dashboard for user {}", user.getUsername());
+    List<LocalDate> getAllDates = statsComponent.getDistinctDates(user);
+    List<LocalDate> filter;
+    Dashboard dashboard = new Dashboard();
     if (!getAllDates.isEmpty()) {
-      int currentYear = getAllDates.get(getAllDates.size() - 1).getYear();
-      filter =
-          getAllDates.stream().filter(d -> d.getYear() == currentYear).collect(Collectors.toList());
+      int currentYear = getAllDates.getLast().getYear();
+      filter = getAllDates.stream().filter(d -> d.getYear() == currentYear).toList();
 
-      thisYear = currentYear;
-      getData = mapDashBoard(filter, authToken);
+      Map<String, Dashboard> getData = mapDashBoard(filter, false);
+      if (!Utilities.isNullOrEmpty(getData)) {
+        dashboard = getData.get(String.valueOf(currentYear));
+      }
     } else {
-      Dashboard dashboard = new Dashboard();
-      List<Wallet> getAllWallet =
-          objectMapper.convertValue(
-              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+      List<Wallet> getAllWallet = new ArrayList<>();
+      ResponseEntity<Response> responseEntityWallet =
+          walletService.getAllWallets(null, true, false, false);
+      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
+          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+        getAllWallet =
+            Mapper.convertObject(
+                responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
-      getData.put(String.valueOf(thisYear), dashboard);
     }
 
     String message = "Data for Dashboard!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            TraceUtils.getSpanID(),
-            getData.get(String.valueOf(thisYear)));
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), dashboard);
     return ResponseEntity.ok(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getResumeData(String authToken) throws UtilsException {
-
-    List<LocalDate> getAllDates = statsService.getDistinctDates(user);
+  public ResponseEntity<Response> getResumeData(Long year) throws UtilsException {
+    LOG.info("Starting getting resume data for dashboard for user {}", user.getUsername());
+    List<LocalDate> getAllDates = statsComponent.getDistinctDates(user);
     Map<String, Dashboard> getData = new HashMap<>();
-    int thisYear = LocalDate.now().getYear();
+    Dashboard dashboard = new Dashboard();
     if (!getAllDates.isEmpty()) {
-      getData = mapDashBoard(getAllDates, authToken);
+      List<LocalDate> filterDateByYear =
+          getAllDates.stream().filter(localDate -> localDate.getYear() == year).toList();
+      Map<String, Dashboard> getDataProvision = mapDashBoard(filterDateByYear, true);
+      if (!Utilities.isNullOrEmpty(getDataProvision)) {
+        dashboard = getDataProvision.get(String.valueOf(year));
+      }
+      dashboard.setStatsWalletDays(getAllDates);
+      getData.put(String.valueOf(year), dashboard);
     } else {
-      Dashboard dashboard = new Dashboard();
-      List<Wallet> getAllWallet =
-          objectMapper.convertValue(
-              walletService.getWallets().getBody().getData(), new TypeReference<List<Wallet>>() {});
+      List<Wallet> getAllWallet = Collections.emptyList();
+      ResponseEntity<Response> responseEntityWallet =
+          walletService.getAllWallets(null, true, false, false);
+      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
+          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+        getAllWallet =
+            Mapper.convertObject(
+                responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
       dashboard.setWallets(getAllWallet);
-      getData.put(String.valueOf(thisYear), dashboard);
+      getData.put(String.valueOf(year), dashboard);
     }
 
     String message = "Data for Resume!";
@@ -131,239 +108,191 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> addStats(List<Wallet> wallets, String authToken) {
-
-    wallets.forEach(
-        wallet -> {
-          try {
-            objectMapper.convertValue(
-                Objects.requireNonNull(
-                        walletService.notFilterInsertOrUpdateWallet(wallet).getBody())
-                    .getData(),
-                Wallet.class);
-          } catch (JsonProcessingException e) {
-            throw new UtilsException(
-                ExceptionMap.ERR_JSON_FOR_001, ExceptionMap.ERR_JSON_FOR_001.getMessage());
-          }
-          List<Stats> statsList = statsService.getStatsByWallet(wallet.getId());
-          wallet.setHistory(statsList);
-        });
-
-    String message = "Stats Added Successfully!";
-
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), wallets);
-    return ResponseEntity.ok(response);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> contactSupport(Support support) throws UtilsException {
-    // Send Email
-    EmailContent emailContent =
-        EmailContent.builder()
-            .subject("MoneyStats - Contact Us!")
-            .to(support.getEmail())
-            .bbc("giovannilamarmora.working@gmail.com")
-            .sentDate(new Date())
-            .build();
-    Map<String, String> param = new HashMap<>();
-    param.put("{{NAME}}", support.getName());
-    param.put("{{MESSAGE}}", support.getMessage());
-    return emailSenderService
-        .sendEmail(EmailContent.CONTACT_TEMPLATE, param, emailContent)
-        .flatMap(
-            emailResponse -> {
-              String message = "Email Sent! Check your email address!";
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), emailResponse);
-
-              return Mono.just(ResponseEntity.ok(response));
-            });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> backupData() throws UtilsException {
-
-    ResponseEntity<Response> getWallets = walletService.getWallets();
-    if (ObjectUtils.isEmpty(getWallets.getBody())) {
-      LOG.error("There is no Wallet saved, backup aborted");
-      Response response =
-          new Response(
-              HttpStatus.OK.value(),
-              "There is no wallet to be saved, backup aborted",
-              TraceUtils.getSpanID(),
-              null);
-      return ResponseEntity.ok(response);
-    }
-
-    List<Wallet> wallets =
-        objectMapper.convertValue(
-            getWallets.getBody().getData(), new TypeReference<List<Wallet>>() {});
-
-    String message = "Backup data completed!";
-
-    Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            TraceUtils.getSpanID(),
-            walletService.deleteWalletIds(wallets));
-
-    return ResponseEntity.ok(response);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
-  public ResponseEntity<Response> restoreData(List<Wallet> walletEntities) {
-
-    walletService.deleteWalletEntities();
-
-    List<Wallet> restoreWallets = walletService.saveWalletEntities(walletEntities);
-
-    String message = "Data successfully restored!";
-
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), restoreWallets);
-
-    return ResponseEntity.ok(response);
-  }
-
-  private Map<String, Dashboard> mapDashBoard(List<LocalDate> dates, String authToken)
-      throws UtilsException {
-    Map<String, Dashboard> response = new HashMap<>();
+  public ResponseEntity<Response> getHistoryData() {
+    LOG.info("Starting getting history data for dashboard for user {}", user.getUsername());
+    Map<String, Dashboard> dashboardHashMap = new HashMap<>();
+    List<LocalDate> getAllDates = statsComponent.getDistinctDates(user);
 
     List<Integer> distinctDatesByYear =
-        dates.stream().map(LocalDate::getYear).distinct().collect(Collectors.toList());
+        getAllDates.stream().map(LocalDate::getYear).distinct().toList();
 
-    // Wallet List
-    List<Wallet> getAllWallet =
-        objectMapper.convertValue(
-            Objects.requireNonNull(walletService.getWallets().getBody()).getData(),
-            new TypeReference<List<Wallet>>() {});
+    ResponseEntity<Response> responseEntityWallet =
+        walletService.getAllWallets(null, true, false, false);
+    List<Wallet> getAllWallet = new ArrayList<>();
+    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
+        & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      getAllWallet =
+          Mapper.convertObject(
+              responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
 
     AtomicInteger index = new AtomicInteger(0);
+    List<Wallet> finalGetAllWallet = getAllWallet;
     distinctDatesByYear.stream()
         .sorted(Collections.reverseOrder())
         .toList()
         .forEach(
             year -> {
-              LOG.info("Mapping Data for year {}", year);
               // Filtro le date secondo l'anno
               List<LocalDate> filterDateByYear =
-                  dates.stream().filter(d -> d.getYear() == year).collect(Collectors.toList());
+                  getAllDates.stream().filter(d -> d.getYear() == year).toList();
               Dashboard dashboard = new Dashboard();
-              dashboard.setStatsWalletDays(filterDateByYear);
-              dashboard.setPerformanceLastDate(filterDateByYear.get(filterDateByYear.size() - 1));
-              dashboard.setPerformanceSince(filterDateByYear.get(0));
               AtomicReference<Double> balance = new AtomicReference<>(0D);
-              AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
               AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
-              AtomicInteger indexWallet = new AtomicInteger(0);
 
-              List<Wallet> filterWallet =
-                  getAllWallet.stream()
-                      .map(
-                          wallet -> {
-                            Wallet wallet1 = new Wallet();
-                            BeanUtils.copyProperties(wallet, wallet1);
-                            wallet1.setAssets(null);
-                            List<Stats> listFilter =
-                                wallet.getHistory() != null
-                                    ? wallet.getHistory().stream()
-                                        .filter(h -> h.getDate().getYear() == year)
-                                        .collect(Collectors.toList())
-                                    : new ArrayList<>();
-                            wallet1.setHistory(listFilter);
+              finalGetAllWallet.forEach(
+                  wallet -> {
+                    List<Stats> listFilter =
+                        wallet.getHistory() != null
+                            ? wallet.getHistory().stream()
+                                .filter(h -> h.getDate().getYear() == year)
+                                .toList()
+                            : Collections.emptyList();
 
-                            if (index.get() == 0
-                                && user.getSettings().getLiveWallets() != null
-                                && user.getSettings()
-                                    .getLiveWallets()
-                                    .equalsIgnoreCase(Status.ACTIVE.name()))
-                              balance.updateAndGet(b -> b + wallet.getBalance());
+                    if (index.get() == 0
+                        && user.getSettings().getLiveWallets() != null
+                        && user.getSettings()
+                            .getLiveWallets()
+                            .equalsIgnoreCase(Status.ACTIVE.name()))
+                      balance.updateAndGet(b -> b + wallet.getBalance());
 
-                            if (!listFilter.isEmpty()) {
-                              if (index.get() != 0) {
-                                appMapper.updateBalance(listFilter, filterDateByYear, balance);
-                                appMapper.updateLastBalance(
-                                    listFilter, filterDateByYear, lastBalance);
-                              } else {
-                                if (user.getSettings().getLiveWallets() != null
-                                    && user.getSettings()
-                                        .getLiveWallets()
-                                        .equalsIgnoreCase(Status.ACTIVE.name()))
-                                  // Uso questa funzione perchè prende l'ultimo saldo
-                                  appMapper.updateBalance(
-                                      listFilter, filterDateByYear, lastBalance);
-                                else {
-                                  appMapper.updateBalance(listFilter, filterDateByYear, balance);
-                                  appMapper.updateLastBalance(
-                                      listFilter, filterDateByYear, lastBalance);
-                                }
-                              }
-                              appMapper.updateInitialBalance(
-                                  listFilter, filterDateByYear, initialBalance);
-                            }
+                    if (!listFilter.isEmpty()) {
+                      if (index.get() != 0) {
+                        AppMapper.updateBalance(listFilter, filterDateByYear, balance);
+                        AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
+                      } else {
+                        if (!Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
+                            && user.getSettings()
+                                .getLiveWallets()
+                                .equalsIgnoreCase(Status.ACTIVE.name()))
+                          AppMapper.updateBalance(listFilter, filterDateByYear, lastBalance);
+                        else {
+                          AppMapper.updateBalance(listFilter, filterDateByYear, balance);
+                          AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
+                        }
+                      }
+                    }
+                  });
 
-                            checkAndMapWalletInThePast(
-                                index, listFilter, filterDateByYear, wallet1);
-                            indexWallet.incrementAndGet();
-                            return wallet1;
-                          })
-                      .collect(Collectors.toList());
-
-              // Filtro Wallet cancellati da anni che non hanno stats
-              Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
-              filterWallet.removeIf(walletRemovedInThePast);
-
-              // Mi serve per mappare il passato
-              if (index.get() > 0) {
-                // Remove wallet that haven't any stats
-                Predicate<Wallet> hasEmptyStats = wallet -> wallet.getHistory().isEmpty();
-                filterWallet.removeIf(hasEmptyStats);
-              }
-
-              dashboard.setWallets(filterWallet);
-              try {
-                appMapper.mapDashboardBalanceAndPerformance(
-                    dashboard, balance, lastBalance, initialBalance);
-              } catch (UtilsException e) {
-                throw new RuntimeException(e);
-              }
+              AppMapper.mapDashboardBalanceAndPerformance(dashboard, balance, lastBalance, null);
               index.incrementAndGet();
-              response.put(String.valueOf(year), dashboard);
+              dashboardHashMap.put(String.valueOf(year), dashboard);
             });
+
+    String message = "Data for History!";
+
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), dashboardHashMap);
+    return ResponseEntity.ok(response);
+  }
+
+  private Map<String, Dashboard> mapDashBoard(List<LocalDate> dates, Boolean isResume) {
+    Map<String, Dashboard> response = new HashMap<>();
+
+    Integer distinctDatesByYear =
+        dates.stream().map(LocalDate::getYear).distinct().toList().getFirst();
+
+    // Wallet List
+    ResponseEntity<Response> responseEntityWallet =
+        walletService.getAllWallets(null, true, false, false);
+    List<Wallet> getAllWallet = new ArrayList<>();
+    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
+        & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      getAllWallet =
+          Mapper.convertObject(
+              responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
+
+    List<Wallet> finalGetAllWallet = getAllWallet;
+    LOG.info("Mapping Data for year {}", distinctDatesByYear);
+    // Filtro le date secondo l'anno
+    List<LocalDate> filterDateByYear =
+        dates.stream().filter(d -> d.getYear() == distinctDatesByYear).toList();
+    Dashboard dashboard = new Dashboard();
+    dashboard.setStatsWalletDays(filterDateByYear);
+    dashboard.setPerformanceLastDate(filterDateByYear.getLast());
+    dashboard.setPerformanceSince(filterDateByYear.getFirst());
+    AtomicReference<Double> balance = new AtomicReference<>(0D);
+    AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
+    AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
+
+    List<Wallet> filterWallet =
+        new ArrayList<>(
+            finalGetAllWallet.stream()
+                .map(
+                    wallet -> {
+                      Wallet wallet1 = new Wallet();
+                      BeanUtils.copyProperties(wallet, wallet1);
+                      wallet1.setAssets(null);
+                      List<Stats> listFilter =
+                          !Utilities.isNullOrEmpty(wallet.getHistory())
+                              ? wallet.getHistory().stream()
+                                  .filter(h -> h.getDate().getYear() == distinctDatesByYear)
+                                  .toList()
+                              : Collections.emptyList();
+                      wallet1.setHistory(listFilter);
+
+                      if (!isResume
+                          && !Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
+                          && user.getSettings()
+                              .getLiveWallets()
+                              .equalsIgnoreCase(Status.ACTIVE.name()))
+                        balance.updateAndGet(b -> b + wallet.getBalance());
+
+                      if (!listFilter.isEmpty()) {
+                        if (isResume) {
+                          AppMapper.updateBalance(listFilter, filterDateByYear, balance);
+                          AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
+                        } else {
+                          if (!Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
+                              && user.getSettings()
+                                  .getLiveWallets()
+                                  .equalsIgnoreCase(Status.ACTIVE.name()))
+                            // Uso questa funzione perchè prende l'ultimo saldo
+                            AppMapper.updateBalance(listFilter, filterDateByYear, lastBalance);
+                          else {
+                            AppMapper.updateBalance(listFilter, filterDateByYear, balance);
+                            AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
+                          }
+                        }
+                        AppMapper.updateInitialBalance(
+                            listFilter, filterDateByYear, initialBalance);
+                      }
+
+                      checkAndMapWalletInThePast(isResume, listFilter, filterDateByYear, wallet1);
+                      return wallet1;
+                    })
+                .toList());
+
+    // Filtro Wallet cancellati da anni che non hanno stats
+    Predicate<Wallet> walletRemovedInThePast =
+        wallet -> wallet.getHistory().isEmpty() && wallet.getDeletedDate() != null;
+    filterWallet.removeIf(walletRemovedInThePast);
+
+    // Mi serve per mappare il passato
+    if (isResume) {
+      // Remove wallet that haven't any stats
+      Predicate<Wallet> hasEmptyStats = wallet -> wallet.getHistory().isEmpty();
+      filterWallet.removeIf(hasEmptyStats);
+    }
+
+    dashboard.setWallets(filterWallet);
+    AppMapper.mapDashboardBalanceAndPerformance(dashboard, balance, lastBalance, initialBalance);
+    response.put(String.valueOf(distinctDatesByYear), dashboard);
 
     return response;
   }
 
   private void checkAndMapWalletInThePast(
-      AtomicInteger index,
-      List<Stats> listFilter,
-      List<LocalDate> filterDateByYear,
-      Wallet wallet1) {
+      Boolean isResume, List<Stats> listFilter, List<LocalDate> filterDateByYear, Wallet wallet1) {
     // Mi serve per mappare il passato
-    if (index.get() > 0 && !listFilter.isEmpty()) {
+    if (isResume && !listFilter.isEmpty()) {
       // Se lo stats all'ultima posizione ha la stessa data
       // dell'ultima
       // data della lista dell'anno, il wallet non era ancora
       // cancellato
-      if (listFilter
-          .get(listFilter.size() - 1)
-          .getDate()
-          .isEqual(filterDateByYear.get(filterDateByYear.size() - 1))) {
+      if (listFilter.getLast().getDate().isEqual(filterDateByYear.getLast())) {
         wallet1.setDeletedDate(null);
       }
-      try {
-        appMapper.mapWalletInThePast(wallet1);
-      } catch (UtilsException e) {
-        throw new RuntimeException(e);
-      }
+      AppMapper.mapWalletInThePast(wallet1);
     }
   }
 }

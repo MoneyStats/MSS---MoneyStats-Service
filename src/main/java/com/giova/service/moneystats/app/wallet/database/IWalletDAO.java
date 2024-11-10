@@ -40,8 +40,13 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
    */
   WalletEntity findWalletEntityById(Long id);
 
+  /**
+   * Deleting all Data of the user
+   *
+   * @param userId of the data
+   */
+  void deleteAllByUserId(Long userId);
+
   /* OLD QUERY */
   List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
-
-  void deleteAllByUserId(Long userId);
 }

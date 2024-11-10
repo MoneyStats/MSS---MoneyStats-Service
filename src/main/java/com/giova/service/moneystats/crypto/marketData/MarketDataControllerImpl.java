@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.crypto.marketData;
 
+import com.giova.service.moneystats.scheduler.CronMarketData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Market Data", description = "API to get Market Data")
 public class MarketDataControllerImpl implements MarketDataController {
   @Autowired private MarketDataService marketDataService;
+  @Autowired private CronMarketData cronMarketData;
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
@@ -51,5 +53,23 @@ public class MarketDataControllerImpl implements MarketDataController {
             "Market Data successfully removed!",
             TraceUtils.getSpanID(),
             null));
+  }
+
+  /**
+   * API to start the import of the marketData
+   *
+   * @param token of the User
+   * @return Successfully Response
+   */
+  @Override
+  public ResponseEntity<Response> importMarketData(String token) {
+    cronMarketData.scheduleAllCryptoAsset();
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "MarketData Successfully imported",
+            TraceUtils.getSpanID(),
+            null);
+    return ResponseEntity.ok(response);
   }
 }

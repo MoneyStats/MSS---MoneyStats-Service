@@ -199,6 +199,68 @@ public class WalletMapper {
     return wallet;
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
+    return wallets.stream()
+        .map(
+            (walletToEdit -> {
+              Wallet wallet = new Wallet();
+              walletToEdit.setId(null);
+              BeanUtils.copyProperties(walletToEdit, wallet);
+
+              if (!Utilities.isNullOrEmpty(walletToEdit.getHistory())) {
+                wallet.setHistory(
+                    walletToEdit.getHistory().stream()
+                        .map(
+                            statsEntity -> {
+                              Stats stats = new Stats();
+                              statsEntity.setId(null);
+                              BeanUtils.copyProperties(statsEntity, stats);
+                              return stats;
+                            })
+                        .toList());
+              }
+              if (!Utilities.isNullOrEmpty(walletToEdit.getAssets())) {
+                wallet.setAssets(
+                    walletToEdit.getAssets().stream()
+                        .map(
+                            assetMap -> {
+                              Asset asset = new Asset();
+                              assetMap.setId(null);
+                              BeanUtils.copyProperties(assetMap, asset);
+                              if (!Utilities.isNullOrEmpty(assetMap.getHistory())) {
+                                asset.setHistory(
+                                    assetMap.getHistory().stream()
+                                        .map(
+                                            statsEntity -> {
+                                              Stats stats = new Stats();
+                                              statsEntity.setId(null);
+                                              BeanUtils.copyProperties(statsEntity, stats);
+                                              return stats;
+                                            })
+                                        .toList());
+                              }
+                              if (!Utilities.isNullOrEmpty(assetMap.getOperations())) {
+                                asset.setOperations(
+                                    assetMap.getOperations().stream()
+                                        .map(
+                                            operationEntity -> {
+                                              Operations operations = new Operations();
+                                              operationEntity.setId(null);
+                                              BeanUtils.copyProperties(operationEntity, operations);
+                                              return operations;
+                                            })
+                                        .toList());
+                              }
+                              return asset;
+                            })
+                        .toList());
+              }
+              return wallet;
+            }))
+        .toList();
+  }
+
   /* @important OLD DATA */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public List<Wallet> fromWalletEntitiesToWallets(
@@ -246,68 +308,6 @@ public class WalletMapper {
                         walletEntity.getAssets(), marketData, getAllCryptoDates));
               }
               if (live) setLivePriceInWallet(wallet, finalForex, lastBalance);
-              return wallet;
-            }))
-        .collect(Collectors.toList());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Wallet> deleteWalletIds(List<Wallet> wallets) {
-    return wallets.stream()
-        .map(
-            (walletToEdit -> {
-              Wallet wallet = new Wallet();
-              walletToEdit.setId(null);
-              BeanUtils.copyProperties(walletToEdit, wallet);
-
-              if (walletToEdit.getHistory() != null) {
-                wallet.setHistory(
-                    walletToEdit.getHistory().stream()
-                        .map(
-                            statsEntity -> {
-                              Stats stats = new Stats();
-                              statsEntity.setId(null);
-                              BeanUtils.copyProperties(statsEntity, stats);
-                              return stats;
-                            })
-                        .collect(Collectors.toList()));
-              }
-              if (walletToEdit.getAssets() != null) {
-                wallet.setAssets(
-                    walletToEdit.getAssets().stream()
-                        .map(
-                            assetMap -> {
-                              Asset asset = new Asset();
-                              assetMap.setId(null);
-                              BeanUtils.copyProperties(assetMap, asset);
-                              if (assetMap.getHistory() != null) {
-                                asset.setHistory(
-                                    assetMap.getHistory().stream()
-                                        .map(
-                                            statsEntity -> {
-                                              Stats stats = new Stats();
-                                              statsEntity.setId(null);
-                                              BeanUtils.copyProperties(statsEntity, stats);
-                                              return stats;
-                                            })
-                                        .collect(Collectors.toList()));
-                              }
-                              if (assetMap.getOperations() != null) {
-                                asset.setOperations(
-                                    assetMap.getOperations().stream()
-                                        .map(
-                                            operationEntity -> {
-                                              Operations operations = new Operations();
-                                              operationEntity.setId(null);
-                                              BeanUtils.copyProperties(operationEntity, operations);
-                                              return operations;
-                                            })
-                                        .collect(Collectors.toList()));
-                              }
-                              return asset;
-                            })
-                        .collect(Collectors.toList()));
-              }
               return wallet;
             }))
         .collect(Collectors.toList());

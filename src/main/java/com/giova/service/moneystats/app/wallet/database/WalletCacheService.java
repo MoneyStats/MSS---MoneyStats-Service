@@ -133,6 +133,31 @@ public class WalletCacheService implements WalletRepository {
   }
 
   /**
+   * Deleting all Data of the user
+   *
+   * @param userId of the data
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public void deleteAllByUserId(Long userId) {
+    clearAllWalletsCache();
+    walletDAO.deleteAllByUserId(userId);
+  }
+
+  /**
+   * Save all walletEntities
+   *
+   * @param walletEntities to be saved
+   * @return wallet saved
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public List<WalletEntity> saveAll(List<WalletEntity> walletEntities) {
+    clearAllWalletsCache();
+    return walletDAO.saveAll(walletEntities);
+  }
+
+  /**
    * Method to delete the cache of the wallets of the user. Even if you update just a wallet we need
    * to delete the cache of al the wallet inorder to get fresh data.
    *
@@ -186,15 +211,5 @@ public class WalletCacheService implements WalletRepository {
   public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
     LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
     return walletDAO.findAllByUserIdAndCategory(userId, category);
-  }
-
-  public List<WalletEntity> saveAll(List<WalletEntity> walletEntities) {
-    clearAllWalletsCache();
-    return walletDAO.saveAll(walletEntities);
-  }
-
-  public void deleteAllByUserId(Long userId) {
-    clearAllWalletsCache();
-    walletDAO.deleteAllByUserId(userId);
   }
 }

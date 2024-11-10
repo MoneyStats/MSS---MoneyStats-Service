@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.crypto.asset;
 
-import com.giova.service.moneystats.app.stats.StatsService;
+import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
@@ -39,7 +39,7 @@ public class AssetService {
   private final UserEntity user;
   @Autowired private WalletService walletService;
   @Autowired private MarketDataService marketDataService;
-  @Autowired private StatsService statsService;
+  @Autowired private StatsComponent statsComponent;
 
   @Autowired private AssetRepository assetRepository;
 
@@ -62,7 +62,7 @@ public class AssetService {
     if (assetEntities.isEmpty()) {
       message = "Asset " + identifier + " not found, insert new Asset to get it!";
     } else {
-      List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+      List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
 
       List<MarketData> marketData =
           marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
@@ -85,7 +85,7 @@ public class AssetService {
    * @return Asset
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getAssets() {
+  public ResponseEntity<Response> getAssets(Boolean includeOperations) {
     LOG.info("Getting all assets");
     List<AssetEntity> assetEntities = assetRepository.findAllByUserIdOrderByRank(user.getId());
     List<Asset> assets = new ArrayList<>();
@@ -94,10 +94,12 @@ public class AssetService {
     if (assetEntities.isEmpty()) {
       message = "Asset Empty, insert new Asset to get it!";
     } else {
+      if (!includeOperations)
+        assetEntities = assetEntities.stream().peek(asset -> asset.setOperations(null)).toList();
       List<MarketData> marketData =
           marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
-      List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+      List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
       assets =
           AssetMapper.mapAssetList(
               AssetMapper.fromAssetEntitiesToAssets(assetEntities, marketData, getAllDates),

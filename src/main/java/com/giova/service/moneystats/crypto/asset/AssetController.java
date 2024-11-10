@@ -51,7 +51,10 @@ public interface AssetController {
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
-          String token);
+          String token,
+      @RequestParam(value = "includeOperations", required = false, defaultValue = "false")
+          @Schema(description = "Param to get the full Operations", example = "true")
+          Boolean includeOperations);
 
   /**
    * API to get an Asset by his identifier

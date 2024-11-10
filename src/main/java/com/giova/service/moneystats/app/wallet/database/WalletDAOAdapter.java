@@ -51,4 +51,25 @@ public class WalletDAOAdapter implements WalletRepository {
   public WalletEntity save(WalletEntity walletEntity) {
     return iWalletDAO.save(walletEntity);
   }
+
+  /**
+   * Deleting all Data of the user
+   *
+   * @param userId of the data
+   */
+  @Override
+  public void deleteAllByUserId(Long userId) {
+    iWalletDAO.deleteAllByUserId(userId);
+  }
+
+  /**
+   * Save all walletEntities
+   *
+   * @param walletEntities to be saved
+   * @return wallet saved
+   */
+  @Override
+  public List<WalletEntity> saveAll(List<WalletEntity> walletEntities) {
+    return iWalletDAO.saveAll(walletEntities);
+  }
 }

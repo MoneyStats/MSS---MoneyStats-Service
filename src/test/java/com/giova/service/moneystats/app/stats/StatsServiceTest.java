@@ -19,7 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest
 public class StatsServiceTest {
 
-  @Autowired private StatsService statsService;
+  @Autowired private StatsComponent statsComponent;
 
   @MockBean private IStatsDAO iStatsDAO;
 
@@ -34,7 +34,7 @@ public class StatsServiceTest {
 
     when(iStatsDAO.selectAppDistinctDate(user.getId())).thenReturn(dates);
 
-    List<LocalDate> distinctDates = statsService.getDistinctDates(user);
+    List<LocalDate> distinctDates = statsComponent.getDistinctDates(user);
 
     assertEquals(2, distinctDates.size());
     assertTrue(distinctDates.contains(date1));
@@ -55,7 +55,7 @@ public class StatsServiceTest {
 
     when(iStatsDAO.findStatsEntitiesByWalletId(walletId)).thenReturn(statsEntities);
 
-    List<Stats> stats = statsService.getStatsByWallet(walletId);
+    List<Stats> stats = statsComponent.getStatsByWallet(walletId);
 
     assertEquals(1, stats.size());
     assertEquals(1L, stats.get(0).getId());

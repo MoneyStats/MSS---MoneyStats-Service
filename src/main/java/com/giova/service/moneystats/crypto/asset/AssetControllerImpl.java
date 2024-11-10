@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.crypto.asset;
 
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -40,8 +39,8 @@ public class AssetControllerImpl implements AssetController {
    * @return Asset List
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> getAllAssets(String token) throws UtilsException {
-    return assetService.getAssets();
+  public ResponseEntity<Response> getAllAssets(String token, Boolean includeOperations) {
+    return assetService.getAssets(includeOperations);
   }
 
   /**

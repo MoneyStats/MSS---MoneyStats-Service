@@ -63,5 +63,5 @@ public interface IAssetDAO extends JpaRepository<AssetEntity, Long> {
    * @param userId o the user
    * @return AssetEntities
    */
-  List<AssetEntity> findAllByUserIdOrderByRank(Long userId);
+  List<AssetEntity> findAllByUserIdOrderByRank(@Param("userId") Long userId);
 }

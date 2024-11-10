@@ -2,7 +2,7 @@ package com.giova.service.moneystats.crypto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.giova.service.moneystats.app.stats.StatsService;
+import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
@@ -46,7 +46,7 @@ public class CryptoService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private WalletService walletService;
-  @Autowired private StatsService statsService;
+  @Autowired private StatsComponent statsComponent;
   @Autowired private CryptoMapper cryptoMapper;
   @Autowired private MarketDataService marketDataService;
   @Autowired private AssetService assetService;
@@ -56,7 +56,7 @@ public class CryptoService {
     List<MarketData> marketData =
         marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
 
-    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+    List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
     List<LocalDate> filter = new ArrayList<>();
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = 0;
@@ -96,7 +96,7 @@ public class CryptoService {
   public ResponseEntity<Response> getCryptoResumeData() {
     List<MarketData> marketData =
         marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
-    List<LocalDate> getAllDates = statsService.getCryptoDistinctDates(user);
+    List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
     Map<String, CryptoDashboard> getData = new HashMap<>();
     int thisYear = LocalDate.now().getYear();
     if (!getAllDates.isEmpty()) {
@@ -358,7 +358,7 @@ public class CryptoService {
   private List<Asset> getCryptoAssetsList(Boolean isResume, Integer year) {
     List<Asset> assets =
         objectMapper.convertValue(
-            Objects.requireNonNull(assetService.getAssets().getBody()).getData(),
+            Objects.requireNonNull(assetService.getAssets(true).getBody()).getData(),
             new TypeReference<List<Asset>>() {});
 
     List<Asset> filterAsset = new ArrayList<>();
