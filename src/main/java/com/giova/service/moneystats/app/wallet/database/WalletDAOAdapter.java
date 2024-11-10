@@ -72,4 +72,16 @@ public class WalletDAOAdapter implements WalletRepository {
   public List<WalletEntity> saveAll(List<WalletEntity> walletEntities) {
     return iWalletDAO.saveAll(walletEntities);
   }
+
+  /**
+   * Find all Wallet Crypto
+   *
+   * @param userId of the wallet
+   * @param category Crypto category default
+   * @return Wallet founded
+   */
+  @Override
+  public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
+    return iWalletDAO.findAllByUserIdAndCategory(userId, category);
+  }
 }

@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.app.wallet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.model.Category;
@@ -25,7 +24,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -259,88 +257,5 @@ public class WalletMapper {
               return wallet;
             }))
         .toList();
-  }
-
-  /* @important OLD DATA */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Wallet> fromWalletEntitiesToWallets(
-      List<WalletEntity> walletEntities, Boolean live, List<LocalDate> getAllCryptoDates) {
-    ForexData forex = null;
-    if (live)
-      forex = forexDataService.getForexDataByCurrency(user.getSettings().getCryptoCurrency());
-    ForexData finalForex = forex;
-    AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
-    return walletEntities.stream()
-        .map(
-            (walletEntity -> {
-              Wallet wallet = new Wallet();
-              BeanUtils.copyProperties(walletEntity, wallet);
-              if (walletEntity.getInfo() != null) {
-                try {
-                  wallet.setInfo(
-                      mapper.readValue(
-                          walletEntity.getInfo(), new TypeReference<Map<String, String>>() {}));
-                } catch (JsonProcessingException e) {
-                  throw new RuntimeException(e);
-                }
-              }
-              if (walletEntity.getHistory() != null && !walletEntity.getHistory().isEmpty()) {
-                lastBalance.set(
-                    walletEntity
-                        .getHistory()
-                        .get(walletEntity.getHistory().size() - 1)
-                        .getBalance());
-                wallet.setHistory(
-                    walletEntity.getHistory().stream()
-                        .map(
-                            statsEntity -> {
-                              Stats stats = new Stats();
-                              BeanUtils.copyProperties(statsEntity, stats);
-                              return stats;
-                            })
-                        .collect(Collectors.toList()));
-              }
-              if (walletEntity.getAssets() != null) {
-                List<MarketData> marketData =
-                    marketDataService.getMarketDataOLD(user.getSettings().getCryptoCurrency());
-                wallet.setAssets(
-                    assetMapper.fromAssetEntitiesToAssets(
-                        walletEntity.getAssets(), marketData, getAllCryptoDates));
-              }
-              if (live) setLivePriceInWallet(wallet, finalForex, lastBalance);
-              return wallet;
-            }))
-        .collect(Collectors.toList());
-  }
-
-  private void setLivePriceInWallet(
-      Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance) {
-    if (Utilities.isNullOrEmpty(forex) || Utilities.isNullOrEmpty(wallet.getAssets())) return;
-    // if (user.getSettings().getCryptoCurrency().equalsIgnoreCase(user.getSettings().getCurrency())
-    //    || !wallet.getCategory().equalsIgnoreCase("Crypto")) return;
-
-    if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
-    AtomicReference<Double> balance = new AtomicReference<>(0D);
-    wallet.getAssets().forEach(asset -> balance.updateAndGet(v -> v + asset.getValue()));
-    double converter = forex.getQuotes().get(user.getSettings().getCurrency());
-    wallet.setBalance(MathService.round(balance.get() * converter, 2));
-    wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
-    wallet.setPerformanceLastStats(
-        wallet.getBalance() == 0 && lastBalance.get() == 0
-            ? 0D
-            : MathService.round(
-                ((wallet.getBalance() - lastBalance.get()) / lastBalance.get()) * 100, 2));
-    if (wallet.getBalance() > wallet.getHighPrice()) {
-      wallet.setHighPrice(wallet.getBalance());
-      wallet.setHighPriceDate(LocalDate.now());
-    }
-    if (wallet.getBalance() < wallet.getLowPrice()) {
-      wallet.setLowPrice(wallet.getBalance());
-      wallet.setLowPriceDate(LocalDate.now());
-    }
-    if (wallet.getBalance() > wallet.getAllTimeHigh()) {
-      wallet.setAllTimeHigh(wallet.getBalance());
-      wallet.setAllTimeHighDate(LocalDate.now());
-    }
   }
 }

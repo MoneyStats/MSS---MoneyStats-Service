@@ -11,8 +11,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -23,6 +21,7 @@ public class WalletCacheService implements WalletRepository {
   public static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
   /* END OLD DATA */
   private static final String CACHE_WALLETS_WITHOUT_DATA = "_wallets_without_assets_and_history";
+  private static final String CACHE_FULL_CRYPTO_WALLET_LIST = "_full_crypto_wallets_list";
   private static final String CACHE_FULL_WALLET_LIST = "_full_wallets_list";
   private static final String CACHE_WALLET_BY_ID = "_wallet_";
 
@@ -158,6 +157,35 @@ public class WalletCacheService implements WalletRepository {
   }
 
   /**
+   * Find all Wallet Crypto
+   *
+   * @param userId of the wallet
+   * @param category Crypto category default
+   * @return Wallet founded
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
+    LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
+    String cacheKey = userId + CACHE_FULL_CRYPTO_WALLET_LIST;
+    try {
+      return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
+          .orElseGet(
+              () -> {
+                LOG.info("[Caching] Full Crypto Wallet into Database for userId {}", userId);
+                List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
+
+                if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
+                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
+                }
+                return wallets;
+              });
+    } catch (Exception e) {
+      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
+      return walletDAO.findAllByUserIdAndCategory(userId, category);
+    }
+  }
+
+  /**
    * Method to delete the cache of the wallets of the user. Even if you update just a wallet we need
    * to delete the cache of al the wallet inorder to get fresh data.
    *
@@ -201,15 +229,5 @@ public class WalletCacheService implements WalletRepository {
     CacheUtils.clearCache(walletEntityTemplate, "wallet data");
     CacheUtils.clearCache(walletEntitiesTemplate, "wallet entities data");
     LOG.info("Finished clearing wallet data cache.");
-  }
-
-  /* OLD DATA */
-  @Caching(
-      cacheable =
-          @Cacheable(value = CRYPTO_WALLET_CACHE, key = "#userId", condition = "#userId!=null"))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
-    LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
-    return walletDAO.findAllByUserIdAndCategory(userId, category);
   }
 }

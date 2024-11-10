@@ -12,7 +12,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.math.MathService;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -148,21 +147,6 @@ public class MarketDataService {
 
               return cryptocurrency;
             });
-  }
-
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<MarketData> getMarketDataOLD(String currency) {
-    LOG.info("Getting MarketData from Database for {}", currency);
-    List<MarketDataEntity> getMarketData = marketDataCacheService.findAllByCurrency(currency);
-
-    if (getMarketData.isEmpty()) {
-      LOG.error("No MarketData found");
-      return new ArrayList<>();
-    }
-    return MarketDataMapper.fromEntityToMarketData(getMarketData).stream()
-        .sorted(Comparator.comparing(MarketData::getRank))
-        .collect(Collectors.toList());
   }
 
   private List<Integer> getPage(Integer quantity) {

@@ -51,4 +51,13 @@ public interface WalletRepository {
    * @return wallet saved
    */
   List<WalletEntity> saveAll(List<WalletEntity> walletEntities);
+
+  /**
+   * Find all Wallet Crypto
+   *
+   * @param userId of the wallet
+   * @param category Crypto category default
+   * @return Wallet founded
+   */
+  List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
 }

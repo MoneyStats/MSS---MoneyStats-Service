@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.app.stats.StatsComponent;
@@ -17,7 +18,6 @@ import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
-import com.giova.service.moneystats.settings.dto.Status;
 import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -25,11 +25,13 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -349,52 +351,32 @@ public class WalletService {
     walletRepository.deleteAllByUserId(user.getId());
   }
 
-  /* OLD DATA */
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getWallets() throws UtilsException {
-    List<WalletEntity> walletEntity = walletCacheService.findAllByUserId(user.getId());
-
-    String message = "";
-    if (walletEntity.isEmpty()) {
-      message = "Wallet Empty, insert new Wallet to get it!";
-    } else {
-      message = "Found " + walletEntity.size() + " Wallets";
-    }
-    Boolean isLiveWallet =
-        user.getSettings().getLiveWallets() != null
-            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
-
-    List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
-    List<Wallet> walletToReturn =
-        walletMapper.fromWalletEntitiesToWallets(walletEntity, isLiveWallet, getAllCryptoDates);
-
-    Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
-    return ResponseEntity.ok(response);
-  }
-
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoWallets(Boolean live) throws UtilsException {
-    // UserEntity user = authService.checkLogin(authToken);
     String CRYPTO = "Crypto";
 
-    List<WalletEntity> walletEntity =
-        walletCacheService.findAllByUserIdAndCategory(user.getId(), CRYPTO);
+    Boolean isLiveWallet = Utils.isLiveWallet(live, user);
+    List<Wallet> wallets = new ArrayList<>();
 
-    String message = "";
-    if (walletEntity.isEmpty()) {
-      message = "Crypto Wallet Empty, insert new Crypto Wallet to get it!";
-    } else {
-      message = "Found " + walletEntity.size() + " Crypto Wallets";
+    ResponseEntity<Response> responseEntityWallet = getAllWallets(isLiveWallet, false, true, true);
+    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
+        && !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData())) {
+      wallets =
+          Mapper.convertObject(
+              responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
+      wallets =
+          wallets.stream().filter(wallet -> wallet.getCategory().equalsIgnoreCase(CRYPTO)).toList();
     }
 
-    List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
-    List<Wallet> walletToReturn =
-        walletMapper.fromWalletEntitiesToWallets(walletEntity, live, getAllCryptoDates);
+    String message = "";
+    if (wallets.isEmpty()) {
+      message = "Crypto Wallet Empty, insert new Crypto Wallet to get it!";
+    } else {
+      message = "Found " + wallets.size() + " Crypto Wallets";
+    }
 
     Response response =
-        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), walletToReturn);
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), wallets);
     return ResponseEntity.ok(response);
   }
 }

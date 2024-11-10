@@ -108,78 +108,69 @@ public class AppService {
     return ResponseEntity.ok(response);
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getHistoryData() {
     LOG.info("Starting getting history data for dashboard for user {}", user.getUsername());
+
     Map<String, Dashboard> dashboardHashMap = new HashMap<>();
-    List<LocalDate> getAllDates = statsComponent.getDistinctDates(user);
+    List<LocalDate> allDates = statsComponent.getDistinctDates(user);
+    List<Integer> distinctYears =
+        allDates.stream()
+            .map(LocalDate::getYear)
+            .distinct()
+            .sorted(Collections.reverseOrder())
+            .toList();
 
-    List<Integer> distinctDatesByYear =
-        getAllDates.stream().map(LocalDate::getYear).distinct().toList();
-
-    ResponseEntity<Response> responseEntityWallet =
+    ResponseEntity<Response> responseWallets =
         walletService.getAllWallets(null, true, false, false);
-    List<Wallet> getAllWallet = new ArrayList<>();
-    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-        & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
-      getAllWallet =
-          Mapper.convertObject(
-              responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
+    List<Wallet> wallets =
+        Optional.ofNullable(responseWallets.getBody())
+            .map(Response::getData)
+            .map(data -> Mapper.convertObject(data, new TypeReference<List<Wallet>>() {}))
+            .orElse(Collections.emptyList());
 
-    AtomicInteger index = new AtomicInteger(0);
-    List<Wallet> finalGetAllWallet = getAllWallet;
-    distinctDatesByYear.stream()
-        .sorted(Collections.reverseOrder())
-        .toList()
-        .forEach(
-            year -> {
-              // Filtro le date secondo l'anno
-              List<LocalDate> filterDateByYear =
-                  getAllDates.stream().filter(d -> d.getYear() == year).toList();
-              Dashboard dashboard = new Dashboard();
-              AtomicReference<Double> balance = new AtomicReference<>(0D);
-              AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
+    boolean isLiveWalletActive =
+        Status.ACTIVE.name().equalsIgnoreCase(user.getSettings().getLiveWallets());
+    AtomicInteger yearIndex = new AtomicInteger(0);
 
-              finalGetAllWallet.forEach(
-                  wallet -> {
-                    List<Stats> listFilter =
-                        wallet.getHistory() != null
-                            ? wallet.getHistory().stream()
-                                .filter(h -> h.getDate().getYear() == year)
-                                .toList()
-                            : Collections.emptyList();
+    distinctYears.forEach(
+        year -> {
+          List<LocalDate> datesByYear = allDates.stream().filter(d -> d.getYear() == year).toList();
+          Dashboard dashboard = new Dashboard();
+          AtomicReference<Double> balance = new AtomicReference<>(0D);
+          AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
 
-                    if (index.get() == 0
-                        && user.getSettings().getLiveWallets() != null
-                        && user.getSettings()
-                            .getLiveWallets()
-                            .equalsIgnoreCase(Status.ACTIVE.name()))
-                      balance.updateAndGet(b -> b + wallet.getBalance());
+          wallets.forEach(
+              wallet -> {
+                List<Stats> yearlyStats =
+                    Optional.ofNullable(wallet.getHistory())
+                        .map(
+                            history ->
+                                history.stream()
+                                    .filter(h -> h.getDate().getYear() == year)
+                                    .toList())
+                        .orElse(Collections.emptyList());
 
-                    if (!listFilter.isEmpty()) {
-                      if (index.get() != 0) {
-                        AppMapper.updateBalance(listFilter, filterDateByYear, balance);
-                        AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
-                      } else {
-                        if (!Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
-                            && user.getSettings()
-                                .getLiveWallets()
-                                .equalsIgnoreCase(Status.ACTIVE.name()))
-                          AppMapper.updateBalance(listFilter, filterDateByYear, lastBalance);
-                        else {
-                          AppMapper.updateBalance(listFilter, filterDateByYear, balance);
-                          AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
-                        }
-                      }
-                    }
-                  });
+                if (yearIndex.get() == 0 && isLiveWalletActive) {
+                  balance.updateAndGet(b -> b + wallet.getBalance());
+                }
 
-              AppMapper.mapDashboardBalanceAndPerformance(dashboard, balance, lastBalance, null);
-              index.incrementAndGet();
-              dashboardHashMap.put(String.valueOf(year), dashboard);
-            });
+                if (!yearlyStats.isEmpty()) {
+                  if (yearIndex.get() != 0 || !isLiveWalletActive) {
+                    AppMapper.updateBalance(yearlyStats, datesByYear, balance);
+                    AppMapper.updateLastBalance(yearlyStats, datesByYear, lastBalance);
+                  } else {
+                    AppMapper.updateBalance(yearlyStats, datesByYear, lastBalance);
+                  }
+                }
+              });
+
+          AppMapper.mapDashboardBalanceAndPerformance(dashboard, balance, lastBalance, null);
+          dashboardHashMap.put(String.valueOf(year), dashboard);
+          yearIndex.incrementAndGet();
+        });
 
     String message = "Data for History!";
-
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), dashboardHashMap);
     return ResponseEntity.ok(response);
