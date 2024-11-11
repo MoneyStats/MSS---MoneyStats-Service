@@ -1,14 +1,12 @@
 package com.giova.service.moneystats.crypto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
-import com.giova.service.moneystats.crypto.asset.AssetService;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
@@ -46,11 +44,9 @@ public class CryptoService {
   private static final String BTC_SYMBOL = "BTC";
   private final UserEntity user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private WalletService walletService;
   @Autowired private StatsComponent statsComponent;
   @Autowired private MarketDataService marketDataService;
-  @Autowired private AssetService assetService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getCryptoDashboardData() {
@@ -59,14 +55,15 @@ public class CryptoService {
 
     List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
     List<LocalDate> filter;
-    Map<String, CryptoDashboard> getData = new HashMap<>();
-    int thisYear = 0;
+    CryptoDashboard dashboard = new CryptoDashboard();
     if (!getAllDates.isEmpty()) {
       int currentYear = getAllDates.getLast().getYear();
       filter = getAllDates.stream().filter(d -> d.getYear() == currentYear).toList();
 
-      thisYear = currentYear;
-      getData = mapDashBoard(filter, marketData, false);
+      Map<String, CryptoDashboard> getData = mapDashBoard(filter, marketData, false);
+      if (!Utilities.isNullOrEmpty(getData)) {
+        dashboard = getData.get(String.valueOf(currentYear));
+      }
     } else {
       List<Wallet> getAllWallet = new ArrayList<>();
       ResponseEntity<Response> responseEntityWallet = walletService.getCryptoWallets(false);
@@ -75,35 +72,46 @@ public class CryptoService {
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
-      CryptoDashboard dashboard =
+      dashboard =
           CryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
               getCryptoAssetsList(false, null, getAllWallet, null, null),
               getAssetValue(marketData, BTC_SYMBOL));
-      getData.put(String.valueOf(thisYear), dashboard);
     }
+
+    dashboard.setWallets(null);
 
     String message = "Data for Crypto Dashboard!";
 
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            TraceUtils.getSpanID(),
-            getData.get(String.valueOf(thisYear)));
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), dashboard);
     return ResponseEntity.ok(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getCryptoResumeData() {
+  public ResponseEntity<Response> getCryptoResumeData(Long year) {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
     Map<String, CryptoDashboard> getData = new HashMap<>();
+    CryptoDashboard dashboard = new CryptoDashboard();
     int thisYear = LocalDate.now().getYear();
     if (!getAllDates.isEmpty()) {
-      getData = mapDashBoard(getAllDates, marketData, true);
+      List<LocalDate> filterDateByYear =
+          getAllDates.stream().filter(localDate -> localDate.getYear() == year).toList();
+      Map<String, CryptoDashboard> getDataProvision =
+          mapDashBoard(filterDateByYear, marketData, true);
+      if (!Utilities.isNullOrEmpty(getDataProvision)) {
+        dashboard = getDataProvision.get(String.valueOf(year));
+      }
+      dashboard.setYearsWalletStats(
+          getAllDates.stream()
+              .map(LocalDate::getYear)
+              .distinct()
+              .sorted(Collections.reverseOrder())
+              .toList());
+      getData.put(String.valueOf(year), dashboard);
     } else {
       List<Wallet> getAllWallet = new ArrayList<>();
       ResponseEntity<Response> responseEntityWallet = walletService.getCryptoWallets(false);
@@ -112,7 +120,7 @@ public class CryptoService {
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
-      CryptoDashboard dashboard =
+      dashboard =
           CryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
@@ -169,19 +177,20 @@ public class CryptoService {
               AtomicInteger indexWallet = new AtomicInteger(0);
 
               List<Wallet> filterWallet =
-                  filterHistoryWallet(
-                      finalGetAllWallet,
-                      balance,
-                      holdingBalance,
-                      initialBalance,
-                      lastBalance,
-                      holdingLastBalance,
-                      index,
-                      indexWallet,
-                      filterDateByYear,
-                      year,
-                      tradingBalance,
-                      tradingLastBalance);
+                  new ArrayList<>(
+                      filterHistoryWallet(
+                          finalGetAllWallet,
+                          balance,
+                          holdingBalance,
+                          initialBalance,
+                          lastBalance,
+                          holdingLastBalance,
+                          index,
+                          indexWallet,
+                          filterDateByYear,
+                          year,
+                          tradingBalance,
+                          tradingLastBalance));
 
               // dashboard.setAssets(getCryptoAsset(filterWallet, marketData, isResume));
               dashboard.setAssets(
@@ -313,7 +322,10 @@ public class CryptoService {
               }
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
-              List<Asset> filterAsset = wallet1.getAssets();
+              List<Asset> filterAsset =
+                  !Utilities.isNullOrEmpty(wallet1.getAssets())
+                      ? new ArrayList<>(wallet1.getAssets())
+                      : null;
               if (filterAsset != null && index.get() > 0) {
                 filterAsset.removeIf(hasEmptyStats);
                 wallet1.setAssets(filterAsset);
@@ -349,6 +361,59 @@ public class CryptoService {
       List<MarketData> marketData,
       List<LocalDate> getAllDates) {
 
+    // Raccolgo tutti gli asset dai wallet
+    List<Asset> assets =
+        walletList.stream()
+            .filter(wallet -> !Utilities.isNullOrEmpty(wallet.getAssets()))
+            .flatMap(wallet -> wallet.getAssets().stream())
+            .toList();
+
+    // Mappa gli asset con marketData e getAllDates
+    assets = AssetMapper.mapAssetList(assets, marketData, getAllDates);
+
+    // Applica i filtri sugli asset
+    List<Asset> filteredAssets =
+        new ArrayList<>(
+            assets.stream()
+                .map(
+                    asset -> {
+                      Asset newAsset = new Asset();
+                      BeanUtils.copyProperties(asset, newAsset);
+
+                      if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+                        if (!isResume) {
+                          // Se non è resume, mantieni solo l'ultima entry della history
+                          Stats latestStats = asset.getHistory().get(asset.getHistory().size() - 1);
+                          newAsset.setHistory(List.of(latestStats));
+                        } else if (year != null) {
+                          // Se è resume e un anno è specificato, filtra gli Stats per l'anno dato
+                          List<Stats> filteredHistory =
+                              asset.getHistory().stream()
+                                  .filter(stats -> stats.getDate().getYear() == year)
+                                  .toList();
+                          newAsset.setHistory(filteredHistory);
+                        }
+                      }
+
+                      return newAsset;
+                    })
+                .toList());
+
+    // Se è resume, rimuovi gli asset senza history
+    if (isResume) {
+      filteredAssets.removeIf(asset -> Utilities.isNullOrEmpty(asset.getHistory()));
+    }
+
+    return filteredAssets;
+  }
+
+  private List<Asset> getCryptoAssetsListOLD(
+      Boolean isResume,
+      Integer year,
+      List<Wallet> walletList,
+      List<MarketData> marketData,
+      List<LocalDate> getAllDates) {
+
     List<Asset> assets = new ArrayList<>();
     List<Asset> finalAssets = assets;
     walletList.stream()
@@ -372,7 +437,9 @@ public class CryptoService {
           // come parametro
           if (isResume && year != null && newAsset.getHistory() != null) {
             Predicate<Stats> hasNotYearStats = stats -> stats.getDate().getYear() != year;
-            newAsset.getHistory().removeIf(hasNotYearStats);
+            List<Stats> histories = new ArrayList<>(newAsset.getHistory());
+            histories.removeIf(hasNotYearStats);
+            newAsset.setHistory(histories);
           }
           filterAsset.add(newAsset);
         });

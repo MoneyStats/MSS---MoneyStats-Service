@@ -1,14 +1,12 @@
 package com.giova.service.moneystats.app.wallet;
 
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +31,7 @@ public class WalletControllerImpl implements WalletController {
    * @return List of Wallets
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getAllWallet(
       String token,
       Boolean live,
@@ -51,6 +50,7 @@ public class WalletControllerImpl implements WalletController {
    * @return List of Wallets
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getWallet(String token, Boolean live, Long id) {
     return walletService.getWalletById(live, id);
   }
@@ -63,6 +63,7 @@ public class WalletControllerImpl implements WalletController {
    * @return The Wallet added
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> addWallet(Wallet wallet, String token) {
     return walletService.addWallet(wallet);
   }
@@ -75,6 +76,7 @@ public class WalletControllerImpl implements WalletController {
    * @return The Wallet update
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> updateWallet(Wallet wallet, Boolean live, String token) {
     return walletService.updateWallet(wallet, live);
   }
@@ -87,20 +89,21 @@ public class WalletControllerImpl implements WalletController {
    * @return The Wallet deleted
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> deleteWallet(Long id, String token) {
     return walletService.deleteWallet(id);
   }
 
-  /* OLD DATA */
+  /**
+   * Getting all Crypto Wallets
+   *
+   * @param token of the user
+   * @param live price data
+   * @return Wallet Response
+   */
   @Override
-  @Deprecated
-  public ResponseEntity<Response> listCryptoWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestParam(value = "live", required = false, defaultValue = "true")
-          @Schema(description = "Live Price")
-          Boolean live)
-      throws UtilsException {
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> listCryptoWallet(String token, Boolean live) {
     return walletService.getCryptoWallets(live);
   }
 }

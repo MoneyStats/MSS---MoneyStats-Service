@@ -9,7 +9,6 @@ import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -74,7 +73,7 @@ public class AppService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getResumeData(Long year) throws UtilsException {
+  public ResponseEntity<Response> getResumeData(Long year) {
     LOG.info("Starting getting resume data for dashboard for user {}", user.getUsername());
     List<LocalDate> getAllDates = statsComponent.getDistinctDates(user);
     Map<String, Dashboard> getData = new HashMap<>();
@@ -86,7 +85,12 @@ public class AppService {
       if (!Utilities.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }
-      dashboard.setStatsWalletDays(getAllDates);
+      dashboard.setYearsWalletStats(
+          getAllDates.stream()
+              .map(LocalDate::getYear)
+              .distinct()
+              .sorted(Collections.reverseOrder())
+              .toList());
       getData.put(String.valueOf(year), dashboard);
     } else {
       List<Wallet> getAllWallet = Collections.emptyList();

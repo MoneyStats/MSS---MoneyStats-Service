@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -61,7 +62,7 @@ public class CryptoController {
     return appService.getCryptoDashboardData();
   }
 
-  @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/resume/{year}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get Crypto Resume", summary = "Crypto Resume", tags = "Crypto")
   @ApiResponse(
       responseCode = "200",
@@ -89,9 +90,16 @@ public class CryptoController {
               examples = @ExampleObject(value = "@expired-jwe.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getCryptoResume(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken) {
-    return appService.getCryptoResumeData();
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @PathVariable(value = "year")
+          @Schema(description = "Year of the data to be searched", example = "2024")
+          @Valid
+          @NotNull(message = "Year is a required field")
+          Long year) {
+    return appService.getCryptoResumeData(year);
   }
 
   @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)

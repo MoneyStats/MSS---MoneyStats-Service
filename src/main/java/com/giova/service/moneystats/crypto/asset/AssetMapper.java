@@ -287,7 +287,9 @@ public class AssetMapper {
                   Stats newStatsToAdd = new Stats();
                   BeanUtils.copyProperties(newStats, newStatsToAdd);
                   newStatsToAdd.setId(null);
-                  existingAsset.getHistory().add(newStatsToAdd);
+                  List<Stats> histories = new ArrayList<>(existingAsset.getHistory());
+                  histories.add(newStatsToAdd);
+                  existingAsset.setHistory(histories);
                 }
               });
     }

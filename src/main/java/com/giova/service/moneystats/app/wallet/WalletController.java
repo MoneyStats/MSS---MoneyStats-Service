@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -182,7 +181,6 @@ public interface WalletController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@invalid-token-exception.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> updateWallet(
       @RequestBody @Valid @Schema(description = "Wallet To Update", implementation = Wallet.class)
           Wallet wallet,
@@ -224,7 +222,6 @@ public interface WalletController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@invalid-token-exception.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> deleteWallet(
       @PathVariable(value = "id")
           @Schema(description = "Id of the Wallet to be deleted", example = "1")
@@ -236,8 +233,14 @@ public interface WalletController {
           @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
           String token);
 
-  /* OLD DATA */
-  @GetMapping(value = "/wallet/crypto/list", produces = MediaType.APPLICATION_JSON_VALUE)
+  /**
+   * Getting all Crypto Wallets
+   *
+   * @param token of the user
+   * @param live price data
+   * @return Wallet Response
+   */
+  @GetMapping(value = "/wallets/crypto", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to get all Crypto wallet",
       summary = "List of Crypto Wallet",
@@ -252,26 +255,18 @@ public interface WalletController {
               examples = @ExampleObject(value = "@wallets-full-list_response.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> listCryptoWallet(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken,
-      @RequestParam(value = "live", required = false, defaultValue = "true")
-          @Schema(description = "Live Price")
-          Boolean live)
-      throws UtilsException;
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  ResponseEntity<Response> listCryptoWallet(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @RequestParam(value = "live", required = false)
+          @Schema(description = "Live Price", example = "true")
+          Boolean live);
 }

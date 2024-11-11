@@ -24,6 +24,9 @@ public class Dashboard {
   private Double lastStatsBalanceDifference;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private List<Integer> yearsWalletStats;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<LocalDate> statsWalletDays;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
