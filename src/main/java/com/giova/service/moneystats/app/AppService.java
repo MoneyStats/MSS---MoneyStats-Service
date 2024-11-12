@@ -81,7 +81,9 @@ public class AppService {
     if (!getAllDates.isEmpty()) {
       List<LocalDate> filterDateByYear =
           getAllDates.stream().filter(localDate -> localDate.getYear() == year).toList();
-      Map<String, Dashboard> getDataProvision = mapDashBoard(filterDateByYear, true);
+      LocalDate today = LocalDate.now();
+      Map<String, Dashboard> getDataProvision =
+          mapDashBoard(filterDateByYear, (today.getYear() != year));
       if (!Utilities.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }

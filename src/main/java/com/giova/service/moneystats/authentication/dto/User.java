@@ -18,11 +18,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User extends GenericDTO {
-  @NotNull @UpperCamelCase private String name;
+  @NotNull(message = "Name cannot be Null")
+  @UpperCamelCase
+  private String name;
+
   @NotNull @UpperCamelCase private String surname;
   @NotNull @LowerCase private String email;
   @NotNull @LowerCase private String username;
-  @NotNull private String password;
+  private String password;
   private UserRole role;
   @NotNull private String profilePhoto;
   private String imgName;
