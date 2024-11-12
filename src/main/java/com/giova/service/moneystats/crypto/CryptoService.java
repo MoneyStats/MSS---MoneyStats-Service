@@ -13,7 +13,6 @@ import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -137,7 +136,7 @@ public class CryptoService {
   }
 
   private Map<String, CryptoDashboard> mapDashBoard(
-      List<LocalDate> dates, List<MarketData> marketData, Boolean isResume) throws UtilsException {
+      List<LocalDate> dates, List<MarketData> marketData, Boolean isResume) {
     Map<String, CryptoDashboard> response = new HashMap<>();
 
     List<Integer> distinctDatesByYear = dates.stream().map(LocalDate::getYear).distinct().toList();
