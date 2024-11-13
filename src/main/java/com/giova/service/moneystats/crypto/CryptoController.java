@@ -102,6 +102,41 @@ public class CryptoController {
     return appService.getCryptoResumeData(year);
   }
 
+  @GetMapping(value = "/history", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(description = "API to get Crypto Resume", summary = "Crypto Resume", tags = "Crypto")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@crypto-resume.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-jwe.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Expired JWE",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@expired-jwe.json")))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> getCryptoHistory(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token) {
+    return appService.getCryptoHistoryData();
+  }
+
   @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to get Crypto Resume", summary = "Cache Clean", tags = "Crypto")
   @ApiResponse(

@@ -7,6 +7,7 @@ import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
+import com.giova.service.moneystats.crypto.asset.AssetService;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
@@ -44,6 +45,7 @@ public class CryptoService {
   private final UserEntity user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private WalletService walletService;
+  @Autowired private AssetService assetService;
   @Autowired private StatsComponent statsComponent;
   @Autowired private MarketDataService marketDataService;
 
@@ -132,6 +134,69 @@ public class CryptoService {
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), getData);
+    return ResponseEntity.ok(response);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public ResponseEntity<Response> getCryptoHistoryData() {
+    LOG.info("Starting getting history data crypto for user {}", user.getUsername());
+
+    Map<String, CryptoDashboard> dashboardHashMap = new LinkedHashMap<>();
+    List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
+    List<Integer> distinctYears =
+        getAllDates.stream()
+            .map(LocalDate::getYear)
+            .distinct()
+            .sorted(Collections.reverseOrder())
+            .toList();
+
+    ResponseEntity<Response> responseAssets = assetService.getAssets(false);
+    List<Asset> assets =
+        Optional.ofNullable(responseAssets.getBody())
+            .map(Response::getData)
+            .map(data -> Mapper.convertObject(data, new TypeReference<List<Asset>>() {}))
+            .orElse(Collections.emptyList());
+
+    AtomicInteger yearIndex = new AtomicInteger(0);
+
+    distinctYears.forEach(
+        year -> {
+          List<LocalDate> datesByYear =
+              getAllDates.stream().filter(d -> d.getYear() == year).toList();
+          CryptoDashboard dashboard = new CryptoDashboard();
+          AtomicReference<Double> balance = new AtomicReference<>(0D);
+
+          assets.forEach(
+              asset -> {
+                List<Stats> yearlyStats =
+                    Optional.ofNullable(asset.getHistory())
+                        .map(
+                            history ->
+                                history.stream()
+                                    .filter(h -> h.getDate().getYear() == year)
+                                    .toList())
+                        .orElse(Collections.emptyList());
+
+                if (yearIndex.get() == 0) {
+                  balance.updateAndGet(b -> b + asset.getBalance());
+                }
+
+                if (!yearlyStats.isEmpty()) {
+                  if (yearIndex.get() != 0) {
+                    CryptoMapper.updateBalance(
+                        List.of(yearlyStats.getLast()), datesByYear, balance);
+                  }
+                }
+              });
+
+          dashboard.setBalance(MathService.round(balance.get(), 2));
+          dashboardHashMap.put(String.valueOf(year), dashboard);
+          yearIndex.incrementAndGet();
+        });
+
+    String message = "Data for History!";
+    Response response =
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), dashboardHashMap);
     return ResponseEntity.ok(response);
   }
 
