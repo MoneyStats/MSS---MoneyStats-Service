@@ -11,6 +11,7 @@ import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.OperationsMapper;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
@@ -297,7 +298,9 @@ public class AssetMapper {
     if (!Utilities.isNullOrEmpty(newAsset.getOperations())) {
       // Aggiungi logica per aggiungere le nuove operazioni
       if (!Utilities.isNullOrEmpty(existingAsset.getOperations())) {
-        existingAsset.getOperations().addAll(newAsset.getOperations());
+        List<Operations> operations = new ArrayList<>(existingAsset.getOperations());
+        operations.addAll(newAsset.getOperations());
+        existingAsset.setOperations(operations);
       } else {
         existingAsset.setOperations(newAsset.getOperations());
       }

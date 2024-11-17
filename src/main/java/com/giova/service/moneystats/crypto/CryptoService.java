@@ -369,6 +369,17 @@ public class CryptoService {
 
                               checkAndMapWalletInThePast(
                                   index, listFilter, filterDateByYear, wallet1);
+
+                              if (!Utilities.isNullOrEmpty(asset1.getOperations()))
+                                asset1.setOperations(
+                                    new ArrayList<>(asset1.getOperations())
+                                        .stream()
+                                            .filter(
+                                                o ->
+                                                    (Utilities.isNullOrEmpty(o.getExitDate())
+                                                            && o.getEntryDate().getYear() <= year)
+                                                        || o.getEntryDate().getYear() == year)
+                                            .toList());
                               return asset1;
                             })
                         .toList());
@@ -382,7 +393,8 @@ public class CryptoService {
                 operations.sort(c);
 
                 tradingLastBalance.updateAndGet(
-                    v -> ObjectUtils.isEmpty(operations) ? v : v + operations.get(0).getTrend());
+                    v ->
+                        ObjectUtils.isEmpty(operations) ? v : v + operations.getFirst().getTrend());
               }
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
