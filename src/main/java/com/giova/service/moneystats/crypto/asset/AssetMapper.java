@@ -114,15 +114,20 @@ public class AssetMapper {
     if (marketData.isEmpty()) {
       return 1D;
     } else {
-      return MathService.round(
+      double current_price =
           marketData.stream()
               .filter(
                   marketData1 ->
                       marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
               .findFirst()
               .map(MarketData::getCurrent_price)
-              .orElse(1D),
-          2);
+              .orElse(1D);
+      final double THRESHOLD = 1;
+      if (current_price < THRESHOLD && current_price > 0) {
+        return current_price;
+      } else {
+        return MathService.round(current_price, 2);
+      }
     }
   }
 
