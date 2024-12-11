@@ -111,7 +111,7 @@ public class AssetMapper {
   }
 
   private static Double getAssetValue(List<MarketData> marketData, Asset asset) {
-    if (marketData.isEmpty()) {
+    if (Utilities.isNullOrEmpty(marketData) || marketData.isEmpty()) {
       return 1D;
     } else {
       double current_price =

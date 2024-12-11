@@ -39,8 +39,8 @@ public class StatsService {
         wallets.stream()
             .peek(
                 wallet -> {
-                  // Response res = walletService.addOrUpdateWallet(wallet, false, null).getBody();
-                  Response res = null;
+                  Response res = walletService.addOrUpdateWallet(wallet, false, null).getBody();
+                  // Response res = null;
                   List<Stats> statsList = new ArrayList<>();
                   if (!Utilities.isNullOrEmpty(res) && !Utilities.isNullOrEmpty(res.getData())) {
                     Wallet w = Mapper.convertObject(res.getData(), Wallet.class);
