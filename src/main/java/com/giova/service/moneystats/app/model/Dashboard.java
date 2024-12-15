@@ -31,4 +31,6 @@ public class Dashboard {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Wallet> wallets;
+
+  private Boolean hasMoreRecords;
 }

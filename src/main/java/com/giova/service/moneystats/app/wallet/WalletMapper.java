@@ -96,7 +96,7 @@ public class WalletMapper {
     wallet.setBalance(MathService.round(balance.get() * converter, 2));
     wallet.setDifferenceLastStats(MathService.round(wallet.getBalance() - lastBalance.get(), 2));
     wallet.setPerformanceLastStats(
-        wallet.getBalance() == 0 && lastBalance.get() == 0
+        wallet.getBalance() == 0 || lastBalance.get() == 0
             ? 0D
             : MathService.round(
                 ((wallet.getBalance() - lastBalance.get()) / lastBalance.get()) * 100, 2));

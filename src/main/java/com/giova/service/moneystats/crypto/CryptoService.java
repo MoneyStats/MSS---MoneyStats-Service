@@ -77,7 +77,7 @@ public class CryptoService {
           CryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
-              getCryptoAssetsList(false, null, getAllWallet, null, null),
+              getCryptoAssetsList(false, null, getAllWallet, marketData, null),
               getAssetValue(marketData, BTC_SYMBOL));
     }
 
@@ -125,7 +125,7 @@ public class CryptoService {
           CryptoMapper.mapCryptoDashboardWithoutStats(
               user.getSettings().getCryptoCurrency(),
               getAllWallet,
-              getCryptoAssetsList(true, null, getAllWallet, null, null),
+              getCryptoAssetsList(false, null, getAllWallet, marketData, null),
               getAssetValue(marketData, BTC_SYMBOL));
       getData.put(String.valueOf(thisYear), dashboard);
     }
@@ -178,7 +178,7 @@ public class CryptoService {
                         .orElse(Collections.emptyList());
 
                 if (yearIndex.get() == 0) {
-                  balance.updateAndGet(b -> b + asset.getBalance());
+                  balance.updateAndGet(b -> b + asset.getValue());
                 }
 
                 if (!yearlyStats.isEmpty()) {
@@ -459,7 +459,7 @@ public class CryptoService {
                       if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
                         if (!isResume) {
                           // Se non è resume, mantieni solo l'ultima entry della history
-                          Stats latestStats = asset.getHistory().get(asset.getHistory().size() - 1);
+                          Stats latestStats = asset.getHistory().getLast();
                           newAsset.setHistory(List.of(latestStats));
                         } else if (year != null) {
                           // Se è resume e un anno è specificato, filtra gli Stats per l'anno dato

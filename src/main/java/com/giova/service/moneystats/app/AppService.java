@@ -81,12 +81,15 @@ public class AppService {
     if (!getAllDates.isEmpty()) {
       List<LocalDate> filterDateByYear =
           getAllDates.stream().filter(localDate -> localDate.getYear() == year).toList();
+      boolean hasPreviousYears =
+          getAllDates.stream().anyMatch(localDate -> localDate.getYear() < year);
       LocalDate today = LocalDate.now();
       Map<String, Dashboard> getDataProvision =
           mapDashBoard(filterDateByYear, (today.getYear() != year));
       if (!Utilities.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }
+      dashboard.setHasMoreRecords(hasPreviousYears); // Imposta il valore di hasMoreRecords
       dashboard.setYearsWalletStats(
           getAllDates.stream()
               .map(LocalDate::getYear)
@@ -103,6 +106,7 @@ public class AppService {
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
+      dashboard.setHasMoreRecords(false);
       dashboard.setWallets(getAllWallet);
       getData.put(String.valueOf(year), dashboard);
     }
