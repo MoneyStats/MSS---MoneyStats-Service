@@ -76,6 +76,9 @@ rest:
       baseUrl: https://anyapi.io/api
       rates: /v1/exchange/rates
       apiKey: ${REST_CLIENT_ANY_API_TOKEN}
+    access-sphere:
+      baseUrl: http://localhost:8081
+      userInfo: /v1/userInfo
 
 logging:
   config: classpath:logback-spring.xml # classpath:logback-google.xml, classpath:logback-logtail.xml

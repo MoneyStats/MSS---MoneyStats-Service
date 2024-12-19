@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.config;
 
+import com.giova.service.moneystats.api.accessSphere.dto.UserInfoResponse;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.config.OpenAPIConfig;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -35,6 +36,11 @@ public class AppConfig {
   @Bean
   public UserEntity user() {
     return new UserEntity();
+  }
+
+  @Bean
+  public UserInfoResponse userInfo() {
+    return new UserInfoResponse();
   }
 
   @Bean

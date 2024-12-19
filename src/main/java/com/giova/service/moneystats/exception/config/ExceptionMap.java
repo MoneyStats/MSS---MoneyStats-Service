@@ -35,6 +35,10 @@ public enum ExceptionMap implements ExceptionCode {
       HttpStatus.FORBIDDEN,
       "You cannot make this request cause the auth-token is invalid"),
   ERR_AUTH_MSS_009("INVALID_REGEX", HttpStatus.BAD_REQUEST, "Invalid regex passed!"),
+  ERR_AUTH_MSS_010(
+      "ACCESS_DENIED",
+      HttpStatus.UNAUTHORIZED,
+      "You cannot make this request cause you don't have the right roles"),
 
   // EmailSender
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),

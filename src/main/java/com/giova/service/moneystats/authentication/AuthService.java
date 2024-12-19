@@ -1,5 +1,7 @@
 package com.giova.service.moneystats.authentication;
 
+import com.giova.service.moneystats.api.accessSphere.AccessSphereClient;
+import com.giova.service.moneystats.api.accessSphere.dto.UserInfoResponse;
 import com.giova.service.moneystats.api.emailSender.EmailSenderService;
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.app.attachments.ImageService;
@@ -9,6 +11,7 @@ import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
 import com.giova.service.moneystats.authentication.token.dto.AuthToken;
+import com.giova.service.moneystats.config.AppRole;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import com.giova.service.moneystats.settings.entity.UserSettingEntity;
 import com.giova.service.moneystats.utilities.RegEx;
@@ -20,6 +23,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -56,6 +60,33 @@ public class AuthService {
   @Autowired private TokenService tokenService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private ImageService imageService;
+  @Autowired private AccessSphereClient accessSphereClient;
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<UserInfoResponse> authorize(String access_token, String sessionId) {
+    return accessSphereClient
+        .getUserInfo(access_token, sessionId, true)
+        .flatMap(
+            responseEntity -> {
+              if (responseEntity.getStatusCode().isError()
+                  || responseEntity.getBody() == null
+                  || responseEntity.getBody().getData() == null) {
+                throw new AuthException(
+                    ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
+              }
+              UserInfoResponse userInfoResponse =
+                  Mapper.convertObject(responseEntity.getBody().getData(), UserInfoResponse.class);
+              if (userInfoResponse.getUserInfo().getRoles().stream()
+                  .noneMatch(string -> Utils.isEnumValue(string, AppRole.class))) {
+                LOG.error(
+                    "The current user role {} not match with the app role",
+                    userInfoResponse.getUserInfo().getRoles());
+                throw new AuthException(
+                    ExceptionMap.ERR_AUTH_MSS_010, ExceptionMap.ERR_AUTH_MSS_010.getMessage());
+              }
+              return Mono.just(userInfoResponse);
+            });
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> register(User user, String invitationCode) throws UtilsException {
