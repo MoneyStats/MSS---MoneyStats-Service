@@ -31,10 +31,6 @@ public class UserSettingEntity extends GenericEntity {
   @Column(name = "CRYPTO_CURRENCY")
   private String cryptoCurrency;
 
-  @Lob
-  @Column(name = "GITHUB_USER")
-  private String githubUser;
-
   @Column(name = "COMPLETE_REQUIREMENT")
   private String completeRequirement;
 

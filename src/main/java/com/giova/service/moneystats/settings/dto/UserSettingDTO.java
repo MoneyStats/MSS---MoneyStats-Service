@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 public class UserSettingDTO extends GenericDTO {
   @NotNull private String currency;
   private String cryptoCurrency;
-  private String githubUser;
   private String completeRequirement;
   private String liveWallets;
 }

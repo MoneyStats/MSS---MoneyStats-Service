@@ -7,6 +7,7 @@ import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
@@ -33,7 +34,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WalletMapper {
 
-  private final UserEntity user;
+  private final UserData user;
   private final ObjectMapper mapper = new ObjectMapper();
   @Autowired private AssetMapper assetMapper;
   @Autowired private MarketDataService marketDataService;

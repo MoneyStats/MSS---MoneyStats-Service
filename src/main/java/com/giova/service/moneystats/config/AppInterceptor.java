@@ -5,13 +5,16 @@ import static io.github.giovannilamarmora.utils.exception.UtilsException.getExce
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.giova.service.moneystats.api.accessSphere.dto.UserInfoResponse;
 import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.AuthService;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.HeaderManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -43,7 +46,7 @@ public class AppInterceptor implements WebFilter {
       new ObjectMapper()
           .registerModule(new JavaTimeModule())
           .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-  private final UserInfoResponse userInfo;
+  private final UserData userInfo;
 
   @Value(value = "${app.shouldNotFilter}")
   private List<String> shouldNotFilter;
@@ -62,7 +65,7 @@ public class AppInterceptor implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
     String authToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-    String sessionId = request.getHeaders().getFirst("Session-ID");
+    String sessionId = RequestManager.getCookieOrHeaderData("Session-ID", request);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
 
     if (isEmpty(authToken) || isEmpty(sessionId)) {
@@ -82,7 +85,7 @@ public class AppInterceptor implements WebFilter {
 
               // Imposta il nuovo token nell'header
               response.getHeaders().set(HttpHeaders.AUTHORIZATION, authToken);
-              response.getHeaders().set("Session-ID", sessionId);
+              setSessionIDInResponse(sessionId, response);
               settingTracing(request, response);
 
               LOG.debug("Ending Filter Authentication");
@@ -98,6 +101,11 @@ public class AppInterceptor implements WebFilter {
               return errorResponse(
                   request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_008);
             });
+  }
+
+  private void setSessionIDInResponse(String sessionId, ServerHttpResponse response) {
+    CookieManager.setCookieInResponse("Session-ID", sessionId, "giovannilamarmora.com", response);
+    HeaderManager.addHeaderInResponse("Session-ID", sessionId, response);
   }
 
   private void settingTracing(ServerHttpRequest request, ServerHttpResponse response) {
@@ -132,7 +140,7 @@ public class AppInterceptor implements WebFilter {
         .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
 
-  private void setUserInContext(UserInfoResponse user) {
+  private void setUserInContext(UserData user) {
     BeanUtils.copyProperties(user, this.userInfo);
   }
 

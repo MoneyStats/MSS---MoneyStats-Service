@@ -8,7 +8,7 @@ import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.model.Support;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -36,7 +36,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SettingsService {
 
-  private final UserEntity user;
+  private final UserData user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private GithubClient githubClient;
   @Autowired private WalletService walletService;

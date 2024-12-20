@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.crypto.forex;
 
 import com.giova.service.moneystats.api.forex.anyApi.AnyAPIClient;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.forex.database.ForexDataRepository;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ForexDataService {
 
-  private final UserEntity user;
+  private final UserData user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private AnyAPIClient anyAPIClient;
   @Autowired private ForexDataRepository forexDataRepository;

@@ -7,6 +7,7 @@ import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.app.attachments.ImageService;
 import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.authentication.dto.User;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.dto.UserRole;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.authentication.token.TokenService;
@@ -63,7 +64,7 @@ public class AuthService {
   @Autowired private AccessSphereClient accessSphereClient;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserInfoResponse> authorize(String access_token, String sessionId) {
+  public Mono<UserData> authorize(String access_token, String sessionId) {
     return accessSphereClient
         .getUserInfo(access_token, sessionId, true)
         .flatMap(
@@ -84,7 +85,8 @@ public class AuthService {
                 throw new AuthException(
                     ExceptionMap.ERR_AUTH_MSS_010, ExceptionMap.ERR_AUTH_MSS_010.getMessage());
               }
-              return Mono.just(userInfoResponse);
+              return Mono.just(
+                  AuthMapper.mapAccessSphereUserToUserData(userInfoResponse.getUser()));
             });
   }
 
@@ -395,7 +397,6 @@ public class AuthService {
       user.setCurrency(null);
       userSettingEntity.setCryptoCurrency(user.getCryptoCurrency());
       user.setCryptoCurrency(null);
-      userSettingEntity.setGithubUser(user.getGithubUser());
       user.setGithubUser(null);
       userSettingEntity.setUser(user);
       user.setSettings(userSettingEntity);

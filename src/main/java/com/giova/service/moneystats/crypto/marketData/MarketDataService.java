@@ -3,6 +3,7 @@ package com.giova.service.moneystats.crypto.marketData;
 import com.giova.service.moneystats.api.coingecko.CoinGeckoClient;
 import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataRepository;
@@ -31,7 +32,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class MarketDataService {
 
-  private final UserEntity user;
+  private final UserData user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private CoinGeckoClient coinGeckoClient;
   @Autowired private MarketDataCacheService marketDataCacheService;
