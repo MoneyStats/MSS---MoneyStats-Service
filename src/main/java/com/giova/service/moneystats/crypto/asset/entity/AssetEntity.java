@@ -3,7 +3,6 @@ package com.giova.service.moneystats.crypto.asset.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.operations.entity.OperationsEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
@@ -65,9 +64,8 @@ public class AssetEntity extends GenericEntity {
   @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<OperationsEntity> operations;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_ID", nullable = false)
-  private UserEntity user;
+  @Column(name = "USER_IDENTIFIER", nullable = false)
+  private String userIdentifier;
 
   @ManyToOne
   @JoinColumn(name = "WALLET_ID", nullable = false)

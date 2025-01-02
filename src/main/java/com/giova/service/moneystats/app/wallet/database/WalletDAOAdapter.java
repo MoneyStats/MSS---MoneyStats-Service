@@ -14,8 +14,8 @@ public class WalletDAOAdapter implements WalletRepository {
    * @return Wallet with only the last Stats
    */
   @Override
-  public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
-    return iWalletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+  public List<WalletEntity> findAllByUserIdentifierWithoutAssetsAndHistory(String userId) {
+    return iWalletDAO.findAllByUserIdentifierWithoutAssetsAndHistory(userId);
   }
 
   /**
@@ -25,8 +25,8 @@ public class WalletDAOAdapter implements WalletRepository {
    * @return Wallet with the full data
    */
   @Override
-  public List<WalletEntity> findAllByUserId(Long userId) {
-    return iWalletDAO.findAllByUserId(userId);
+  public List<WalletEntity> findAllByUserIdentifier(String userId) {
+    return iWalletDAO.findAllByUserIdentifier(userId);
   }
 
   /**
@@ -37,7 +37,7 @@ public class WalletDAOAdapter implements WalletRepository {
    * @return Full Wallet data
    */
   @Override
-  public WalletEntity findWalletEntityById(Long id, Long userId) {
+  public WalletEntity findWalletEntityById(Long id, String userId) {
     return iWalletDAO.findWalletEntityById(id);
   }
 
@@ -58,8 +58,8 @@ public class WalletDAOAdapter implements WalletRepository {
    * @param userId of the data
    */
   @Override
-  public void deleteAllByUserId(Long userId) {
-    iWalletDAO.deleteAllByUserId(userId);
+  public void deleteAllByUserIdentifier(String userId) {
+    iWalletDAO.deleteAllByUserIdentifier(userId);
   }
 
   /**
@@ -80,8 +80,8 @@ public class WalletDAOAdapter implements WalletRepository {
    * @param category Crypto category default
    * @return Wallet founded
    */
-  @Override
-  public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
-    return iWalletDAO.findAllByUserIdAndCategory(userId, category);
-  }
+  /*@Override
+  public List<WalletEntity> findAllByUserIdentifierAndCategory(String userId, String category) {
+    return iWalletDAO.findAllByUserIdentifierAndCategory(userId, category);
+  }*/
 }

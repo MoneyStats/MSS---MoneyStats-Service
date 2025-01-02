@@ -10,7 +10,7 @@ public interface WalletRepository {
    * @param userId User of the Wallet
    * @return Wallet with only the last Stats
    */
-  List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId);
+  List<WalletEntity> findAllByUserIdentifierWithoutAssetsAndHistory(String userId);
 
   /**
    * Obtaining the full wallet list with all data
@@ -18,7 +18,7 @@ public interface WalletRepository {
    * @param userId User of the Wallet
    * @return Full Wallet list
    */
-  List<WalletEntity> findAllByUserId(Long userId);
+  List<WalletEntity> findAllByUserIdentifier(String userId);
 
   /**
    * Obtaining the Wallet data by ID
@@ -27,7 +27,7 @@ public interface WalletRepository {
    * @param userId User ID used for cache
    * @return Full Wallet data
    */
-  WalletEntity findWalletEntityById(Long id, Long userId);
+  WalletEntity findWalletEntityById(Long id, String userId);
 
   /**
    * Saving the Wallet
@@ -42,7 +42,7 @@ public interface WalletRepository {
    *
    * @param userId of the data
    */
-  void deleteAllByUserId(Long userId);
+  void deleteAllByUserIdentifier(String userId);
 
   /**
    * Save all walletEntities
@@ -59,5 +59,5 @@ public interface WalletRepository {
    * @param category Crypto category default
    * @return Wallet founded
    */
-  List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
+  //List<WalletEntity> findAllByUserIdentifierAndCategory(String userId, String category);
 }

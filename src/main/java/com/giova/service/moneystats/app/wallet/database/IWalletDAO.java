@@ -18,11 +18,11 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
   @Query(
       "SELECT w FROM WalletEntity w "
           + "LEFT JOIN FETCH w.history h "
-          + "WHERE w.user.id = :userId "
+          + "WHERE w.userIdentifier = :userId "
           + "AND (h.date IS NULL OR h.date = "
           + "(SELECT MAX(h2.date) FROM StatsEntity h2 WHERE h2.wallet.id = w.id)) "
           + "ORDER BY w.id")
-  List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId);
+  List<WalletEntity> findAllByUserIdentifierWithoutAssetsAndHistory(String userId);
 
   /**
    * Obtaining the full wallet list with all data
@@ -30,7 +30,7 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
    * @param userId User of the Wallet
    * @return Full Wallet list
    */
-  List<WalletEntity> findAllByUserId(Long userId);
+  List<WalletEntity> findAllByUserIdentifier(String userId);
 
   /**
    * Obtaining the Wallet data by ID
@@ -45,8 +45,8 @@ public interface IWalletDAO extends JpaRepository<WalletEntity, Long> {
    *
    * @param userId of the data
    */
-  void deleteAllByUserId(Long userId);
+  void deleteAllByUserIdentifier(String userId);
 
   /* OLD QUERY */
-  List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category);
+  //List<WalletEntity> findAllByUserIdentifierAndCategory(String userId, String category);
 }

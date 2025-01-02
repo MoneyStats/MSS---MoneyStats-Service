@@ -17,7 +17,7 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return Assets with only the identifier, balance and wallet id
    */
   @Override
-  public List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, String userId) {
     return iAssetDAO.findAssetsByWalletIds(walletIds);
   }
 
@@ -29,7 +29,7 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return Full asset list
    */
   @Override
-  public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, String userId) {
     return iAssetDAO.findAllByWalletIds(walletIds);
   }
 
@@ -41,7 +41,7 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return Assets list without operations and histories
    */
   @Override
-  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, String userId) {
     return iAssetDAO.findAllAssetsByWalletIds(walletIds);
   }
 
@@ -53,8 +53,8 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return AssetEntities
    */
   @Override
-  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId) {
-    return iAssetDAO.findAllByIdentifierAndUserId(identifier, userId);
+  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, String userId) {
+    return iAssetDAO.findAllByIdentifierAndUserIdentifier(identifier, userId);
   }
 
   /**
@@ -64,8 +64,8 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return AssetEntities
    */
   @Override
-  public List<AssetEntity> findAllByUserIdOrderByRank(Long userId) {
-    return iAssetDAO.findAllByUserIdOrderByRank(userId);
+  public List<AssetEntity> findAllByUserIdOrderByRank(String userId) {
+    return iAssetDAO.findAllByUserIdentifierOrderByRank(userId);
   }
 
   /** Delete All Cache */

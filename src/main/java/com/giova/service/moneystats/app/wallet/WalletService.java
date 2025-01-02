@@ -8,6 +8,7 @@ import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
@@ -48,7 +49,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class WalletService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  private final UserEntity user;
+  private final UserData user;
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private WalletMapper walletMapper;
   @Autowired private ImageService imageService;
@@ -90,12 +91,12 @@ public class WalletService {
     List<LocalDate> getAllCryptoDates =
         includeAssets ? statsComponent.getCryptoDistinctDates(user) : null;
     if (!isLiveWallet && !includeHistory && !includeAssets && !includeFullAssets)
-      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
     else if (isLiveWallet && !includeHistory && !includeAssets) {
-      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetLivePrice> livePrices =
-          assetRepository.findAssetsByWalletIds(walletIds, user.getId());
+          assetRepository.findAssetsByWalletIds(walletIds, user.getIdentifier());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -105,10 +106,10 @@ public class WalletService {
                               livePrices, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory && !includeFullAssets) {
-      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetWithoutOpAndStats> assetFulls =
-          assetRepository.findAllAssetsByWalletIds(walletIds, user.getId());
+          assetRepository.findAllAssetsByWalletIds(walletIds, user.getIdentifier());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -117,9 +118,9 @@ public class WalletService {
                           AssetMapper.fromAssetToAssetEntities(assetFulls, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory) {
-      walletEntity = walletRepository.findAllByUserIdWithoutAssetsAndHistory(user.getId());
+      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
-      List<AssetEntity> assetFulls = assetRepository.findAllByWalletIds(walletIds, user.getId());
+      List<AssetEntity> assetFulls = assetRepository.findAllByWalletIds(walletIds, user.getIdentifier());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -131,7 +132,7 @@ public class WalletService {
                                       assetEntity.getWallet().getId().equals(walletEntity1.getId()))
                               .toList()))
               .toList();
-    } else walletEntity = walletRepository.findAllByUserId(user.getId());
+    } else walletEntity = walletRepository.findAllByUserIdentifier(user.getIdentifier());
 
     String message = "";
     if (walletEntity.isEmpty()) {
@@ -180,7 +181,7 @@ public class WalletService {
     List<MarketData> marketData =
         marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
     List<LocalDate> getAllCryptoDates = statsComponent.getCryptoDistinctDates(user);
-    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
+    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getIdentifier());
 
     Wallet walletToReturn = null;
 
@@ -242,7 +243,7 @@ public class WalletService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = Exception.class)
   public ResponseEntity<Response> deleteWallet(Long id) {
-    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getId());
+    WalletEntity walletEntity = walletRepository.findWalletEntityById(id, user.getIdentifier());
     walletEntity.setDeletedDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
     WalletEntity saved = walletRepository.save(walletEntity);
@@ -276,7 +277,7 @@ public class WalletService {
      * return the wrong balance, caused because of the live wallet
      */
     if (!Utilities.isNullOrEmpty(wallet.getId()) && live) {
-      WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getId());
+      WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getIdentifier());
       WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
     }
 
@@ -348,7 +349,7 @@ public class WalletService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteWalletEntities() {
     LOG.info("Deleting all wallet data for user {}", user.getUsername());
-    walletRepository.deleteAllByUserId(user.getId());
+    walletRepository.deleteAllByUserIdentifier(user.getIdentifier());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

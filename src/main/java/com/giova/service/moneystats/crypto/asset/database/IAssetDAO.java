@@ -55,7 +55,7 @@ public interface IAssetDAO extends JpaRepository<AssetEntity, Long> {
    * @param userId o the user
    * @return AssetEntities
    */
-  List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId);
+  List<AssetEntity> findAllByIdentifierAndUserIdentifier(String identifier, String userId);
 
   /**
    * Query to find all asset
@@ -63,5 +63,5 @@ public interface IAssetDAO extends JpaRepository<AssetEntity, Long> {
    * @param userId o the user
    * @return AssetEntities
    */
-  List<AssetEntity> findAllByUserIdOrderByRank(@Param("userId") Long userId);
+  List<AssetEntity> findAllByUserIdentifierOrderByRank(@Param("userId") String userId);
 }

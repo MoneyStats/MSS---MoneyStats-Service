@@ -3,6 +3,7 @@ package com.giova.service.moneystats.app.stats;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -24,17 +25,17 @@ public class StatsComponent {
   @Autowired private IStatsDAO iStatsDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<LocalDate> getDistinctDates(UserEntity user) {
-    return iStatsDAO.selectAppDistinctDate(user.getId());
+  public List<LocalDate> getDistinctDates(UserData user) {
+    return iStatsDAO.selectAppDistinctDate(user.getIdentifier());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<LocalDate> getCryptoDistinctDates(UserEntity user) {
-    return iStatsDAO.selectCryptoDistinctDate(user.getId());
+  public List<LocalDate> getCryptoDistinctDates(UserData user) {
+    return iStatsDAO.selectCryptoDistinctDate(user.getIdentifier());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserEntity user) {
+  public List<Stats> saveStats(List<Stats> stats, WalletEntity wallet, UserData user) {
     List<StatsEntity> statsEntities = StatsMapper.fromStatsToEntity(stats, wallet, user);
 
     List<StatsEntity> saved = iStatsDAO.saveAll(statsEntities);

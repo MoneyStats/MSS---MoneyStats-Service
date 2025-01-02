@@ -3,7 +3,7 @@ package com.giova.service.moneystats.app.stats;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
@@ -29,7 +29,7 @@ public class StatsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<StatsEntity> fromStatsToEntity(
-      List<Stats> stats, WalletEntity wallet, UserEntity user) {
+      List<Stats> stats, WalletEntity wallet, UserData user) {
     if (Utilities.isNullOrEmpty(stats)) return null;
     return stats.stream()
         .map(
@@ -37,7 +37,7 @@ public class StatsMapper {
               StatsEntity statsEntity = new StatsEntity();
               BeanUtils.copyProperties(stats1, statsEntity);
               statsEntity.setWallet(wallet);
-              statsEntity.setUser(user);
+              statsEntity.setUserIdentifier(user.getIdentifier());
               return statsEntity;
             })
         .toList();

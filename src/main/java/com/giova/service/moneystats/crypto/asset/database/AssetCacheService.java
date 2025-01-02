@@ -38,7 +38,7 @@ public class AssetCacheService implements AssetRepository {
    * @return Assets with only the identifier, balance and wallet id
    */
   @Override
-  public List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, String userId) {
     String cacheKey = userId + "_assets_live_price_list";
     try {
       return Optional.ofNullable(assetLivePriceTemplate.opsForValue().get(cacheKey))
@@ -69,7 +69,7 @@ public class AssetCacheService implements AssetRepository {
    * @return Full asset list
    */
   @Override
-  public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, String userId) {
     String cacheKey = userId + "_assets_full_list_by_wallet_ids";
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
@@ -100,7 +100,7 @@ public class AssetCacheService implements AssetRepository {
    * @return Assets list without operations and histories
    */
   @Override
-  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId) {
+  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, String userId) {
     String cacheKey = userId + "_assets_without_operation_list";
     try {
       return Optional.ofNullable(assetWithoutOpAndStatsTemplate.opsForValue().get(cacheKey))
@@ -133,7 +133,7 @@ public class AssetCacheService implements AssetRepository {
    * @return AssetEntities
    */
   @Override
-  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId) {
+  public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, String userId) {
     String cacheKey = userId + CACHE_ASSETS_BY_IDENTIFIER + identifier;
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
@@ -142,7 +142,7 @@ public class AssetCacheService implements AssetRepository {
                 LOG.info("[Caching] Asset {} into Database for userId {}", identifier, userId);
 
                 return Optional.ofNullable(
-                        assetDAO.findAllByIdentifierAndUserId(identifier, userId))
+                        assetDAO.findAllByIdentifierAndUserIdentifier(identifier, userId))
                     .map(
                         assetEntities -> {
                           if (!assetEntities.isEmpty())
@@ -153,7 +153,7 @@ public class AssetCacheService implements AssetRepository {
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return assetDAO.findAllByIdentifierAndUserId(identifier, userId);
+      return assetDAO.findAllByIdentifierAndUserIdentifier(identifier, userId);
     }
   }
 
@@ -164,7 +164,7 @@ public class AssetCacheService implements AssetRepository {
    * @return AssetEntities
    */
   @Override
-  public List<AssetEntity> findAllByUserIdOrderByRank(Long userId) {
+  public List<AssetEntity> findAllByUserIdOrderByRank(String userId) {
     String cacheKey = userId + CACHE_ALL_ASSETS_BY_USER;
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
@@ -172,7 +172,7 @@ public class AssetCacheService implements AssetRepository {
               () -> {
                 LOG.info("[Caching] Asset Full list into Database for userId {}", userId);
 
-                return Optional.ofNullable(assetDAO.findAllByUserIdOrderByRank(userId))
+                return Optional.ofNullable(assetDAO.findAllByUserIdentifierOrderByRank(userId))
                     .map(
                         assetEntities -> {
                           if (!assetEntities.isEmpty())
@@ -183,7 +183,7 @@ public class AssetCacheService implements AssetRepository {
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return assetDAO.findAllByUserIdOrderByRank(userId);
+      return assetDAO.findAllByUserIdentifierOrderByRank(userId);
     }
   }
 

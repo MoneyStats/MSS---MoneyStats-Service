@@ -40,7 +40,7 @@ public class WalletCacheService implements WalletRepository {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserIdWithoutAssetsAndHistory(Long userId) {
+  public List<WalletEntity> findAllByUserIdentifierWithoutAssetsAndHistory(String userId) {
     String cacheKey = userId + CACHE_WALLETS_WITHOUT_DATA;
     try {
       return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
@@ -48,7 +48,7 @@ public class WalletCacheService implements WalletRepository {
               () -> {
                 LOG.info("[Caching] Wallet into Database for userId {}", userId);
                 List<WalletEntity> wallets =
-                    walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+                    walletDAO.findAllByUserIdentifierWithoutAssetsAndHistory(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
                   walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
@@ -57,7 +57,7 @@ public class WalletCacheService implements WalletRepository {
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return walletDAO.findAllByUserIdWithoutAssetsAndHistory(userId);
+      return walletDAO.findAllByUserIdentifierWithoutAssetsAndHistory(userId);
     }
   }
 
@@ -69,14 +69,14 @@ public class WalletCacheService implements WalletRepository {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserId(Long userId) {
+  public List<WalletEntity> findAllByUserIdentifier(String userId) {
     String cacheKey = userId + CACHE_FULL_WALLET_LIST;
     try {
       return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
-                List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
+                List<WalletEntity> wallets = walletDAO.findAllByUserIdentifier(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
                   walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
@@ -85,7 +85,7 @@ public class WalletCacheService implements WalletRepository {
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return walletDAO.findAllByUserId(userId);
+      return walletDAO.findAllByUserIdentifier(userId);
     }
   }
 
@@ -98,7 +98,7 @@ public class WalletCacheService implements WalletRepository {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public WalletEntity findWalletEntityById(Long id, Long userId) {
+  public WalletEntity findWalletEntityById(Long id, String userId) {
     String cacheKey = userId + CACHE_WALLET_BY_ID + id;
     try {
       return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
@@ -138,9 +138,9 @@ public class WalletCacheService implements WalletRepository {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public void deleteAllByUserId(Long userId) {
+  public void deleteAllByUserIdentifier(String userId) {
     clearAllWalletsCache();
-    walletDAO.deleteAllByUserId(userId);
+    walletDAO.deleteAllByUserIdentifier(userId);
   }
 
   /**
@@ -163,8 +163,8 @@ public class WalletCacheService implements WalletRepository {
    * @param category Crypto category default
    * @return Wallet founded
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserIdAndCategory(Long userId, String category) {
+  /*@LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public List<WalletEntity> findAllByUserIdentifierAndCategory(String userId, String category) {
     LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
     String cacheKey = userId + CACHE_FULL_CRYPTO_WALLET_LIST;
     try {
@@ -172,7 +172,7 @@ public class WalletCacheService implements WalletRepository {
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Full Crypto Wallet into Database for userId {}", userId);
-                List<WalletEntity> wallets = walletDAO.findAllByUserId(userId);
+                List<WalletEntity> wallets = walletDAO.findAllByUserIdentifier(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
                   walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
@@ -181,9 +181,9 @@ public class WalletCacheService implements WalletRepository {
               });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return walletDAO.findAllByUserIdAndCategory(userId, category);
+      return walletDAO.findAllByUserIdentifierAndCategory(userId, category);
     }
-  }
+  }*/
 
   /**
    * Method to delete the cache of the wallets of the user. Even if you update just a wallet we need
@@ -192,7 +192,7 @@ public class WalletCacheService implements WalletRepository {
    * @param wallet Wallet to be removed from the cache
    */
   public void evictAllWalletCache(WalletEntity wallet) {
-    Long userId = wallet.getUser().getId();
+    String userId = wallet.getUserIdentifier();
 
     try {
       // Cache key per wallets without assets and history

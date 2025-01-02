@@ -3,6 +3,7 @@ package com.giova.service.moneystats.crypto.asset;
 import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
@@ -36,7 +37,7 @@ import org.springframework.util.ObjectUtils;
 public class AssetService {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  private final UserEntity user;
+  private final UserData user;
   @Autowired private WalletService walletService;
   @Autowired private MarketDataService marketDataService;
   @Autowired private StatsComponent statsComponent;
@@ -53,7 +54,7 @@ public class AssetService {
   public ResponseEntity<Response> getAssetByIdentifier(String identifier) {
     LOG.info("Getting asset {}", identifier);
     List<AssetEntity> assetEntities =
-        assetRepository.findAllByIdentifierAndUserId(identifier, user.getId());
+        assetRepository.findAllByIdentifierAndUserId(identifier, user.getIdentifier());
     List<Asset> assets;
     Asset asset = null;
 
@@ -87,7 +88,7 @@ public class AssetService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAssets(Boolean includeOperations) {
     LOG.info("Getting all assets");
-    List<AssetEntity> assetEntities = assetRepository.findAllByUserIdOrderByRank(user.getId());
+    List<AssetEntity> assetEntities = assetRepository.findAllByUserIdOrderByRank(user.getIdentifier());
     List<Asset> assets = new ArrayList<>();
 
     String message = "";

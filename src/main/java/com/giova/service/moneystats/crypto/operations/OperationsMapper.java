@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.crypto.operations;
 
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import com.giova.service.moneystats.crypto.operations.entity.OperationsEntity;
@@ -31,14 +31,14 @@ public class OperationsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<OperationsEntity> fromOperationDTOSToEntities(
-      List<Operations> operations, UserEntity user, AssetEntity asset) {
+      List<Operations> operations, UserData user, AssetEntity asset) {
     if (Utilities.isNullOrEmpty(operations)) return null;
     return operations.stream()
         .map(
             operation -> {
               OperationsEntity operationsEntity = new OperationsEntity();
               BeanUtils.copyProperties(operation, operationsEntity);
-              operationsEntity.setUser(user);
+              operationsEntity.setUserIdentifier(user.getIdentifier());
               operationsEntity.setAsset(asset);
               return operationsEntity;
             })
@@ -54,10 +54,10 @@ public class OperationsMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public OperationsEntity fromOperationDTOToEntity(
-      Operations operations, UserEntity user, AssetEntity asset) {
+      Operations operations, UserData user, AssetEntity asset) {
     OperationsEntity operationsEntity = new OperationsEntity();
     BeanUtils.copyProperties(operations, operationsEntity);
-    operationsEntity.setUser(user);
+    operationsEntity.setUserIdentifier(user.getIdentifier());
     operationsEntity.setAsset(asset);
     return operationsEntity;
   }

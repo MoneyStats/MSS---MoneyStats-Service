@@ -8,7 +8,6 @@ import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
@@ -116,11 +115,11 @@ public class WalletMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static WalletEntity fromWalletToWalletEntity(Wallet wallet, UserEntity userEntity) {
+  public static WalletEntity fromWalletToWalletEntity(Wallet wallet, UserData userData) {
     WalletEntity walletEntity = new WalletEntity();
     BeanUtils.copyProperties(wallet, walletEntity);
     mapEmptyDataWalletEntity(walletEntity);
-    walletEntity.setUser(userEntity);
+    walletEntity.setUserIdentifier(userData.getIdentifier());
 
     // if (wallet.getInfoString() != null && !wallet.getInfoString().isEmpty()) {
     walletEntity.setInfo(wallet.getInfoString());
@@ -129,10 +128,10 @@ public class WalletMapper {
       walletEntity.setInfo(Mapper.convertMapToString(wallet.getInfo()));
     }
     walletEntity.setHistory(
-        StatsMapper.fromStatsToEntity(wallet.getHistory(), walletEntity, userEntity));
+        StatsMapper.fromStatsToEntity(wallet.getHistory(), walletEntity, userData));
 
     walletEntity.setAssets(
-        AssetMapper.fromAssetToAssetsEntities(wallet.getAssets(), userEntity, walletEntity));
+        AssetMapper.fromAssetToAssetsEntities(wallet.getAssets(), userData, walletEntity));
     return walletEntity;
   }
 

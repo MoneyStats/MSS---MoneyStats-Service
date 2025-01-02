@@ -13,7 +13,7 @@ public interface AssetRepository {
    * @param userId User ID used for cache
    * @return Assets with only the identifier, balance and wallet id
    */
-  List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, Long userId);
+  List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, String userId);
 
   /**
    * Used to get the full asset list, included with operations and histories
@@ -22,7 +22,7 @@ public interface AssetRepository {
    * @param userId User ID used for cache
    * @return Full asset list
    */
-  List<AssetEntity> findAllByWalletIds(List<Long> walletIds, Long userId);
+  List<AssetEntity> findAllByWalletIds(List<Long> walletIds, String userId);
 
   /**
    * Used to get the Asset list without operation and history
@@ -31,7 +31,7 @@ public interface AssetRepository {
    * @param userId User ID used for cache
    * @return Assets list without operations and histories
    */
-  List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, Long userId);
+  List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, String userId);
 
   /**
    * Query to find an asset by his identifier and the user id
@@ -40,7 +40,7 @@ public interface AssetRepository {
    * @param userId o the user
    * @return AssetEntities
    */
-  List<AssetEntity> findAllByIdentifierAndUserId(String identifier, Long userId);
+  List<AssetEntity> findAllByIdentifierAndUserId(String identifier, String userId);
 
   /**
    * Query to find all asset
@@ -48,7 +48,7 @@ public interface AssetRepository {
    * @param userId o the user
    * @return AssetEntities
    */
-  List<AssetEntity> findAllByUserIdOrderByRank(Long userId);
+  List<AssetEntity> findAllByUserIdOrderByRank(String userId);
 
   /** Delete All Cache */
   void clearAllWalletsCache();

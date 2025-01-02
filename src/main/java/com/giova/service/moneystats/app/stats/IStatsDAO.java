@@ -18,8 +18,8 @@ public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
    */
   @Query(
       value =
-          "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId order by STATS.date")
-  List<LocalDate> selectDistinctDate(Long userId);
+          "select distinct STATS.date from StatsEntity STATS where STATS.userIdentifier = :userId order by STATS.date")
+  List<LocalDate> selectDistinctDate(String userId);
 
   /**
    * Used on {@link StatsEntity}, to get all the Date ordered and just one time
@@ -29,8 +29,8 @@ public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
    */
   @Query(
       value =
-          "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId and STATS.wallet.id is not null order by STATS.date")
-  List<LocalDate> selectAppDistinctDate(Long userId);
+          "select distinct STATS.date from StatsEntity STATS where STATS.userIdentifier = :userId and STATS.wallet.id is not null order by STATS.date")
+  List<LocalDate> selectAppDistinctDate(String userId);
 
   /**
    * Used on {@link com.giova.service.moneystats.crypto.CryptoService}, to get all the Date ordered
@@ -41,8 +41,8 @@ public interface IStatsDAO extends JpaRepository<StatsEntity, Long> {
    */
   @Query(
       value =
-          "select distinct STATS.date from StatsEntity STATS where STATS.user.id = :userId and STATS.asset.id is not null order by STATS.date")
-  List<LocalDate> selectCryptoDistinctDate(Long userId);
+          "select distinct STATS.date from StatsEntity STATS where STATS.userIdentifier = :userId and STATS.asset.id is not null order by STATS.date")
+  List<LocalDate> selectCryptoDistinctDate(String userId);
 
   List<StatsEntity> findStatsEntitiesByWalletId(Long walletId);
 }

@@ -6,11 +6,14 @@ import static org.mockito.Mockito.*;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,14 +28,15 @@ public class StatsServiceTest {
 
   @Test
   public void testGetDistinctDates() {
-    UserEntity user = new UserEntity();
+    UserData user = new UserData();
     user.setId(123L);
+    user.setIdentifier(UUID.randomUUID().toString());
 
     LocalDate date1 = LocalDate.of(2022, 1, 1);
     LocalDate date2 = LocalDate.of(2022, 1, 2);
     List<LocalDate> dates = Arrays.asList(date1, date2);
 
-    when(iStatsDAO.selectAppDistinctDate(user.getId())).thenReturn(dates);
+    when(iStatsDAO.selectAppDistinctDate(user.getIdentifier())).thenReturn(dates);
 
     List<LocalDate> distinctDates = statsComponent.getDistinctDates(user);
 

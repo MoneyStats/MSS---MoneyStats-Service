@@ -25,7 +25,7 @@ public class AuthMapper {
     if (user.getAttributes() != null && user.getAttributes().containsKey("money_stats_settings"))
       userData.setSettings(
           Mapper.convertObject(
-              user.getAttributes().containsKey("money_stats_settings"), UserSettingDTO.class));
+              user.getAttributes().get("money_stats_settings"), UserSettingDTO.class));
     return userData;
   }
 

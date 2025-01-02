@@ -6,6 +6,7 @@ import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class AppService {
 
-  private final UserEntity user;
+  private final UserData user;
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private WalletService walletService;
   @Autowired private StatsComponent statsComponent;

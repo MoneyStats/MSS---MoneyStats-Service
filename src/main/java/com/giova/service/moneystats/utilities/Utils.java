@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.utilities;
 
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
@@ -17,7 +18,21 @@ public class Utils {
      */
     return !ObjectUtils.isEmpty(live)
         ? live
-        : !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+        : !ObjectUtils.isEmpty(user.getSettings())
+            && !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+            && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
+  }
+
+  public static Boolean isLiveWallet(Boolean live, UserData user) {
+    /**
+     * We give the priority to the param "Boolean live", if the param is null we check the User
+     * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
+     * value as Null
+     */
+    return !ObjectUtils.isEmpty(live)
+        ? live
+        : !ObjectUtils.isEmpty(user.getSettings())
+            && !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
             && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
   }
 

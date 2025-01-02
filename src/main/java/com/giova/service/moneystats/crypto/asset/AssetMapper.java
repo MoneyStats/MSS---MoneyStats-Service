@@ -4,7 +4,7 @@ import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
@@ -133,7 +133,7 @@ public class AssetMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetToAssetsEntities(
-      List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
+          List<Asset> assetList, UserData user, WalletEntity walletEntity) {
     if (Utilities.isNullOrEmpty(assetList)) return null;
     return assetList.stream()
         .map(
@@ -150,17 +150,17 @@ public class AssetMapper {
                             statsEntity -> {
                               StatsEntity stats = new StatsEntity();
                               BeanUtils.copyProperties(statsEntity, stats);
-                              stats.setUser(userEntity);
+                              stats.setUserIdentifier(user.getIdentifier());
                               stats.setAsset(assetEntity);
                               return stats;
                             })
                         .collect(Collectors.toList()));
               }
-              assetEntity.setUser(userEntity);
+              assetEntity.setUserIdentifier(user.getIdentifier());
               assetEntity.setWallet(walletEntity);
               assetEntity.setOperations(
                   OperationsMapper.fromOperationDTOSToEntities(
-                      asset.getOperations(), userEntity, assetEntity));
+                      asset.getOperations(), user, assetEntity));
               return assetEntity;
             })
         .toList();
