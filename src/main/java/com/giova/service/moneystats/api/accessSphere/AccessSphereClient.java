@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.api.accessSphere;
 
+import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -25,11 +26,20 @@ import reactor.core.publisher.Mono;
 public class AccessSphereClient {
   private final WebClientRest webClientRest = new WebClientRest();
 
+  @Value(value = "${rest.client.access-sphere.client-id}")
+  private String clientID;
+
+  @Value(value = "${rest.client.access-sphere.token}")
+  private String registration_token;
+
   @Value(value = "${rest.client.access-sphere.baseUrl}")
   private String accessSphereBaseUrl;
 
   @Value(value = "${rest.client.access-sphere.userInfo}")
   private String getUserInfoUrl;
+
+  @Value(value = "${rest.client.access-sphere.register}")
+  private String registerUrl;
 
   @Autowired private WebClient.Builder builder;
 
@@ -54,6 +64,23 @@ public class AccessSphereClient {
         HttpMethod.GET,
         UtilsUriBuilder.buildUri(getUserInfoUrl, params),
         null,
+        headers,
+        Response.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<Response>> register(User user) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("client_id", clientID);
+    params.put("registration_token", registration_token);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+    return webClientRest.perform(
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(registerUrl, params),
+        user,
         headers,
         Response.class);
   }

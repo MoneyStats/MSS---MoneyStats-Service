@@ -9,7 +9,6 @@ import com.giova.service.moneystats.app.wallet.database.WalletRepository;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
@@ -91,9 +90,11 @@ public class WalletService {
     List<LocalDate> getAllCryptoDates =
         includeAssets ? statsComponent.getCryptoDistinctDates(user) : null;
     if (!isLiveWallet && !includeHistory && !includeAssets && !includeFullAssets)
-      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
+      walletEntity =
+          walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
     else if (isLiveWallet && !includeHistory && !includeAssets) {
-      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
+      walletEntity =
+          walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetLivePrice> livePrices =
           assetRepository.findAssetsByWalletIds(walletIds, user.getIdentifier());
@@ -106,7 +107,8 @@ public class WalletService {
                               livePrices, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory && !includeFullAssets) {
-      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
+      walletEntity =
+          walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetWithoutOpAndStats> assetFulls =
           assetRepository.findAllAssetsByWalletIds(walletIds, user.getIdentifier());
@@ -118,9 +120,11 @@ public class WalletService {
                           AssetMapper.fromAssetToAssetEntities(assetFulls, walletEntity1.getId())))
               .toList();
     } else if (!includeHistory) {
-      walletEntity = walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
+      walletEntity =
+          walletRepository.findAllByUserIdentifierWithoutAssetsAndHistory(user.getIdentifier());
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
-      List<AssetEntity> assetFulls = assetRepository.findAllByWalletIds(walletIds, user.getIdentifier());
+      List<AssetEntity> assetFulls =
+          assetRepository.findAllByWalletIds(walletIds, user.getIdentifier());
       walletEntity =
           walletEntity.stream()
               .peek(
@@ -277,7 +281,8 @@ public class WalletService {
      * return the wrong balance, caused because of the live wallet
      */
     if (!Utilities.isNullOrEmpty(wallet.getId()) && live) {
-      WalletEntity getFromDB = walletRepository.findWalletEntityById(wallet.getId(), user.getIdentifier());
+      WalletEntity getFromDB =
+          walletRepository.findWalletEntityById(wallet.getId(), user.getIdentifier());
       WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
     }
 

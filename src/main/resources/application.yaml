@@ -77,14 +77,17 @@ rest:
       rates: /v1/exchange/rates
       apiKey: ${REST_CLIENT_ANY_API_TOKEN}
     access-sphere:
+      client-id: MONEYSTATS-TEST-01
+      token: b967aba2-ae13-4367-af3d-31595aab2229
       baseUrl: http://localhost:8081
       userInfo: /v1/userInfo
+      register: /v1/users/register
 
 logging:
   config: classpath:logback-spring.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
   level:
     io.github.giovannilamarmora: DEBUG
-    com.giova.service.moneystats: INFO
+    com.giova.service.moneystats: DEBUG
     web: INFO
     root: INFO
     org:
@@ -111,7 +114,3 @@ app:
   version: @project.version@
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
   invitationCode: ${TOKEN_INVITE}
-  cors: # Disabled
-    enabled: false
-  fe:
-    url: http://localhost:4200

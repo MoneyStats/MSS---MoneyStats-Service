@@ -3,7 +3,6 @@ package com.giova.service.moneystats.config.cache;
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletDAOAdapter;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
-import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetDAOAdapter;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
@@ -72,7 +71,6 @@ public class CacheConfig {
       return RedisCacheManager.builder(redisConnectionFactory).build();
     } else {
       return new ConcurrentMapCacheManager(
-          AuthCacheService.USER_CACHE,
           WalletCacheService.CRYPTO_WALLET_CACHE); // Usa cache in-memory
     }
   }

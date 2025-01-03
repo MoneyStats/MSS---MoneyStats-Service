@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.config;
 
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 public class TestConfig {
 
-    @Bean
-    public UserEntity user() {
-        return Mockito.mock(UserEntity.class);
-    }
+  @Bean
+  public UserData user() {
+    return Mockito.mock(UserData.class);
+  }
 }

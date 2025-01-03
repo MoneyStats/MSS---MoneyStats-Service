@@ -4,7 +4,6 @@ import com.giova.service.moneystats.api.coingecko.CoinGeckoClient;
 import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataRepository;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;

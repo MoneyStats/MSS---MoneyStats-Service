@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.authentication.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.authentication.token.dto.AuthToken;
 import com.giova.service.moneystats.settings.dto.UserSettingDTO;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
@@ -33,7 +32,6 @@ public class User extends GenericDTO {
   // private String cryptoCurrency;
   // private String githubUser;
 
-  private AuthToken authToken;
   private String tokenReset;
   private UserSettingDTO settings;
 

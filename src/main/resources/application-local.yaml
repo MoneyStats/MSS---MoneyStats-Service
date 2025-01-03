@@ -1,12 +1,6 @@
-env: Local # Used for Google Cloud LOG
-server:
-  servlet:
-    #context-path: /moneystats-service
-    context-path:
 spring:
   application:
     name: MoneyStats Service Local
-    starter-log: true
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/moneystats
@@ -29,90 +23,13 @@ spring:
   webflux:
     multipart:
       max-request-size: 1MB
-  data:
-    redis:
-      repositories:
-        enabled: false
-      enabled: false
-      cron: 0 0 1 * * *
-      host: pc-giovanni
-      json: false
-      password: password
-      port: 6379
-      sslEnabled: false
-      #sslTruststore: path of the truststore (.jks file)
-      #sslTruststorePassword: password of the trustore
-      username: username
-
-rest:
-  scheduled:
-    marketData:
-      active: false
-      quantity: 250
-      delay:
-        start: 5000
-        end: 3600000
-    forex:
-      active: false
-      delay:
-        start: 5000
-        end: 3600000
-    caching:
-      active: true
-      cron: 0 0 1 * * MON
-  client:
-    github:
-      baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
-      authToken: ${GITHUB_AUTH_TOKEN}
-    emailSender:
-      url: https://email-sender.giovannilamarmora.com
-      sendEmailUrl: /v1/send-email
-    coinGecko:
-      url: https://api.coingecko.com
-      marketDataUrl: /api/v3/coins/markets
-    exchangeRates:
-      baseUrl: http://api.exchangerate.host
-      rates: /live
-      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
-    anyApi:
-      baseUrl: https://anyapi.io/api
-      rates: /v1/exchange/rates
-      apiKey: ${REST_CLIENT_ANY_API_TOKEN}
-
-logging:
-  config: classpath:logback-spring.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
-  level:
-    com.giova.service.moneystats: DEBUG
-    io.github.giovannilamarmora.utils: DEBUG
-    web: INFO
-    root: INFO
-    org:
-      springframework:
-        web: INFO
-      hibernate: ERROR
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    disable-swagger-default-url: true
 
 filter:
   requestResponse:
     enabled: true
     shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*/css/*,*/js/*,*/images/*,*/favicon.ico,/index.html"
 
-jwt:
-  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
-  time: 3600000
-
 app:
-  version: @project.version@
   exception:
     stacktrace: true
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
-  invitationCode: ${TOKEN_INVITE}
-  fe:
-    url: http://localhost:4200
+  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/swagger-ui.html,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"

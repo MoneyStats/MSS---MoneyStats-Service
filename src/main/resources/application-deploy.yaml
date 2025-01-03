@@ -109,5 +109,3 @@ app:
   cors:
     enabled: false # Usando CrossOrigin non ne ho bisogno
   invitationCode: ${TOKEN_INVITE}
-  fe:
-    url: ${FE_URL}

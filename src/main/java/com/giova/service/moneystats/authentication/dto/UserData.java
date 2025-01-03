@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,6 +59,8 @@ public class UserData extends GenericDTO {
   private String ssn; // Social Security Number
 
   private String tokenReset;
+
+  private Map<String, Object> attributes;
 
   private UserSettingDTO settings;
 }

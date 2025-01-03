@@ -4,7 +4,6 @@ import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -88,7 +87,8 @@ public class AssetService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public ResponseEntity<Response> getAssets(Boolean includeOperations) {
     LOG.info("Getting all assets");
-    List<AssetEntity> assetEntities = assetRepository.findAllByUserIdOrderByRank(user.getIdentifier());
+    List<AssetEntity> assetEntities =
+        assetRepository.findAllByUserIdOrderByRank(user.getIdentifier());
     List<Asset> assets = new ArrayList<>();
 
     String message = "";

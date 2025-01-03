@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.scheduler;
 
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
-import com.giova.service.moneystats.authentication.AuthCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import com.giova.service.moneystats.crypto.forex.database.ForexDataCacheService;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
@@ -25,7 +24,6 @@ public class CronCachingReset {
   private Boolean isSchedulerActive;
 
   @Autowired private MarketDataCacheService marketDataCacheService;
-  @Autowired private AuthCacheService authCacheService;
   @Autowired private WalletCacheService walletCacheService;
   @Autowired private ForexDataCacheService forexDataCacheService;
   @Autowired private AssetCacheService assetCacheService;
@@ -42,7 +40,6 @@ public class CronCachingReset {
     }
 
     walletCacheService.clearAllWalletsCache();
-    authCacheService.deleteUserCache();
     marketDataCacheService.clearAllMarketDataCache();
     forexDataCacheService.clearAllForexDataCache();
     assetCacheService.clearAllWalletsCache();
