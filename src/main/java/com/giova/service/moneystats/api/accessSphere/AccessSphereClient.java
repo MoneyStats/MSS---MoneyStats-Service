@@ -73,6 +73,7 @@ public class AccessSphereClient {
     Map<String, Object> params = new HashMap<>();
     params.put("client_id", clientID);
     params.put("registration_token", registration_token);
+    params.put("assign_new_client", true);
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);

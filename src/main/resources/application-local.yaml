@@ -27,9 +27,9 @@ spring:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*/css/*,*/js/*,*/images/*,*/favicon.ico,/index.html"
+    shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
 
 app:
-  exception:
-    stacktrace: true
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/swagger-ui.html,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
+  version: @project.version@
+  #shouldNotFilter: "/v1/auth/sign-up,/v1/settings/report/bug,/v1/settings/contact,**/swagger-ui/**,**/api-docs/**,/api-docs,*/"
+  #shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,*/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/swagger-ui.html,/api-docs,**/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"

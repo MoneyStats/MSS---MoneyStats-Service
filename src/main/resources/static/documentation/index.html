@@ -30,7 +30,6 @@
     <link href="icons/icon-192x192.png" rel="apple-touch-icon" sizes="180x180">
     <link href="icons/icon-96x96.png" rel="icon" sizes="32x32" type="image/png">
     <link href="icons/icon-72x72.png" rel="icon" sizes="16x16" type="image/png">
-    <link href="site.webmanifest" rel="manifest">
 
 </head>
 
@@ -91,7 +90,8 @@
                         id="redirect_uri"
                         target="_blank">MoneyStats</a>
                     <br>
-                    Here you can find the <a href="#" onclick="getSwagger()" target="_blank">Swagger API</a> <br>
+                    Here you can find the <a href="#" id="swagger" target="_blank">Swagger
+                    API</a> <br>
                 </h1>
 
 
@@ -102,24 +102,23 @@
     </div> <!--  end intro-content -->
 
     <script>
-        function getSwagger() {
-            return window.open(window.location.origin + "/swagger-ui.html");
-        }
         function setAnchorHref() {
           // Ottenere l'URL dell'origine della finestra
           const origin = window.location.origin;
 
           // Ottenere l'elemento anchor dal documento
           const anchorElement = document.getElementById('redirect_uri'); // Assicurati di sostituire 'ilTuoID' con l'ID reale del tuo elemento anchor
+          const swagger = document.getElementById('swagger'); // Assicurati di sostituire 'ilTuoID' con l'ID reale del tuo elemento anchor
+          swagger.href = origin + "/webjars/swagger-ui/index.html";
 
           // Verificare se l'URL dell'origine contiene la parola "stg"
           if (origin.includes('stg')) {
             // Se sì, impostare l'URL desiderato per l'ambiente di staging
-            anchorElement.href = 'https://stg.moneystats.app.hostwebserver.site';
+            anchorElement.href = 'https://stg.moneystats.app.giovannilamarmora.com';
           } else if (origin.includes('localhost')) {
             // Altrimenti, impostare l'URL di default per localhost
             anchorElement.href = 'http://localhost:4200';
-          } else anchorElement.href = 'https://moneystats.github.io/App';
+          } else anchorElement.href = 'https://moneystats.github.io/auth/login';
         }
 
         // Esempio di utilizzo

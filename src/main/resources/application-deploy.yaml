@@ -49,63 +49,34 @@ rest:
       #quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
       quantity: 250
       delay:
-        #start: ${SCHEDULER_MARKET_DATA_DELAY_START}
-        #end: ${SCHEDULER_MARKET_DATA_DELAY_END}
-        start: 60000
-        end: 3600000
+        start: ${SCHEDULER_MARKET_DATA_DELAY_START:60000}
+        end: ${SCHEDULER_MARKET_DATA_DELAY_END:3600000}
     forex:
       active: ${SCHEDULER_FOREX_ACTIVE}
       delay:
-        start: 1800000
-        end: 10800000
+        start: ${SCHEDULER_FOREX_DELAY_START:1800000}
+        end: ${SCHEDULER_FOREX_DELAY_END:10800000}
     caching:
       active: true
-      cron: 0 0 1 * * MON
   client:
-    github:
-      baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
-      authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
       url: http://email.sender:8080
-      sendEmailUrl: /v1/send-email
-    coinGecko:
-      url: https://api.coingecko.com
-      marketDataUrl: /api/v3/coins/markets
-    exchangeRates:
-      baseUrl: http://api.exchangerate.host
-      rates: /live
-      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
-    anyApi:
-      baseUrl: https://anyapi.io/api
-      rates: /v1/exchange/rates
-      apiKey: ${REST_CLIENT_ANY_API_TOKEN}
+    access-sphere:
+      client-id: MONEYSTATS-PROD-01
+      token: ${CLIENT_ID_TOKEN}
+      baseUrl: http://localhost:8081
 
 logging:
   config: classpath:logback-google.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
   level:
     com.giova.service.moneystats: ${LOGGING_LEVEL}
     io.github.giovannilamarmora.utils: ${LOGGING_LEVEL}
-    web: INFO
-    root: INFO
-    org:
-      springframework:
-        web: INFO
-      hibernate: ERROR
 
 filter:
   requestResponse:
     enabled: true
     shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*/css/*,*/js/*,*/images/*,*/favicon.ico,/index.html"
 
-jwt:
-  secret: ${JWT_SECRET}
-  time: ${JWT_TIME}
 app:
-  version: @project.version@
-  exception:
-    stacktrace: ${SHOW_UTILS_EXCEPTION_STACKTRACE}
   shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
-  cors:
-    enabled: false # Usando CrossOrigin non ne ho bisogno
   invitationCode: ${TOKEN_INVITE}

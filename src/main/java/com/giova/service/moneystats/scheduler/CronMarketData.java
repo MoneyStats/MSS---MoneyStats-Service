@@ -77,7 +77,7 @@ public class CronMarketData {
                         rollBackMarketData(fiatCurrencies, allMarketData);
                       })
                   // Aspetta 60 secondi tra una valuta e l'altra
-                  .delaySubscription(Duration.ofSeconds(60));
+                  .delaySubscription(Duration.ofSeconds(90));
             })
         .doOnComplete(() -> LOG.info("Scheduler Finished at {}", LocalDateTime.now()))
         .doOnError(

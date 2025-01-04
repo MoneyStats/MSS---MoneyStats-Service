@@ -60,18 +60,14 @@ rest:
   client:
     github:
       baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/App/issues
+      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
       authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: https://email-sender.giovannilamarmora.com/
+      url: https://email-sender.giovannilamarmora.com
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com
       marketDataUrl: /api/v3/coins/markets
-    exchangeRates:
-      baseUrl: http://api.exchangerate.host
-      rates: /live
-      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
     anyApi:
       baseUrl: https://anyapi.io/api
       rates: /v1/exchange/rates
@@ -105,12 +101,9 @@ springdoc:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
+    shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
 
-jwt:
-  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
-  time: 360000
 app:
   version: @project.version@
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
+  shouldNotFilter: "/v1/auth/sign-up,/v1/settings/report/bug,/v1/settings/contact,**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
   invitationCode: ${TOKEN_INVITE}
