@@ -4,12 +4,15 @@ import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +24,9 @@ import reactor.core.publisher.Mono;
 public class CronMarketData {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+  @Value(value = "${env:Default}")
+  private String env;
 
   @Value(value = "#{new Boolean(${rest.scheduled.marketData.active:false})}")
   private Boolean isSchedulerActive;
@@ -35,6 +41,8 @@ public class CronMarketData {
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleAllCryptoAsset() {
+    MDCUtils.registerDefaultMDC(env).subscribe();
+    Map<String, String> contextMap = MDC.getCopyOfContextMap();
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {
@@ -86,6 +94,8 @@ public class CronMarketData {
               LOG.error("Exception: {}", e.getMessage());
               rollBackMarketData(fiatCurrencies, allMarketData);
             })
+        .contextWrite(MDCUtils.contextViewMDC(env))
+        .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
         .subscribe(); // Necessario per attivare il flusso reattivo
   }
 

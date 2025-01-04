@@ -31,7 +31,7 @@ public class MarketDataEntity extends GenericEntity {
   @Column(name = "NAME", nullable = false)
   private String name;
 
-  @Column(name = "ICON", nullable = false)
+  @Column(name = "ICON", nullable = false, length = 500)
   private String icon;
 
   @Column(name = "CURRENT_PRICE", nullable = false)

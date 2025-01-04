@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.math.MathService;
+import jakarta.transaction.Transactional;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -63,6 +64,7 @@ public class MarketDataService {
     return MarketDataMapper.fromEntityToMarketData(getMarketData);
   }
 
+  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteMarketData() {
     LOG.info("Deleting All MarketData from Database");
@@ -85,10 +87,12 @@ public class MarketDataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<MarketData>> getCoinGeckoMarketData(String currency, Integer quantity) {
-    LOG.info("Getting {} MarketData for {}", quantity, currency);
+    List<Integer> pages = getPage(quantity);
+    LOG.info(
+        "Getting {} MarketData for {}, number of page are {}", quantity, currency, pages.getLast());
 
     Flux<CoinGeckoMarketData> marketDataFlux =
-        Flux.fromIterable(getPage(quantity))
+        Flux.fromIterable(pages)
             .flatMap(
                 page ->
                     coinGeckoClient
@@ -121,7 +125,7 @@ public class MarketDataService {
     return marketDataFlux
         .collectList()
         .zipWith(stablecoinMono)
-        .map(
+        .flatMap(
             tuple -> {
               List<CoinGeckoMarketData> marketData = tuple.getT1();
               List<CoinGeckoMarketData> stableCoinData = tuple.getT2();
@@ -145,7 +149,7 @@ public class MarketDataService {
 
               cryptocurrency.sort(Comparator.comparing(MarketData::getRank));
 
-              return cryptocurrency;
+              return Mono.just(cryptocurrency);
             });
   }
 

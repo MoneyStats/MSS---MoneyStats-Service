@@ -9,6 +9,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,7 @@ public class ForexDataService {
   }
 
   /** API To Delete the forex data */
+  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteForexData() {
     LOG.info("Deleting ForexData from Database");

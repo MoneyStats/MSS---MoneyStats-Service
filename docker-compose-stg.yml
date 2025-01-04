@@ -12,14 +12,12 @@ services:
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - LOGTAIL_LOGS=${LOGTAIL_LOGS}
-      - LOGTAIL_APP_NAME=${LOGTAIL_APP_NAME}
       - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
       - TOKEN_INVITE=${TOKEN_INVITE}
       - CONTEXT_PATH=${CONTEXT_PATH}
       - SCHEDULER_MARKET_DATA_ACTIVE=${SCHEDULER_ACTIVE}
       - SCHEDULER_FOREX_ACTIVE=${SCHEDULER_ACTIVE}
-      #- SCHEDULER_MARKET_DATA_QUANTITY=${SCHEDULER_MARKET_DATA_QUANTITY}
+      - SCHEDULER_MARKET_DATA_QUANTITY=${SCHEDULER_MARKET_DATA_QUANTITY}
       - SCHEDULER_MARKET_DATA_DELAY_START=${SCHEDULER_MARKET_DATA_DELAY_START}
       - SCHEDULER_MARKET_DATA_DELAY_END=${SCHEDULER_MARKET_DATA_DELAY_END}
       - REST_CLIENT_ANY_API_TOKEN=${REST_CLIENT_ANY_API_TOKEN}
@@ -28,23 +26,11 @@ services:
       - SCHEDULER_FOREX_DELAY_START=${SCHEDULER_FOREX_DELAY_START}
       - SCHEDULER_FOREX_DELAY_END=${SCHEDULER_FOREX_DELAY_END}
     deploy:
-      replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
-      #update_config:
-      #  parallelism: 1
-      #  delay: 10s
-      #restart_policy:
-      #  condition: on-failure
-      #placement:
-      #  constraints:
-      #    - node.role == manager
+      replicas: 1
     networks:
       docker-network:
         aliases:
           - stg.moneystats.service
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
-      - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
   docker-network:

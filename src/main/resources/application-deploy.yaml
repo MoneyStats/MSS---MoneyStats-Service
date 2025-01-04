@@ -75,8 +75,7 @@ logging:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*/css/*,*/js/*,*/images/*,*/favicon.ico,/index.html"
+    shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
 
 app:
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
   invitationCode: ${TOKEN_INVITE}

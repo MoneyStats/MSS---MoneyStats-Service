@@ -50,10 +50,10 @@ rest:
         #end: 60000
         end: 3600000
     forex:
-      active: false
+      active: true
       delay:
         start: 5000
-        end: 3600000
+        end: 10800000
     caching:
       active: false
       cron: 0 0 1 * * MON
