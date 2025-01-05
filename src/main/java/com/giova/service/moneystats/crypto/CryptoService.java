@@ -144,11 +144,16 @@ public class CryptoService {
     Map<String, CryptoDashboard> dashboardHashMap = new LinkedHashMap<>();
     List<LocalDate> getAllDates = statsComponent.getCryptoDistinctDates(user);
     List<Integer> distinctYears =
-        getAllDates.stream()
-            .map(LocalDate::getYear)
-            .distinct()
-            .sorted(Collections.reverseOrder())
-            .toList();
+        new ArrayList<>(
+            getAllDates.stream()
+                .map(LocalDate::getYear)
+                .distinct()
+                .sorted(Collections.reverseOrder())
+                .toList());
+
+    LocalDate today = LocalDate.now();
+    if (!distinctYears.contains(today.getYear())) distinctYears.add(today.getYear());
+    distinctYears.sort(Collections.reverseOrder());
 
     ResponseEntity<Response> responseAssets = assetService.getAssets(false);
     List<Asset> assets =
@@ -481,49 +486,6 @@ public class CryptoService {
     }
 
     return filteredAssets;
-  }
-
-  private List<Asset> getCryptoAssetsListOLD(
-      Boolean isResume,
-      Integer year,
-      List<Wallet> walletList,
-      List<MarketData> marketData,
-      List<LocalDate> getAllDates) {
-
-    List<Asset> assets = new ArrayList<>();
-    List<Asset> finalAssets = assets;
-    walletList.stream()
-        .filter(wallet -> !Utilities.isNullOrEmpty(wallet.getAssets()))
-        .forEach(
-            wallet -> {
-              finalAssets.addAll(wallet.getAssets());
-            });
-    assets = AssetMapper.mapAssetList(finalAssets, marketData, getAllDates);
-
-    List<Asset> filterAsset = new ArrayList<>();
-    assets.forEach(
-        asset -> {
-          Asset newAsset = new Asset();
-          BeanUtils.copyProperties(asset, newAsset);
-          if (asset.getHistory() != null && !asset.getHistory().isEmpty() && !isResume) {
-            Stats stats = asset.getHistory().getLast();
-            newAsset.setHistory(List.of(stats));
-          }
-          // Se siamo in resume devo rimuovere gli Stats che non hanno history per l'anno passato
-          // come parametro
-          if (isResume && year != null && newAsset.getHistory() != null) {
-            Predicate<Stats> hasNotYearStats = stats -> stats.getDate().getYear() != year;
-            List<Stats> histories = new ArrayList<>(newAsset.getHistory());
-            histories.removeIf(hasNotYearStats);
-            newAsset.setHistory(histories);
-          }
-          filterAsset.add(newAsset);
-        });
-    if (isResume) {
-      Predicate<Asset> hasEmptyStats = asset -> !Utilities.isNullOrEmpty(asset.getHistory());
-      filterAsset.removeIf(hasEmptyStats);
-    }
-    return filterAsset;
   }
 
   private Double getAssetValue(List<MarketData> marketData, String symbol) {

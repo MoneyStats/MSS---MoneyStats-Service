@@ -85,7 +85,9 @@ public class AppService {
           getAllDates.stream().anyMatch(localDate -> localDate.getYear() < year);
       LocalDate today = LocalDate.now();
       Map<String, Dashboard> getDataProvision =
-          mapDashBoard(filterDateByYear, (today.getYear() != year));
+          Utilities.isNullOrEmpty(filterDateByYear)
+              ? null
+              : mapDashBoard(filterDateByYear, (today.getYear() != year));
       if (!Utilities.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }
@@ -125,11 +127,21 @@ public class AppService {
     Map<String, Dashboard> dashboardHashMap = new HashMap<>();
     List<LocalDate> allDates = statsComponent.getDistinctDates(user);
     List<Integer> distinctYears =
-        allDates.stream()
-            .map(LocalDate::getYear)
-            .distinct()
-            .sorted(Collections.reverseOrder())
-            .toList();
+        new ArrayList<>(
+            allDates.stream()
+                .map(LocalDate::getYear)
+                .distinct()
+                .sorted(Collections.reverseOrder())
+                .toList());
+
+    boolean isLiveWalletActive =
+        Status.ACTIVE.name().equalsIgnoreCase(user.getSettings().getLiveWallets());
+
+    if (isLiveWalletActive) {
+      LocalDate today = LocalDate.now();
+      if (!distinctYears.contains(today.getYear())) distinctYears.add(today.getYear());
+      distinctYears.sort(Collections.reverseOrder());
+    }
 
     ResponseEntity<Response> responseWallets =
         walletService.getAllWallets(null, true, false, false);
@@ -139,8 +151,6 @@ public class AppService {
             .map(data -> Mapper.convertObject(data, new TypeReference<List<Wallet>>() {}))
             .orElse(Collections.emptyList());
 
-    boolean isLiveWalletActive =
-        Status.ACTIVE.name().equalsIgnoreCase(user.getSettings().getLiveWallets());
     AtomicInteger yearIndex = new AtomicInteger(0);
 
     distinctYears.forEach(
@@ -161,6 +171,8 @@ public class AppService {
                                     .toList())
                         .orElse(Collections.emptyList());
 
+                Stats lastStats = wallet.getHistory().getLast();
+
                 if (yearIndex.get() == 0 && isLiveWalletActive) {
                   balance.updateAndGet(b -> b + wallet.getBalance());
                 }
@@ -172,6 +184,9 @@ public class AppService {
                   } else {
                     AppMapper.updateBalance(yearlyStats, datesByYear, lastBalance);
                   }
+                } else if (!Utilities.isNullOrEmpty(lastStats) && isLiveWalletActive) {
+                  AppMapper.updateBalance(
+                      List.of(lastStats), List.of(lastStats.getDate()), lastBalance);
                 }
               });
 

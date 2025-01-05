@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.config;
+package com.giova.service.moneystats.config.roles;
 
 public enum AppRole {
   MONEY_STATS_USER,

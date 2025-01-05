@@ -1,7 +1,6 @@
 package com.giova.service.moneystats.app.wallet;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.model.Category;
 import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
@@ -10,9 +9,7 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.asset.AssetMapper;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
-import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
-import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -26,18 +23,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class WalletMapper {
-
-  private final UserData user;
-  private final ObjectMapper mapper = new ObjectMapper();
-  @Autowired private AssetMapper assetMapper;
-  @Autowired private MarketDataService marketDataService;
-  @Autowired private ForexDataService forexDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Wallet> mapFromWalletEntitiesToWalletList(
@@ -87,7 +77,9 @@ public class WalletMapper {
 
   private static void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance, String userCurrency) {
-    if (Utilities.isNullOrEmpty(forex) || Utilities.isNullOrEmpty(wallet.getAssets())) return;
+    if (Utilities.isNullOrEmpty(forex)
+        || Utilities.isNullOrEmpty(forex.getQuotes())
+        || Utilities.isNullOrEmpty(wallet.getAssets())) return;
 
     if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);

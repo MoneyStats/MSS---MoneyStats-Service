@@ -17,9 +17,7 @@ import org.springframework.util.ObjectUtils;
 
 @Component
 public class WalletCacheService implements WalletRepository {
-  /* OLD DATA */
-  public static final String CRYPTO_WALLET_CACHE = "Crypto-Wallets-Cache";
-  /* END OLD DATA */
+
   private static final String CACHE_WALLETS_WITHOUT_DATA = "_wallets_without_assets_and_history";
   private static final String CACHE_FULL_CRYPTO_WALLET_LIST = "_full_crypto_wallets_list";
   private static final String CACHE_FULL_WALLET_LIST = "_full_wallets_list";

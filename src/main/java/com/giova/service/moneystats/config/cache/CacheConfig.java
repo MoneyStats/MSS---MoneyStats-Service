@@ -17,12 +17,9 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 @Configuration
@@ -63,15 +60,5 @@ public class CacheConfig {
   public ForexDataRepository getForexDataRepository() {
     if (redisCacheEnabled) return new ForexDataCacheService();
     return new ForexDataDAOAdapter();
-  }
-
-  @Bean
-  public CacheManager cacheManager() {
-    if (redisCacheEnabled) {
-      return RedisCacheManager.builder(redisConnectionFactory).build();
-    } else {
-      return new ConcurrentMapCacheManager(
-          WalletCacheService.CRYPTO_WALLET_CACHE); // Usa cache in-memory
-    }
   }
 }

@@ -3,6 +3,10 @@ package com.giova.service.moneystats.app.settings;
 import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.model.Support;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
+import com.giova.service.moneystats.config.roles.AppRole;
+import com.giova.service.moneystats.config.roles.Roles;
+import com.giova.service.moneystats.scheduler.CronCachingReset;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -10,6 +14,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +29,7 @@ import reactor.core.publisher.Mono;
 public class SettingsControllerImpl implements SettingsController {
 
   @Autowired private SettingsService settingsService;
+  @Autowired private CronCachingReset cronCachingReset;
 
   /**
    * API to report a BUG
@@ -72,5 +78,22 @@ public class SettingsControllerImpl implements SettingsController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> contactUs(Support support) {
     return settingsService.contactSupport(support);
+  }
+
+  /**
+   * API to clean the cache of the app
+   *
+   * @param token ADMIN token
+   * @return Cache cleaned
+   */
+  @Override
+  @Roles(value = AppRole.MONEY_STATS_ADMIN)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public ResponseEntity<Response> cleanCache(String token) {
+    cronCachingReset.scheduleCleanCache();
+    Response response =
+        new Response(
+            HttpStatus.OK.value(), "Cache cleaned successfully", TraceUtils.getSpanID(), null);
+    return ResponseEntity.ok(response);
   }
 }

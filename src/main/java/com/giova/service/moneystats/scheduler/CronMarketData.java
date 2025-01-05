@@ -75,15 +75,15 @@ public class CronMarketData {
                         // Salvataggio dei dati al DB
                         return Mono.just(marketDataService.saveMarketData(getMarketData, currency));
                       })
-                  .doOnError(
-                      e -> {
-                        LOG.error(
-                            "Error while processing MarketData for currency {}: {}",
-                            currency,
-                            e.getMessage());
-                        LOG.error("Rolling back MarketData for {}", currency);
-                        rollBackMarketData(fiatCurrencies, allMarketData);
-                      })
+                  // .doOnError(
+                  //    e -> {
+                  //      LOG.error(
+                  //          "Error while processing MarketData for currency {}: {}",
+                  //          currency,
+                  //          e.getMessage());
+                  //      LOG.error("Rolling back MarketData for {}", currency);
+                  //      rollBackMarketData(fiatCurrencies, allMarketData);
+                  //    })
                   // Aspetta 60 secondi tra una valuta e l'altra
                   .delaySubscription(Duration.ofSeconds(90));
             })

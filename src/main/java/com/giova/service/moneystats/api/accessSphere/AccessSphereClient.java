@@ -7,47 +7,18 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.webClient.UtilsUriBuilder;
-import io.github.giovannilamarmora.utils.webClient.WebClientRest;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
 @Logged
-public class AccessSphereClient {
-  private final WebClientRest webClientRest = new WebClientRest();
-
-  @Value(value = "${rest.client.access-sphere.client-id}")
-  private String clientID;
-
-  @Value(value = "${rest.client.access-sphere.token}")
-  private String registration_token;
-
-  @Value(value = "${rest.client.access-sphere.baseUrl}")
-  private String accessSphereBaseUrl;
-
-  @Value(value = "${rest.client.access-sphere.userInfo}")
-  private String getUserInfoUrl;
-
-  @Value(value = "${rest.client.access-sphere.register}")
-  private String registerUrl;
-
-  @Autowired private WebClient.Builder builder;
-
-  @PostConstruct
-  void init() {
-    webClientRest.setBaseUrl(accessSphereBaseUrl);
-    webClientRest.init(builder);
-  }
+public class AccessSphereClient extends AccessSphereConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<Response>> getUserInfo(
@@ -59,6 +30,7 @@ public class AccessSphereClient {
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     headers.add(HttpHeaders.AUTHORIZATION, access_token);
     if (!Utilities.isNullOrEmpty(sessionId)) headers.add("Session-ID", sessionId);
+    setTracing(headers);
 
     return webClientRest.perform(
         HttpMethod.GET,
@@ -77,6 +49,7 @@ public class AccessSphereClient {
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    setTracing(headers);
 
     return webClientRest.perform(
         HttpMethod.POST,

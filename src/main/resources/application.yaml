@@ -50,7 +50,7 @@ rest:
         #end: 60000
         end: 3600000
     forex:
-      active: true
+      active: false
       delay:
         start: 5000
         end: 10800000

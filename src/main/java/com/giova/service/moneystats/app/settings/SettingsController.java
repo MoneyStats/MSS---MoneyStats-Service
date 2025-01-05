@@ -15,10 +15,7 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 public interface SettingsController {
@@ -126,4 +123,34 @@ public interface SettingsController {
   Mono<ResponseEntity<Response>> contactUs(
       @RequestBody @Valid @Schema(description = "Support Body", implementation = Support.class)
           Support support);
+
+  /**
+   * API to clean the cache of the app
+   *
+   * @param token ADMIN token
+   * @return Cache cleaned
+   */
+  @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(description = "API to clean the cache", summary = "Cache Clean", tags = "Crypto")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content =
+          @Content(
+              schema = @Schema(implementation = Response.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@cache-clean.json")))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Invalid Token",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+  ResponseEntity<Response> cleanCache(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token);
 }

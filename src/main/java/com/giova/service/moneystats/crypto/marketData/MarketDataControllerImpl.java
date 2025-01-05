@@ -1,5 +1,7 @@
 package com.giova.service.moneystats.crypto.marketData;
 
+import com.giova.service.moneystats.config.roles.AppRole;
+import com.giova.service.moneystats.config.roles.Roles;
 import com.giova.service.moneystats.scheduler.CronMarketData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -62,6 +64,7 @@ public class MarketDataControllerImpl implements MarketDataController {
    * @return Successfully Response
    */
   @Override
+  @Roles(value = AppRole.MONEY_STATS_ADMIN)
   public ResponseEntity<Response> importMarketData(String token) {
     cronMarketData.scheduleAllCryptoAsset();
     Response response =
