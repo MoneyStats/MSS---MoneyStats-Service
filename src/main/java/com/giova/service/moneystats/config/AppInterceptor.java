@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.giova.service.moneystats.authentication.AuthException;
-import com.giova.service.moneystats.authentication.AuthService;
 import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.authentication.service.AuthRepository;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -51,7 +51,7 @@ public class AppInterceptor implements WebFilter {
   @Value(value = "${app.shouldNotFilter}")
   private List<String> shouldNotFilter;
 
-  @Autowired private AuthService authService;
+  @Autowired private AuthRepository authRepository;
 
   private static boolean isEmpty(String value) {
     return value == null || value.isBlank();
@@ -76,7 +76,7 @@ public class AppInterceptor implements WebFilter {
       return errorResponse(request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_008);
     }
 
-    return authService
+    return authRepository
         .authorize(authToken, sessionId)
         .flatMap(
             userInfoResponse -> {

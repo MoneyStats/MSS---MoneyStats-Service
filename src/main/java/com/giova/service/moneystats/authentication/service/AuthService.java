@@ -1,11 +1,11 @@
-package com.giova.service.moneystats.authentication;
+package com.giova.service.moneystats.authentication.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.giova.service.moneystats.api.accessSphere.AccessSphereClient;
-import com.giova.service.moneystats.api.accessSphere.dto.UserInfoResponse;
 import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
+import com.giova.service.moneystats.authentication.AuthException;
+import com.giova.service.moneystats.authentication.AuthMapper;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.config.roles.AppRole;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import com.giova.service.moneystats.utilities.RegEx;
 import com.giova.service.moneystats.utilities.Utils;
@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
 @Service
 @Logged
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements AuthRepository {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -40,31 +40,18 @@ public class AuthService {
 
   @Autowired private AccessSphereClient accessSphereClient;
 
+  /**
+   * Authorize request to Access Sphere
+   *
+   * @param access_token to be validated
+   * @param sessionId of the request
+   * @return User Info
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserData> authorize(String access_token, String sessionId) {
     return accessSphereClient
         .getUserInfo(access_token, sessionId, true)
-        .flatMap(
-            responseEntity -> {
-              if (responseEntity.getStatusCode().isError()
-                  || responseEntity.getBody() == null
-                  || responseEntity.getBody().getData() == null) {
-                throw new AuthException(
-                    ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
-              }
-              UserInfoResponse userInfoResponse =
-                  Mapper.convertObject(responseEntity.getBody().getData(), UserInfoResponse.class);
-              if (userInfoResponse.getUserInfo().getRoles().stream()
-                  .noneMatch(string -> Utils.isEnumValue(string, AppRole.class))) {
-                LOG.error(
-                    "The current user role {} not match with the app role",
-                    userInfoResponse.getUserInfo().getRoles());
-                throw new AuthException(
-                    ExceptionMap.ERR_AUTH_MSS_010, ExceptionMap.ERR_AUTH_MSS_010.getMessage());
-              }
-              return Mono.just(
-                  AuthMapper.mapAccessSphereUserToUserData(userInfoResponse.getUser()));
-            });
+        .flatMap(AuthMapper::verifyAndMapAccessSphereResponse);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

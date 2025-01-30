@@ -55,7 +55,7 @@ rest:
       active: ${SCHEDULER_FOREX_ACTIVE}
       delay:
         start: ${SCHEDULER_FOREX_DELAY_START:1800000}
-        end: ${SCHEDULER_FOREX_DELAY_END:10800000}
+        end: ${SCHEDULER_FOREX_DELAY_END:32400000}
     caching:
       active: true
   client:

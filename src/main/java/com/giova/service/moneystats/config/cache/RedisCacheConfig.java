@@ -2,6 +2,7 @@ package com.giova.service.moneystats.config.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -11,9 +12,12 @@ import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -185,6 +189,28 @@ public class RedisCacheConfig {
     template.setValueSerializer(valueSerializer);
 
     return template;
+  }
+
+  /**
+   * Caching Access Sphere UserInfo
+   *
+   * @param factory Redis
+   * @param mapper ObjectMapper
+   * @return UserInfoTemplate
+   */
+  @Bean
+  public ReactiveRedisTemplate<String, UserData> userDataTemplate(
+      ReactiveRedisConnectionFactory factory, ObjectMapper mapper) {
+
+    StringRedisSerializer keySerializer = new StringRedisSerializer();
+    Jackson2JsonRedisSerializer<UserData> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, UserData.class);
+
+    RedisSerializationContext.RedisSerializationContextBuilder<String, UserData> builder =
+        RedisSerializationContext.newSerializationContext(keySerializer);
+    RedisSerializationContext<String, UserData> context = builder.value(valueSerializer).build();
+
+    return new ReactiveRedisTemplate<>(factory, context);
   }
 
   // @Bean

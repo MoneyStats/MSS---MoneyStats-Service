@@ -80,11 +80,12 @@ public class WalletService {
     List<WalletEntity> walletEntity;
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
     ForexData forexData =
-        isLiveWallet
+        isLiveWallet && !Utilities.isNullOrEmpty(user.getSettings().getCryptoCurrency())
             ? forexDataService.getForexDataByCurrency(user.getSettings().getCryptoCurrency())
             : null;
     List<MarketData> marketData =
         (isLiveWallet || includeAssets || includeFullAssets)
+                && !Utilities.isNullOrEmpty(user.getSettings().getCryptoCurrency())
             ? marketDataService.getMarketData(user.getSettings().getCryptoCurrency())
             : null;
     List<LocalDate> getAllCryptoDates =

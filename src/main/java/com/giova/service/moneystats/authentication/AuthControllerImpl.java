@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
+import com.giova.service.moneystats.authentication.service.AuthService;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.tags.Tag;
