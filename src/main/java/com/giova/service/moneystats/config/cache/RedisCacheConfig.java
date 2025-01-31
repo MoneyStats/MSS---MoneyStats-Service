@@ -7,9 +7,9 @@ import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
 import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
-import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
-import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -25,18 +25,18 @@ public class RedisCacheConfig {
 
   public static final String REDIS_ERROR_LOG =
       "[Redis] Unable to connect to Redis, falling back to database: {}";
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   @Bean
-  public RedisTemplate<String, List<WalletEntity>> walletEntitiesTemplate(
+  public RedisTemplate<String, String> walletEntitiesTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<WalletEntity>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper.getTypeFactory().constructCollectionType(List.class, WalletEntity.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
 
-    RedisTemplate<String, List<WalletEntity>> template = new RedisTemplate<>();
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -125,16 +125,15 @@ public class RedisCacheConfig {
    * @return MarketDataTemplate
    */
   @Bean
-  public RedisTemplate<String, List<MarketDataEntity>> marketDataEntityTemplate(
+  public RedisTemplate<String, String> marketDataEntityTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<MarketData>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper.getTypeFactory().constructCollectionType(List.class, MarketDataEntity.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
 
-    RedisTemplate<String, List<MarketDataEntity>> template = new RedisTemplate<>();
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -174,7 +173,7 @@ public class RedisCacheConfig {
    * @return ForexDataTemplate
    */
   @Bean
-  public RedisTemplate<String, List<ForexDataEntity>> marketDataEntitiesTemplate(
+  public RedisTemplate<String, List<ForexDataEntity>> forexDataEntitiesTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();

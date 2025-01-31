@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.crypto.operations.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
@@ -76,5 +77,6 @@ public class OperationsEntity extends GenericEntity {
 
   @ManyToOne
   @JoinColumn(name = "ASSET_ID", nullable = false)
+  @JsonIgnore // 🔹 Evita la serializzazione ciclica
   private AssetEntity asset;
 }

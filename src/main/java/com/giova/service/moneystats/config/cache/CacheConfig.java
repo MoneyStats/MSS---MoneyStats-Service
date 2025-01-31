@@ -3,6 +3,9 @@ package com.giova.service.moneystats.config.cache;
 import com.giova.service.moneystats.app.wallet.database.WalletCacheService;
 import com.giova.service.moneystats.app.wallet.database.WalletDAOAdapter;
 import com.giova.service.moneystats.app.wallet.database.WalletRepository;
+import com.giova.service.moneystats.authentication.service.AuthCacheService;
+import com.giova.service.moneystats.authentication.service.AuthRepository;
+import com.giova.service.moneystats.authentication.service.AuthService;
 import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import com.giova.service.moneystats.crypto.asset.database.AssetDAOAdapter;
 import com.giova.service.moneystats.crypto.asset.database.AssetRepository;
@@ -60,5 +63,11 @@ public class CacheConfig {
   public ForexDataRepository getForexDataRepository() {
     if (redisCacheEnabled) return new ForexDataCacheService();
     return new ForexDataDAOAdapter();
+  }
+
+  @Bean(name = "authRepository")
+  public AuthRepository getAuthRepository() {
+    if (redisCacheEnabled) return new AuthCacheService();
+    return new AuthService();
   }
 }

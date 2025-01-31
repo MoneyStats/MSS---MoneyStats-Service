@@ -1,10 +1,13 @@
 package com.giova.service.moneystats.app.wallet.database;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
+import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Optional;
@@ -16,16 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class WalletCacheService implements WalletRepository {
+public class WalletCacheService extends CacheDataConfig implements WalletRepository {
 
-  private static final String CACHE_WALLETS_WITHOUT_DATA = "_wallets_without_assets_and_history";
-  private static final String CACHE_FULL_CRYPTO_WALLET_LIST = "_full_crypto_wallets_list";
-  private static final String CACHE_FULL_WALLET_LIST = "_full_wallets_list";
-  private static final String CACHE_WALLET_BY_ID = "_wallet_";
-
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private IWalletDAO walletDAO;
-  @Autowired private RedisTemplate<String, List<WalletEntity>> walletEntitiesTemplate;
+  @Autowired private RedisTemplate<String, String> walletEntitiesTemplate;
   @Autowired private RedisTemplate<String, WalletEntity> walletEntityTemplate;
 
   // @Autowired private ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate;
@@ -39,9 +36,11 @@ public class WalletCacheService implements WalletRepository {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserIdentifierWithoutAssetsAndHistory(String userId) {
-    String cacheKey = userId + CACHE_WALLETS_WITHOUT_DATA;
+    String cacheKey = application_name + SPACE + userId + CACHE_WALLETS_WITHOUT_DATA;
     try {
       return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<WalletEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Wallet into Database for userId {}", userId);
@@ -49,7 +48,8 @@ public class WalletCacheService implements WalletRepository {
                     walletDAO.findAllByUserIdentifierWithoutAssetsAndHistory(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
+                  String json = Mapper.writeObjectToString(wallets);
+                  walletEntitiesTemplate.opsForValue().set(cacheKey, json);
                 }
                 return wallets;
               });
@@ -68,16 +68,19 @@ public class WalletCacheService implements WalletRepository {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<WalletEntity> findAllByUserIdentifier(String userId) {
-    String cacheKey = userId + CACHE_FULL_WALLET_LIST;
+    String cacheKey = application_name + SPACE + userId + CACHE_FULL_WALLET_LIST;
     try {
       return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<WalletEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Full Wallet into Database for userId {}", userId);
                 List<WalletEntity> wallets = walletDAO.findAllByUserIdentifier(userId);
 
                 if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
+                  String json = Mapper.writeObjectToString(wallets);
+                  walletEntitiesTemplate.opsForValue().set(cacheKey, json);
                 }
                 return wallets;
               });
@@ -97,9 +100,10 @@ public class WalletCacheService implements WalletRepository {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public WalletEntity findWalletEntityById(Long id, String userId) {
-    String cacheKey = userId + CACHE_WALLET_BY_ID + id;
+    String cacheKey = application_name + SPACE + userId + CACHE_WALLET_BY_ID + id;
     try {
       return Optional.ofNullable(walletEntityTemplate.opsForValue().get(cacheKey))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] WalletEntity from Database by id {}", id);
@@ -194,9 +198,10 @@ public class WalletCacheService implements WalletRepository {
 
     try {
       // Cache key per wallets without assets and history
-      String keyWithoutAssetsAndHistory = userId + CACHE_WALLETS_WITHOUT_DATA;
+      String keyWithoutAssetsAndHistory =
+          application_name + SPACE + userId + CACHE_WALLETS_WITHOUT_DATA;
       // Cache key per full wallets list
-      String keyFullWallets = userId + CACHE_FULL_WALLET_LIST;
+      String keyFullWallets = application_name + SPACE + userId + CACHE_FULL_WALLET_LIST;
 
       if (!Utilities.isNullOrEmpty(
           walletEntitiesTemplate.opsForValue().get(keyWithoutAssetsAndHistory))) {

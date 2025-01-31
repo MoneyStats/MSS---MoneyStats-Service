@@ -29,7 +29,7 @@ spring:
     redis:
       repositories:
         enabled: false
-      enabled: false
+      enabled: true
       cron: 0 0 1 * * *
       host: pc-giovanni
       json: false
@@ -54,7 +54,7 @@ rest:
       delay:
         start: 5000
         end: 10800000
-    caching:
+    caching: # TODO: Controlla Utilizzo in caso usa la config di redis
       active: false
       cron: 0 0 1 * * MON
   client:

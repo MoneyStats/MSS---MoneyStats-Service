@@ -1,29 +1,27 @@
 package com.giova.service.moneystats.crypto.marketData.database;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MarketDataCacheService implements MarketDataRepository {
+public class MarketDataCacheService extends CacheDataConfig implements MarketDataRepository {
 
-  private static final String CACHE_MARKET_DATA = "market_data_";
-  private static final String CACHE_MARKET_DATA_FULL = "market_data_full";
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private IMarketDataDAO iMarketDataDAO;
 
-  @Autowired private RedisTemplate<String, List<MarketDataEntity>> marketDataEntityTemplate;
+  @Autowired private RedisTemplate<String, String> marketDataEntityTemplate;
 
   /**
    * Get all MarketData with currency
@@ -34,9 +32,11 @@ public class MarketDataCacheService implements MarketDataRepository {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<MarketDataEntity> findAllByCurrency(String currency) {
-    String cacheKey = CACHE_MARKET_DATA + currency;
+    String cacheKey = application_name + SPACE + CACHE_MARKET_DATA + currency;
     try {
       return Optional.ofNullable(marketDataEntityTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<MarketDataEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] MarketData into Database by currency {}", currency);
@@ -44,7 +44,8 @@ public class MarketDataCacheService implements MarketDataRepository {
                     iMarketDataDAO.findAllByCurrency(currency);
 
                 if (!Utilities.isNullOrEmpty(marketDataEntities)) {
-                  marketDataEntityTemplate.opsForValue().set(cacheKey, marketDataEntities);
+                  String json = Mapper.writeObjectToString(marketDataEntities);
+                  marketDataEntityTemplate.opsForValue().set(cacheKey, json);
                 }
                 return marketDataEntities;
               });
@@ -62,16 +63,19 @@ public class MarketDataCacheService implements MarketDataRepository {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public List<MarketDataEntity> findAll() {
-    String cacheKey = CACHE_MARKET_DATA_FULL;
+    String cacheKey = application_name + SPACE + CACHE_MARKET_DATA_FULL;
     try {
       return Optional.ofNullable(marketDataEntityTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<MarketDataEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] MarketData into Database");
                 List<MarketDataEntity> marketDataEntities = iMarketDataDAO.findAll();
 
                 if (!Utilities.isNullOrEmpty(marketDataEntities)) {
-                  marketDataEntityTemplate.opsForValue().set(cacheKey, marketDataEntities);
+                  String json = Mapper.writeObjectToString(marketDataEntities);
+                  marketDataEntityTemplate.opsForValue().set(cacheKey, json);
                 }
                 return marketDataEntities;
               });

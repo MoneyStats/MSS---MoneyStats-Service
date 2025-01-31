@@ -1,5 +1,6 @@
 package com.giova.service.moneystats.app.stats.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
@@ -42,9 +43,11 @@ public class StatsEntity extends GenericEntity {
 
   @ManyToOne
   @JoinColumn(name = "ASSET_ID")
+  @JsonIgnore // 🔹 Evita la serializzazione ciclica
   private AssetEntity asset;
 
   @ManyToOne
   @JoinColumn(name = "WALLET_ID")
+  @JsonIgnore // 🔹 Evita la serializzazione ciclica
   private WalletEntity wallet;
 }

@@ -3,15 +3,20 @@ package com.giova.service.moneystats.authentication.service;
 import com.giova.service.moneystats.api.accessSphere.AccessSphereClient;
 import com.giova.service.moneystats.authentication.AuthMapper;
 import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-public class AuthCacheService implements AuthRepository {
+@Component
+public class AuthCacheService extends CacheDataConfig implements AuthRepository {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private ReactiveRedisTemplate<String, UserData> userDataTemplate;
@@ -25,9 +30,10 @@ public class AuthCacheService implements AuthRepository {
    * @return User Info
    */
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public Mono<UserData> authorize(String access_token, String sessionId) {
     // Chiave di cache basata sui parametri
-    String cacheKey = "authorize:" + access_token + ":" + sessionId;
+    String cacheKey = application_name + SPACE + "authorize_" + sessionId;
 
     try {
       return userDataTemplate
@@ -40,19 +46,18 @@ public class AuthCacheService implements AuthRepository {
               })
           .switchIfEmpty(
               Mono.defer(
-                      () -> {
-                        LOG.info(
-                            "[Caching] UserInfo into Access Sphere for session id {}", sessionId);
-                        return accessSphereClient
-                            .getUserInfo(access_token, sessionId, true)
-                            .flatMap(AuthMapper::verifyAndMapAccessSphereResponse);
-                      })
+                      () ->
+                          accessSphereClient
+                              .getUserInfo(access_token, sessionId, true)
+                              .flatMap(AuthMapper::verifyAndMapAccessSphereResponse))
                   .doOnSuccess(
                       userData -> {
+                        LOG.info(
+                            "[Caching] UserInfo into Access Sphere for session id {}", sessionId);
                         userDataTemplate
                             .opsForValue()
-                            .set(cacheKey, userData, Duration.ofMinutes(10))
-                            .thenReturn(userData);
+                            .set(cacheKey, userData, Duration.ofMinutes(30))
+                            .subscribe(); // Assicura che l'operazione di salvataggio venga eseguita
                       }));
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
