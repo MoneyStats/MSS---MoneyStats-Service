@@ -121,9 +121,9 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
   public void evictMarketDataCache(String currency) {
     try {
       // Cache key per wallets without assets and history
-      String keyMarketData = CACHE_MARKET_DATA + currency;
+      String keyMarketData = application_name + SPACE + CACHE_MARKET_DATA + currency;
       // Cache key per full wallets list
-      String keyFullMarketData = CACHE_MARKET_DATA_FULL;
+      String keyFullMarketData = application_name + SPACE + CACHE_MARKET_DATA_FULL;
 
       if (!Utilities.isNullOrEmpty(marketDataEntityTemplate.opsForValue().get(keyMarketData))) {
         marketDataEntityTemplate.delete(keyMarketData);

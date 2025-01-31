@@ -1,5 +1,7 @@
 package com.giova.service.moneystats.crypto.asset.database;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
@@ -7,27 +9,20 @@ import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AssetCacheService implements AssetRepository {
+public class AssetCacheService extends CacheDataConfig implements AssetRepository {
 
-  private static final String CACHE_ASSETS_BY_IDENTIFIER = "_assets_identifier_";
-  private static final String CACHE_ALL_ASSETS_BY_USER = "_assets_by_user";
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-  @Autowired private RedisTemplate<String, List<AssetEntity>> assetEntityTemplate;
-  @Autowired private RedisTemplate<String, List<AssetLivePrice>> assetLivePriceTemplate;
-
-  @Autowired
-  private RedisTemplate<String, List<AssetWithoutOpAndStats>> assetWithoutOpAndStatsTemplate;
-
+  @Autowired private RedisTemplate<String, String> assetEntityTemplate;
+  @Autowired private RedisTemplate<String, String> assetLivePriceTemplate;
+  @Autowired private RedisTemplate<String, String> assetWithoutOpAndStatsTemplate;
   @Autowired private IAssetDAO assetDAO;
 
   /**
@@ -39,9 +34,11 @@ public class AssetCacheService implements AssetRepository {
    */
   @Override
   public List<AssetLivePrice> findAssetsByWalletIds(List<Long> walletIds, String userId) {
-    String cacheKey = userId + "_assets_live_price_list";
+    String cacheKey = application_name + SPACE + userId + CACHE_ASSETS_LIVE_PRICE_LIST;
     try {
       return Optional.ofNullable(assetLivePriceTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<AssetLivePrice>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Assets Live Price into Database for userId {}", userId);
@@ -49,8 +46,10 @@ public class AssetCacheService implements AssetRepository {
                 return Optional.ofNullable(assetDAO.findAssetsByWalletIds(walletIds))
                     .map(
                         assetEntities -> {
-                          if (!assetEntities.isEmpty())
-                            assetLivePriceTemplate.opsForValue().set(cacheKey, assetEntities);
+                          if (!assetEntities.isEmpty()) {
+                            String json = Mapper.writeObjectToString(assetEntities);
+                            assetLivePriceTemplate.opsForValue().set(cacheKey, json);
+                          }
                           return assetEntities;
                         })
                     .orElse(Collections.emptyList());
@@ -70,9 +69,11 @@ public class AssetCacheService implements AssetRepository {
    */
   @Override
   public List<AssetEntity> findAllByWalletIds(List<Long> walletIds, String userId) {
-    String cacheKey = userId + "_assets_full_list_by_wallet_ids";
+    String cacheKey = application_name + SPACE + userId + CACHE_ASSETS_FULL_LIST_BY_WALLETS_IDS;
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<AssetEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Assets into Database for userId {}", userId);
@@ -80,8 +81,10 @@ public class AssetCacheService implements AssetRepository {
                 return Optional.ofNullable(assetDAO.findAllByWalletIds(walletIds))
                     .map(
                         assetEntities -> {
-                          if (!assetEntities.isEmpty())
-                            assetEntityTemplate.opsForValue().set(cacheKey, assetEntities);
+                          if (!assetEntities.isEmpty()) {
+                            String json = Mapper.writeObjectToString(assetEntities);
+                            assetEntityTemplate.opsForValue().set(cacheKey, json);
+                          }
                           return assetEntities;
                         })
                     .orElse(Collections.emptyList());
@@ -100,10 +103,13 @@ public class AssetCacheService implements AssetRepository {
    * @return Assets list without operations and histories
    */
   @Override
-  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, String userId) {
-    String cacheKey = userId + "_assets_without_operation_list";
+  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(
+      List<Long> walletIds, String userId) {
+    String cacheKey = application_name + SPACE + userId + CACHE_ASSETS_WITHOUT_OPERATIONS_LIST;
     try {
       return Optional.ofNullable(assetWithoutOpAndStatsTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<AssetWithoutOpAndStats>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Assets Lite into Database for userId {}", userId);
@@ -111,10 +117,10 @@ public class AssetCacheService implements AssetRepository {
                 return Optional.ofNullable(assetDAO.findAllAssetsByWalletIds(walletIds))
                     .map(
                         assetEntities -> {
-                          if (!assetEntities.isEmpty())
-                            assetWithoutOpAndStatsTemplate
-                                .opsForValue()
-                                .set(cacheKey, assetEntities);
+                          if (!assetEntities.isEmpty()) {
+                            String json = Mapper.writeObjectToString(assetEntities);
+                            assetWithoutOpAndStatsTemplate.opsForValue().set(cacheKey, json);
+                          }
                           return assetEntities;
                         })
                     .orElse(Collections.emptyList());
@@ -134,9 +140,11 @@ public class AssetCacheService implements AssetRepository {
    */
   @Override
   public List<AssetEntity> findAllByIdentifierAndUserId(String identifier, String userId) {
-    String cacheKey = userId + CACHE_ASSETS_BY_IDENTIFIER + identifier;
+    String cacheKey = application_name + SPACE + userId + CACHE_ASSETS_BY_IDENTIFIER + identifier;
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<AssetEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Asset {} into Database for userId {}", identifier, userId);
@@ -145,8 +153,10 @@ public class AssetCacheService implements AssetRepository {
                         assetDAO.findAllByIdentifierAndUserIdentifier(identifier, userId))
                     .map(
                         assetEntities -> {
-                          if (!assetEntities.isEmpty())
-                            assetEntityTemplate.opsForValue().set(cacheKey, assetEntities);
+                          if (!assetEntities.isEmpty()) {
+                            String json = Mapper.writeObjectToString(assetEntities);
+                            assetEntityTemplate.opsForValue().set(cacheKey, json);
+                          }
                           return assetEntities;
                         })
                     .orElse(Collections.emptyList());
@@ -165,9 +175,11 @@ public class AssetCacheService implements AssetRepository {
    */
   @Override
   public List<AssetEntity> findAllByUserIdOrderByRank(String userId) {
-    String cacheKey = userId + CACHE_ALL_ASSETS_BY_USER;
+    String cacheKey = application_name + SPACE + userId + CACHE_ALL_ASSETS_BY_USER;
     try {
       return Optional.ofNullable(assetEntityTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<AssetEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] Asset Full list into Database for userId {}", userId);
@@ -175,8 +187,10 @@ public class AssetCacheService implements AssetRepository {
                 return Optional.ofNullable(assetDAO.findAllByUserIdentifierOrderByRank(userId))
                     .map(
                         assetEntities -> {
-                          if (!assetEntities.isEmpty())
-                            assetEntityTemplate.opsForValue().set(cacheKey, assetEntities);
+                          if (!assetEntities.isEmpty()) {
+                            String json = Mapper.writeObjectToString(assetEntities);
+                            assetEntityTemplate.opsForValue().set(cacheKey, json);
+                          }
                           return assetEntities;
                         })
                     .orElse(Collections.emptyList());

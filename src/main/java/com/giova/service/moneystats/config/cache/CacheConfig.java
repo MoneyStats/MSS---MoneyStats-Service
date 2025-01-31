@@ -18,12 +18,10 @@ import com.giova.service.moneystats.crypto.marketData.database.MarketDataReposit
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 @Configuration
 @EnableCaching
@@ -33,8 +31,6 @@ public class CacheConfig {
 
   @Value(value = "${spring.data.redis.enabled:false}")
   private Boolean redisCacheEnabled;
-
-  @Autowired private RedisConnectionFactory redisConnectionFactory;
 
   @PostConstruct
   void init() {

@@ -3,13 +3,7 @@ package com.giova.service.moneystats.config.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
-import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
-import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -25,7 +19,6 @@ public class RedisCacheConfig {
 
   public static final String REDIS_ERROR_LOG =
       "[Redis] Unable to connect to Redis, falling back to database: {}";
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   @Bean
   public RedisTemplate<String, String> walletEntitiesTemplate(
@@ -62,16 +55,19 @@ public class RedisCacheConfig {
   }
 
   @Bean
-  public RedisTemplate<String, List<AssetEntity>> assetEntityTemplate(
+  public RedisTemplate<String, String> assetEntityTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<AssetEntity>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper.getTypeFactory().constructCollectionType(List.class, AssetEntity.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
 
-    RedisTemplate<String, List<AssetEntity>> template = new RedisTemplate<>();
+    // Jackson2JsonRedisSerializer<List<AssetEntity>> valueSerializer =
+    //    new Jackson2JsonRedisSerializer<>(
+    //        mapper.getTypeFactory().constructCollectionType(List.class, AssetEntity.class));
+
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -80,16 +76,19 @@ public class RedisCacheConfig {
   }
 
   @Bean
-  public RedisTemplate<String, List<AssetLivePrice>> assetLivePriceTemplate(
+  public RedisTemplate<String, String> assetLivePriceTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<AssetLivePrice>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper.getTypeFactory().constructCollectionType(List.class, AssetLivePrice.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
 
-    RedisTemplate<String, List<AssetLivePrice>> template = new RedisTemplate<>();
+    // Jackson2JsonRedisSerializer<List<AssetLivePrice>> valueSerializer =
+    //    new Jackson2JsonRedisSerializer<>(
+    //        mapper.getTypeFactory().constructCollectionType(List.class, AssetLivePrice.class));
+
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -98,18 +97,21 @@ public class RedisCacheConfig {
   }
 
   @Bean
-  public RedisTemplate<String, List<AssetWithoutOpAndStats>> assetWithoutOpAndStatsTemplate(
+  public RedisTemplate<String, String> assetWithoutOpAndStatsTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<AssetWithoutOpAndStats>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper
-                .getTypeFactory()
-                .constructCollectionType(List.class, AssetWithoutOpAndStats.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
 
-    RedisTemplate<String, List<AssetWithoutOpAndStats>> template = new RedisTemplate<>();
+    // Jackson2JsonRedisSerializer<List<AssetWithoutOpAndStats>> valueSerializer =
+    //    new Jackson2JsonRedisSerializer<>(
+    //        mapper
+    //            .getTypeFactory()
+    //            .constructCollectionType(List.class, AssetWithoutOpAndStats.class));
+
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -173,16 +175,18 @@ public class RedisCacheConfig {
    * @return ForexDataTemplate
    */
   @Bean
-  public RedisTemplate<String, List<ForexDataEntity>> forexDataEntitiesTemplate(
+  public RedisTemplate<String, String> forexDataEntitiesTemplate(
       RedisConnectionFactory factory, ObjectMapper mapper) {
 
     StringRedisSerializer keySerializer = new StringRedisSerializer();
 
-    Jackson2JsonRedisSerializer<List<ForexDataEntity>> valueSerializer =
-        new Jackson2JsonRedisSerializer<>(
-            mapper.getTypeFactory().constructCollectionType(List.class, ForexDataEntity.class));
+    Jackson2JsonRedisSerializer<String> valueSerializer =
+        new Jackson2JsonRedisSerializer<>(mapper, String.class);
+    // Jackson2JsonRedisSerializer<List<ForexDataEntity>> valueSerializer =
+    //    new Jackson2JsonRedisSerializer<>(
+    //        mapper.getTypeFactory().constructCollectionType(List.class, ForexDataEntity.class));
 
-    RedisTemplate<String, List<ForexDataEntity>> template = new RedisTemplate<>();
+    RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(keySerializer);
     template.setValueSerializer(valueSerializer);
@@ -211,17 +215,4 @@ public class RedisCacheConfig {
 
     return new ReactiveRedisTemplate<>(factory, context);
   }
-
-  // @Bean
-  // public ReactiveRedisTemplate<String, WalletEntity> walletEntityTemplate(
-  //    ReactiveRedisConnectionFactory factory, ObjectMapper mapper) {
-  //  StringRedisSerializer keySerializer = new StringRedisSerializer();
-  //  Jackson2JsonRedisSerializer<WalletEntity> valueSerializer =
-  //      new Jackson2JsonRedisSerializer<>(mapper, WalletEntity.class);
-  //  RedisSerializationContext.RedisSerializationContextBuilder<String, WalletEntity> builder =
-  //      RedisSerializationContext.newSerializationContext(keySerializer);
-  //  RedisSerializationContext<String, WalletEntity> context =
-  //      builder.value(valueSerializer).build();
-  //  return new ReactiveRedisTemplate<>(factory, context);
-  // }
 }

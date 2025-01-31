@@ -19,7 +19,7 @@ public class CronCachingReset {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  @Value(value = "#{new Boolean(${rest.scheduled.caching.active:false})}")
+  @Value(value = "#{new Boolean(${spring.data.redis.enabled:false})}")
   @Autowired
   private Boolean isSchedulerActive;
 
@@ -28,7 +28,7 @@ public class CronCachingReset {
   @Autowired private ForexDataCacheService forexDataCacheService;
   @Autowired private AssetCacheService assetCacheService;
 
-  @Scheduled(cron = "${rest.scheduled.caching.cron}")
+  @Scheduled(cron = "${spring.data.redis.cron}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleCleanCache() {
     LOG.info("[Clean-Cache] Scheduler Started at {}", LocalDateTime.now());

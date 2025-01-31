@@ -1,36 +1,35 @@
 package com.giova.service.moneystats.crypto.forex.database;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ForexDataCacheService implements ForexDataRepository {
+public class ForexDataCacheService extends CacheDataConfig implements ForexDataRepository {
 
-  private static final String CACHE_FOREX_DATA_BY_CURRENCY = "forex_data_";
-  private static final String CACHE_FOREX_DATA = "forex_data_all";
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private IForexDAO iForexDAO;
 
   @Autowired private RedisTemplate<String, ForexDataEntity> forexDataEntityTemplate;
-  @Autowired private RedisTemplate<String, List<ForexDataEntity>> forexDataEntitiesTemplate;
+  @Autowired private RedisTemplate<String, String> forexDataEntitiesTemplate;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public ForexDataEntity findByCurrency(String currency) {
-    String cacheKey = CACHE_FOREX_DATA_BY_CURRENCY + currency;
+    String cacheKey = application_name + SPACE + CACHE_FOREX_DATA_BY_CURRENCY + currency;
     try {
       return Optional.ofNullable(forexDataEntityTemplate.opsForValue().get(cacheKey))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] ForexData into Database by currency {}", currency);
@@ -54,16 +53,19 @@ public class ForexDataCacheService implements ForexDataRepository {
    */
   @Override
   public List<ForexDataEntity> findAll() {
-    String cacheKey = CACHE_FOREX_DATA;
+    String cacheKey = application_name + SPACE + CACHE_FOREX_DATA;
     try {
       return Optional.ofNullable(forexDataEntitiesTemplate.opsForValue().get(cacheKey))
+          .map(s -> Mapper.readObject(s, new TypeReference<List<ForexDataEntity>>() {}))
+          .map(cache -> logCache(cache, cacheKey))
           .orElseGet(
               () -> {
                 LOG.info("[Caching] All ForexData into Database");
                 List<ForexDataEntity> forexDataEntity = iForexDAO.findAll();
 
                 if (!Utilities.isNullOrEmpty(forexDataEntity)) {
-                  forexDataEntitiesTemplate.opsForValue().set(cacheKey, forexDataEntity);
+                  String json = Mapper.writeObjectToString(forexDataEntity);
+                  forexDataEntitiesTemplate.opsForValue().set(cacheKey, json);
                 }
                 return forexDataEntity;
               });
@@ -116,8 +118,9 @@ public class ForexDataCacheService implements ForexDataRepository {
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public void evictAllForexDataCache(String currency) {
     try {
-      String keyForexDataByCurrency = CACHE_FOREX_DATA_BY_CURRENCY + currency;
-      String keyFullForexData = CACHE_FOREX_DATA;
+      String keyForexDataByCurrency =
+          application_name + SPACE + CACHE_FOREX_DATA_BY_CURRENCY + currency;
+      String keyFullForexData = application_name + SPACE + CACHE_FOREX_DATA;
 
       if (!Utilities.isNullOrEmpty(
           forexDataEntityTemplate.opsForValue().get(keyForexDataByCurrency))) {
