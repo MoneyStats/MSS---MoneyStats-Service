@@ -30,5 +30,6 @@ public class JWTData {
   private boolean email_verified;
   private List<String> roles;
   private OAuthType type;
+  private String client_id;
   private Map<String, Object> attributes;
 }

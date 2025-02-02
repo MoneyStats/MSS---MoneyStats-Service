@@ -1,7 +1,7 @@
 package com.giova.service.moneystats.utilities;
 
+import com.giova.service.moneystats.app.settings.dto.Status;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

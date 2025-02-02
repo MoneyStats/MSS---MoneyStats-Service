@@ -3,6 +3,7 @@ package com.giova.service.moneystats.app.settings;
 import com.giova.service.moneystats.app.model.GithubIssues;
 import com.giova.service.moneystats.app.model.Support;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
+import com.giova.service.moneystats.authentication.service.AuthCacheService;
 import com.giova.service.moneystats.config.roles.AppRole;
 import com.giova.service.moneystats.config.roles.Roles;
 import com.giova.service.moneystats.scheduler.CronCachingReset;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Logged
@@ -30,6 +32,7 @@ public class SettingsControllerImpl implements SettingsController {
 
   @Autowired private SettingsService settingsService;
   @Autowired private CronCachingReset cronCachingReset;
+  @Autowired private AuthCacheService authCacheService;
 
   /**
    * API to report a BUG
@@ -89,8 +92,10 @@ public class SettingsControllerImpl implements SettingsController {
   @Override
   @Roles(value = AppRole.MONEY_STATS_ADMIN)
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> cleanCache(String token) {
-    cronCachingReset.scheduleCleanCache();
+  public ResponseEntity<Response> cleanCache(
+      ServerWebExchange exchange, Boolean isUserInfo, String token) {
+    authCacheService.evictAuthenticationCache(exchange);
+    if (!isUserInfo) cronCachingReset.scheduleCleanCache();
     Response response =
         new Response(
             HttpStatus.OK.value(), "Cache cleaned successfully", TraceUtils.getSpanID(), null);

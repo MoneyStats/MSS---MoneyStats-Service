@@ -40,8 +40,8 @@ public class CacheDataConfig {
   @Value("${spring.application.name}")
   public String application_name;
 
-  @Value("${spring.application.name}")
-  public String cache_duration;
+  @Value(value = "#{new Boolean(${spring.data.redis.enabled:false})}")
+  public Boolean redisCacheEnabled;
 
   public <T> T logCache(T cached, String cacheKey) {
     LOG.info(CACHE_HIT, cacheKey);

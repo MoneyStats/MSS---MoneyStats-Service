@@ -76,4 +76,14 @@ public class AssetEntity extends GenericEntity {
   @OrderBy(value = "date")
   @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
+
+  @Transient // Questo campo non viene salvato nel database
+  private Long walletId;
+
+  @PostLoad
+  private void init() {
+    if (this.wallet != null) {
+      this.walletId = this.wallet.getId();
+    }
+  }
 }

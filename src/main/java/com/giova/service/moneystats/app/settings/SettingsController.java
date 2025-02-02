@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public interface SettingsController {
@@ -149,6 +150,10 @@ public interface SettingsController {
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@invalid-token-exception.json")))
   ResponseEntity<Response> cleanCache(
+      ServerWebExchange exchange,
+      @RequestParam(value = "isUserInfo", required = false, defaultValue = "false")
+          @Schema(description = "Use to delete the cache of the user session", example = "true")
+          Boolean isUserInfo,
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")

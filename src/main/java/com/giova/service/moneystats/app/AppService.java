@@ -2,12 +2,12 @@ package com.giova.service.moneystats.app;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.giova.service.moneystats.app.model.Dashboard;
+import com.giova.service.moneystats.app.settings.dto.Status;
 import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import com.giova.service.moneystats.settings.dto.Status;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;

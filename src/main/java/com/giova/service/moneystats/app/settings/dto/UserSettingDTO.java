@@ -1,4 +1,4 @@
-package com.giova.service.moneystats.settings.dto;
+package com.giova.service.moneystats.app.settings.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

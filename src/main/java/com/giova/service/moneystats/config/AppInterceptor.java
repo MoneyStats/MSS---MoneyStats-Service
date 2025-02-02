@@ -2,9 +2,6 @@ package com.giova.service.moneystats.config;
 
 import static io.github.giovannilamarmora.utils.exception.UtilsException.getExceptionResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.authentication.service.AuthRepository;
@@ -42,10 +39,6 @@ import reactor.core.publisher.Mono;
 public class AppInterceptor implements WebFilter {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  private final ObjectMapper objectMapper =
-      new ObjectMapper()
-          .registerModule(new JavaTimeModule())
-          .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
   private final UserData userInfo;
 
   @Value(value = "${app.shouldNotFilter}")
@@ -93,7 +86,6 @@ public class AppInterceptor implements WebFilter {
             })
         .onErrorResume(
             throwable -> {
-              LOG.error("Authorization failed: {}", throwable.getMessage());
               if (throwable instanceof AuthException error) {
                 return errorResponse(
                     request, response, exceptionResponse, (ExceptionMap) error.getExceptionCode());

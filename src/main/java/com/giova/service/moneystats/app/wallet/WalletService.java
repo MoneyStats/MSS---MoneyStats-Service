@@ -31,10 +31,8 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,6 +124,19 @@ public class WalletService {
       List<Long> walletIds = walletEntity.stream().map(WalletEntity::getId).toList();
       List<AssetEntity> assetFulls =
           assetRepository.findAllByWalletIds(walletIds, user.getIdentifier());
+
+      // 🔥 Associa manualmente i wallet agli asset (se il campo wallet è null)
+      Map<Long, WalletEntity> walletMap =
+          walletEntity.stream().collect(Collectors.toMap(WalletEntity::getId, w -> w));
+
+      assetFulls.forEach(
+          asset -> {
+            if (asset.getWallet() == null) {
+              asset.setWallet(
+                  walletMap.get(asset.getWalletId())); // Usa un campo walletId se presente
+            }
+          });
+
       walletEntity =
           walletEntity.stream()
               .peek(

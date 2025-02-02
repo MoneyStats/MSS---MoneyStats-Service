@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.config.roles;
 
 import com.giova.service.moneystats.authentication.AuthException;
+import com.giova.service.moneystats.authentication.AuthMapper;
 import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -39,6 +40,9 @@ public class RolesConfig implements Serializable {
     MethodSignature signature = (MethodSignature) proceedingJoinPoint.getSignature();
     Method method = signature.getMethod();
     Roles rolesAnnotation = method.getAnnotation(Roles.class);
+
+    if (AuthMapper.isUserInfoDeleteCache(proceedingJoinPoint, method))
+      return proceedingJoinPoint.proceed();
 
     if (rolesAnnotation != null) {
       AppRole[] requiredRoles = rolesAnnotation.value();
