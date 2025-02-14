@@ -8,7 +8,7 @@ import com.giova.service.moneystats.crypto.forex.entity.ForexDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +104,7 @@ public class ForexDataService {
         .getAnyApiForexData(currency)
         .flatMap(
             exchangeRatesList -> {
-              if (!Utilities.isNullOrEmpty(exchangeRatesList.getBody())) {
+              if (!ObjectToolkit.isNullOrEmpty(exchangeRatesList.getBody())) {
                 LOG.error("Error on fetching Exchange Rates");
                 throw new ForexDataException(
                     "An error occurred during calling Exchange Rates, empty body");

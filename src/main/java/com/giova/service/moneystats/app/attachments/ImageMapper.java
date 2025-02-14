@@ -4,7 +4,7 @@ import com.giova.service.moneystats.app.attachments.dto.Image;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,7 +40,7 @@ public class ImageMapper {
                   }
                 });
     String contentType =
-        Utilities.isNullOrEmpty(file.headers().getContentType())
+        ObjectToolkit.isNullOrEmpty(file.headers().getContentType())
             ? null
             : Objects.requireNonNull(file.headers().getContentType()).toString();
     return getByteArray.map(

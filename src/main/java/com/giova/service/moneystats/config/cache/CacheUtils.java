@@ -1,6 +1,6 @@
 package com.giova.service.moneystats.config.cache;
 
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class CacheUtils {
       LOG.debug("Redis connection factory is available for {}.", dataType);
       RedisConnection connection = template.getConnectionFactory().getConnection();
 
-      if (!Utilities.isNullOrEmpty(connection)) {
+      if (!ObjectToolkit.isNullOrEmpty(connection)) {
         LOG.debug("Redis connection established successfully for {}.", dataType);
         Set<String> keys = template.keys("*");
 

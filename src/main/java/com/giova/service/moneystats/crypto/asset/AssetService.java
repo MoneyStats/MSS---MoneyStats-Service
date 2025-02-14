@@ -15,7 +15,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -192,12 +192,12 @@ public class AssetService {
           ResponseEntity<Response> saveWallet =
               walletService.addOrUpdateWallet(wallet, isLiveWallet, null);
           message.append(wallet.getAssets().getLast().getName()).append(" ");
-          if (!Utilities.isNullOrEmpty(saveWallet.getBody()))
+          if (!ObjectToolkit.isNullOrEmpty(saveWallet.getBody()))
             walletRes.add((Wallet) Objects.requireNonNull(saveWallet.getBody()).getData());
         });
     message.append("Successfully saved!");
 
-    if (!Utilities.isNullOrEmpty(walletRes)) {
+    if (!ObjectToolkit.isNullOrEmpty(walletRes)) {
       assetRepository.clearAllWalletsCache();
     }
 
@@ -226,12 +226,12 @@ public class AssetService {
           ResponseEntity<Response> saveWallet =
               walletService.addOrUpdateWallet(wallet, isLiveWallet, null);
           message.append(wallet.getAssets().getLast().getName()).append(" ");
-          if (!Utilities.isNullOrEmpty(saveWallet.getBody()))
+          if (!ObjectToolkit.isNullOrEmpty(saveWallet.getBody()))
             walletRes.add((Wallet) Objects.requireNonNull(saveWallet.getBody()).getData());
         });
     message.append("Successfully updated!");
 
-    if (!Utilities.isNullOrEmpty(walletRes)) {
+    if (!ObjectToolkit.isNullOrEmpty(walletRes)) {
       assetRepository.clearAllWalletsCache();
     }
 

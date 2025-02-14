@@ -33,7 +33,7 @@ spring:
       cron: 0 0 1 * * MON
       host: pc-giovanni
       json: false
-      password: password
+      password: Innavoig.94
       port: 6379
       sslEnabled: false
       #sslTruststore: path of the truststore (.jks file)

@@ -16,7 +16,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import jakarta.transaction.Transactional;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +64,7 @@ public class SettingsService {
     LOG.info("Backup data for user {}", user.getUsername());
 
     ResponseEntity<Response> getWallets = walletService.getAllWallets(false, true, true, true);
-    if (Utilities.isNullOrEmpty(getWallets.getBody())) {
+    if (ObjectToolkit.isNullOrEmpty(getWallets.getBody())) {
       LOG.error("There is no Wallet saved, backup aborted");
       Response response =
           new Response(

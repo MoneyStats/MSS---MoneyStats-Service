@@ -20,13 +20,12 @@ import com.giova.service.moneystats.crypto.marketData.MarketDataService;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,12 +77,12 @@ public class WalletService {
     List<WalletEntity> walletEntity;
     /* If you have the live included you can get the Forex Data, otherwise we do not need it */
     ForexData forexData =
-        isLiveWallet && !Utilities.isNullOrEmpty(user.getSettings().getCryptoCurrency())
+        isLiveWallet && !ObjectToolkit.isNullOrEmpty(user.getSettings().getCryptoCurrency())
             ? forexDataService.getForexDataByCurrency(user.getSettings().getCryptoCurrency())
             : null;
     List<MarketData> marketData =
         (isLiveWallet || includeAssets || includeFullAssets)
-                && !Utilities.isNullOrEmpty(user.getSettings().getCryptoCurrency())
+                && !ObjectToolkit.isNullOrEmpty(user.getSettings().getCryptoCurrency())
             ? marketDataService.getMarketData(user.getSettings().getCryptoCurrency())
             : null;
     List<LocalDate> getAllCryptoDates =
@@ -202,7 +201,7 @@ public class WalletService {
     Wallet walletToReturn = null;
 
     String message = "";
-    if (Utilities.isNullOrEmpty(walletEntity)) {
+    if (ObjectToolkit.isNullOrEmpty(walletEntity)) {
       message = "No Wallet found, insert new Wallet to get it!";
     } else {
       message = "Found " + walletEntity.getName() + " Wallet";
@@ -264,7 +263,7 @@ public class WalletService {
 
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
-    if (!Utilities.isNullOrEmpty(saved.getAssets()))
+    if (!ObjectToolkit.isNullOrEmpty(saved.getAssets()))
       marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
@@ -292,14 +291,14 @@ public class WalletService {
      * I need to check if is an Update Wallet, if the wallet is live I need to prevent the data to
      * return the wrong balance, caused because of the live wallet
      */
-    if (!Utilities.isNullOrEmpty(wallet.getId()) && live) {
+    if (!ObjectToolkit.isNullOrEmpty(wallet.getId()) && live) {
       WalletEntity getFromDB =
           walletRepository.findWalletEntityById(wallet.getId(), user.getIdentifier());
       WalletMapper.mapWalletEntityToBeSaved(walletEntity, getFromDB);
     }
 
     /** If the wallet is to delete I need to get the full wallet to be deleted from the database */
-    if (!Utilities.isNullOrEmpty(wallet.getImgName())) {
+    if (!ObjectToolkit.isNullOrEmpty(wallet.getImgName())) {
       LOG.debug("Building image with filename {}", wallet.getImgName());
       Image image = imageService.getAttachment(wallet.getImgName());
       imageService.removeAttachment(wallet.getImgName());
@@ -312,7 +311,7 @@ public class WalletService {
 
     WalletEntity saved = walletRepository.save(walletEntity);
     List<MarketData> marketData = Collections.emptyList();
-    if (!Utilities.isNullOrEmpty(saved.getAssets()))
+    if (!ObjectToolkit.isNullOrEmpty(saved.getAssets()))
       marketData = marketDataService.getMarketData(user.getSettings().getCryptoCurrency());
 
     Wallet walletToReturn = WalletMapper.fromWalletEntityToWallet(saved, null, marketData);
@@ -331,7 +330,7 @@ public class WalletService {
                 wallet -> {
                   WalletEntity walletEntity = WalletMapper.fromWalletToWalletEntity(wallet, user);
 
-                  if (!Utilities.isNullOrEmpty(wallet.getImgName())) {
+                  if (!ObjectToolkit.isNullOrEmpty(wallet.getImgName())) {
                     LOG.info("Building attachment with filename {}", wallet.getImgName());
                     Image image = imageService.getAttachment(wallet.getImgName());
                     imageService.removeAttachment(wallet.getImgName());
@@ -370,15 +369,15 @@ public class WalletService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public ResponseEntity<Response> getCryptoWallets(Boolean live) throws UtilsException {
+  public ResponseEntity<Response> getCryptoWallets(Boolean live) {
     String CRYPTO = "Crypto";
 
     Boolean isLiveWallet = Utils.isLiveWallet(live, user);
     List<Wallet> wallets = new ArrayList<>();
 
     ResponseEntity<Response> responseEntityWallet = getAllWallets(isLiveWallet, false, true, true);
-    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-        && !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData())) {
+    if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+        && !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData())) {
       wallets =
           Mapper.convertObject(
               responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});

@@ -8,11 +8,9 @@ import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -203,20 +201,20 @@ public class WalletCacheService extends CacheDataConfig implements WalletReposit
       // Cache key per full wallets list
       String keyFullWallets = application_name + SPACE + userId + CACHE_FULL_WALLET_LIST;
 
-      if (!Utilities.isNullOrEmpty(
+      if (!ObjectToolkit.isNullOrEmpty(
           walletEntitiesTemplate.opsForValue().get(keyWithoutAssetsAndHistory))) {
         walletEntitiesTemplate.delete(keyWithoutAssetsAndHistory);
         LOG.info("Cache evicted for key: {}", keyWithoutAssetsAndHistory);
       }
 
-      if (!Utilities.isNullOrEmpty(walletEntitiesTemplate.opsForValue().get(keyFullWallets))) {
+      if (!ObjectToolkit.isNullOrEmpty(walletEntitiesTemplate.opsForValue().get(keyFullWallets))) {
         walletEntitiesTemplate.delete(keyFullWallets);
         LOG.info("Cache evicted for key: {}", keyFullWallets);
       }
 
       String keyWalletById = userId + CACHE_WALLET_BY_ID + wallet.getId();
 
-      if (!Utilities.isNullOrEmpty(walletEntityTemplate.opsForValue().get(keyWalletById))) {
+      if (!ObjectToolkit.isNullOrEmpty(walletEntityTemplate.opsForValue().get(keyWalletById))) {
         walletEntityTemplate.delete(keyWalletById);
         LOG.info("Cache evicted for wallet key: {}", keyWalletById);
       }

@@ -5,7 +5,7 @@ import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +17,7 @@ public class MarketDataMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<MarketData> fromEntityToMarketData(List<MarketDataEntity> marketDataEntities) {
-    if (Utilities.isNullOrEmpty(marketDataEntities)) return Collections.emptyList();
+    if (ObjectToolkit.isNullOrEmpty(marketDataEntities)) return Collections.emptyList();
     return marketDataEntities.stream()
         .map(
             marketDataEntity -> {
@@ -54,7 +54,7 @@ public class MarketDataMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<MarketData> fromCoinGeckoMarketDataListToCoinGeckoList(
       List<CoinGeckoMarketData> coinGeckoMarketData, String category) {
-    if (Utilities.isNullOrEmpty(coinGeckoMarketData)) return Collections.emptyList();
+    if (ObjectToolkit.isNullOrEmpty(coinGeckoMarketData)) return Collections.emptyList();
     return coinGeckoMarketData.stream()
         .map(c -> fromCoinGeckoMarketDataToCoinGeckoModel(c, category))
         .collect(Collectors.toList());
@@ -63,7 +63,7 @@ public class MarketDataMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<MarketDataEntity> fromMarketDataToEntity(
       List<MarketData> marketData, String currency) {
-    if (Utilities.isNullOrEmpty(marketData)) return Collections.emptyList();
+    if (ObjectToolkit.isNullOrEmpty(marketData)) return Collections.emptyList();
     return marketData.stream()
         .map(
             marketData1 -> {

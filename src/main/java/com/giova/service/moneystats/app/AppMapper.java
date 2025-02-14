@@ -7,7 +7,7 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -68,12 +68,12 @@ public class AppMapper {
       AtomicReference<Double> balance,
       AtomicReference<Double> lastBalance,
       AtomicReference<Double> initialBalance) {
-    if (!Utilities.isNullOrEmpty(initialBalance))
+    if (!ObjectToolkit.isNullOrEmpty(initialBalance))
       dashboard.setPerformanceValue(MathService.round(balance.get() - initialBalance.get(), 2));
     dashboard.setLastStatsBalanceDifference(
         MathService.round(balance.get() - lastBalance.get(), 2));
     dashboard.setBalance(MathService.round(balance.get(), 2));
-    if (!Utilities.isNullOrEmpty(initialBalance))
+    if (!ObjectToolkit.isNullOrEmpty(initialBalance))
       dashboard.setPerformance(
           balance.get() == 0 || initialBalance.get() == 0
               ? 0D

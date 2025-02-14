@@ -20,20 +20,19 @@ public enum ExceptionMap implements ExceptionCode {
   /**
    * @Authentication Exception Map for Authentication
    */
-  ERR_AUTH_MSS_003("AUTHENTICATION_EXCEPTION", HttpStatus.BAD_REQUEST, "Generic Error"),
+  ERR_AUTH_MSS_001("GENERIC_AUTH_EXCEPTION", HttpStatus.BAD_REQUEST, "Generic Error"),
   ERR_AUTH_MSS_005(
       "INVALID_INVITATION_CODE",
-      HttpStatus.UNAUTHORIZED,
+      HttpStatus.BAD_REQUEST,
       "Error on checking the current invitation code provided, wrong code, try again!"),
-  ERR_AUTH_MSS_008(
-      "AUTH_TOKEN_NOT_VALID",
-      HttpStatus.FORBIDDEN,
-      "You cannot make this request cause the auth-token is invalid"),
   ERR_AUTH_MSS_009("INVALID_REGEX", HttpStatus.BAD_REQUEST, "Invalid regex passed!"),
-  ERR_AUTH_MSS_010(
-      "ACCESS_DENIED",
+  ERR_AUTH_MSS_400("BAD_REQUEST_EXCEPTION", HttpStatus.BAD_REQUEST, "A Bad Request Error Happen"),
+  ERR_AUTH_MSS_401(
+      "AUTH_TOKEN_NOT_VALID",
       HttpStatus.UNAUTHORIZED,
-      "You cannot make this request cause you don't have the right roles"),
+      "You cannot make this request cause the auth-token is invalid"),
+  ERR_AUTH_MSS_403(
+      "ACCESS_DENIED", HttpStatus.FORBIDDEN, "You cannot make this request, access denied"),
 
   // EmailSender
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),

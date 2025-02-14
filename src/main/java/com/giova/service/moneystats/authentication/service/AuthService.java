@@ -6,6 +6,7 @@ import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.AuthMapper;
 import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.exception.config.ExceptionCode;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import com.giova.service.moneystats.utilities.RegEx;
 import com.giova.service.moneystats.utilities.Utils;
@@ -17,7 +18,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,10 +79,12 @@ public class AuthService implements AuthRepository {
         .flatMap(
             responseEntity -> {
               if (responseEntity.getStatusCode().isError()
-                  || responseEntity.getBody() == null
-                  || responseEntity.getBody().getData() == null) {
+                  || ObjectToolkit.areNullOrEmpty(
+                      responseEntity,
+                      ObjectToolkit.lift(ResponseEntity<Response>::getBody),
+                      ObjectToolkit.lift(Response::getData))) {
                 throw new AuthException(
-                    ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
+                    ExceptionMap.ERR_AUTH_MSS_401, ExceptionMap.ERR_AUTH_MSS_401.getMessage());
               }
               User userResponse =
                   Mapper.convertObject(responseEntity.getBody().getData(), User.class);
@@ -97,12 +100,14 @@ public class AuthService implements AuthRepository {
         .onErrorResume(
             throwable -> {
               if (throwable instanceof UtilsException exception) {
-                if (Utilities.isInstanceOf(
+                if (ObjectToolkit.isInstanceOf(
                     exception.getExceptionMessage(), new TypeReference<ExceptionResponse>() {})) {
                   ExceptionResponse exceptionResponse =
                       Mapper.readObject(exception.getExceptionMessage(), ExceptionResponse.class);
                   throw new AuthException(
-                      ExceptionMap.ERR_AUTH_MSS_003, exceptionResponse.getError().getMessage());
+                      ExceptionMap.ERR_AUTH_MSS_400,
+                      ExceptionCode.ACCESS_SPHERE_EXCEPTION,
+                      exceptionResponse.getError().getMessage());
                 }
               }
               return Mono.error(throwable);

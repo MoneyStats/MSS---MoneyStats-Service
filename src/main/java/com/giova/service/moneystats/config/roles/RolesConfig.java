@@ -3,10 +3,10 @@ package com.giova.service.moneystats.config.roles;
 import com.giova.service.moneystats.authentication.AuthException;
 import com.giova.service.moneystats.authentication.AuthMapper;
 import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.exception.config.ExceptionCode;
 import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
-
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -51,7 +51,7 @@ public class RolesConfig implements Serializable {
       LOG.info(
           "Checking Roles for user {}. Required roles: {}", user.getUsername(), requiredRolesSet);
 
-      if (!Utilities.isNullOrEmpty(user)) {
+      if (!ObjectToolkit.isNullOrEmpty(user)) {
         Set<String> userRoles = new HashSet<>(user.getRoles());
 
         if (userRoles.containsAll(requiredRolesSet)) {
@@ -63,12 +63,14 @@ public class RolesConfig implements Serializable {
               requiredRolesSet,
               userRoles);
           throw new AuthException(
-              ExceptionMap.ERR_AUTH_MSS_010, "Access denied: insufficient permissions");
+              ExceptionMap.ERR_AUTH_MSS_403, "Access denied: insufficient permissions");
         }
       } else {
         LOG.warn("Unauthenticated access attempt to method: {}", method.getName());
         throw new AuthException(
-            ExceptionMap.ERR_AUTH_MSS_010, "Access denied: unauthenticated user");
+            ExceptionMap.ERR_AUTH_MSS_401,
+            ExceptionCode.UNAUTHENTICATED_USER,
+            "Access denied: unauthenticated user");
       }
     } else {
       return proceedingJoinPoint.proceed();

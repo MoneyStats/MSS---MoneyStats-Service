@@ -15,6 +15,7 @@ import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDate;
 import java.util.*;
@@ -28,9 +29,9 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
-    if (Utilities.isNullOrEmpty(assetEntityList)) return Collections.emptyList();
+    if (ObjectToolkit.isNullOrEmpty(assetEntityList)) return Collections.emptyList();
     LocalDate lastDate =
-        (!Utilities.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
+        (!ObjectToolkit.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -40,7 +41,7 @@ public class AssetMapper {
               asset.setCurrent_price(getAssetValue(marketData, asset));
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
-              if (!Utilities.isNullOrEmpty(assetEntity.getHistory())) {
+              if (!ObjectToolkit.isNullOrEmpty(assetEntity.getHistory())) {
                 asset.setHistory(StatsMapper.fromEntityToStats(assetEntity.getHistory()));
                 Stats lastStats =
                     asset.getHistory().stream()
@@ -65,7 +66,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Asset> fromAssetEntitiesLivePriceToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData) {
-    if (Utilities.isNullOrEmpty(assetEntityList)) return null;
+    if (ObjectToolkit.isNullOrEmpty(assetEntityList)) return null;
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -81,7 +82,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetLivePricesToAssetEntities(
       List<AssetLivePrice> assetLivePrices, Long walletID) {
-    if (Utilities.isNullOrEmpty(assetLivePrices)) return null;
+    if (ObjectToolkit.isNullOrEmpty(assetLivePrices)) return null;
     return assetLivePrices.stream()
         .filter(assetLivePrice -> Objects.equals(assetLivePrice.getWalletId(), walletID))
         .map(
@@ -96,7 +97,7 @@ public class AssetMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetToAssetEntities(
       List<AssetWithoutOpAndStats> assetWithoutOpAndStatsList, Long walletID) {
-    if (Utilities.isNullOrEmpty(assetWithoutOpAndStatsList)) return null;
+    if (ObjectToolkit.isNullOrEmpty(assetWithoutOpAndStatsList)) return null;
     return assetWithoutOpAndStatsList.stream()
         .filter(
             assetWithoutOpAndStats ->
@@ -111,7 +112,7 @@ public class AssetMapper {
   }
 
   private static Double getAssetValue(List<MarketData> marketData, Asset asset) {
-    if (Utilities.isNullOrEmpty(marketData) || marketData.isEmpty()) {
+    if (ObjectToolkit.isNullOrEmpty(marketData) || marketData.isEmpty()) {
       return 1D;
     } else {
       double current_price =
@@ -133,8 +134,8 @@ public class AssetMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<AssetEntity> fromAssetToAssetsEntities(
-          List<Asset> assetList, UserData user, WalletEntity walletEntity) {
-    if (Utilities.isNullOrEmpty(assetList)) return null;
+      List<Asset> assetList, UserData user, WalletEntity walletEntity) {
+    if (ObjectToolkit.isNullOrEmpty(assetList)) return null;
     return assetList.stream()
         .map(
             asset -> {
@@ -175,7 +176,7 @@ public class AssetMapper {
         asset -> {
           Asset existingAsset = assetMap.get(asset.getName());
 
-          if (!Utilities.isNullOrEmpty(existingAsset)) {
+          if (!ObjectToolkit.isNullOrEmpty(existingAsset)) {
             // Aggiorna l'asset esistente
             updateExistingAsset(existingAsset, asset, getAllDates);
           } else {
@@ -187,7 +188,7 @@ public class AssetMapper {
                 MathService.round(asset.getBalance() * newAsset.getCurrent_price(), 2));
             newAsset.setId(null);
 
-            if (!Utilities.isNullOrEmpty(asset.getHistory())) {
+            if (!ObjectToolkit.isNullOrEmpty(asset.getHistory())) {
               newAsset.setHistory(
                   asset.getHistory().stream()
                       .map(
@@ -230,8 +231,8 @@ public class AssetMapper {
                 .orElse(new Stats(lastDate, 0D, 0D, 0D))
             : new Stats(lastDate, 0D, 0D, 0D);
 
-    if (!Utilities.isNullOrEmpty(existingAsset.getPerformance())
-        && !Utilities.isNullOrEmpty(newAsset.getPerformance())) {
+    if (!ObjectToolkit.isNullOrEmpty(existingAsset.getPerformance())
+        && !ObjectToolkit.isNullOrEmpty(newAsset.getPerformance())) {
       // existingAsset.setPerformance(
       //    MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
       Double lastStatsBalance =
@@ -243,8 +244,8 @@ public class AssetMapper {
               : 0.0);
     }
 
-    if (!Utilities.isNullOrEmpty(existingAsset.getTrend())
-        && !Utilities.isNullOrEmpty(newAsset.getTrend())) {
+    if (!ObjectToolkit.isNullOrEmpty(existingAsset.getTrend())
+        && !ObjectToolkit.isNullOrEmpty(newAsset.getTrend())) {
       existingAsset.setTrend(
           MathService.round(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend(), 2));
     }
@@ -252,7 +253,7 @@ public class AssetMapper {
     existingAsset.setInvested(
         MathService.round(existingAsset.getInvested() + newAsset.getInvested(), 2));
 
-    if (!Utilities.isNullOrEmpty(newAsset.getHistory())) {
+    if (!ObjectToolkit.isNullOrEmpty(newAsset.getHistory())) {
       newAsset
           .getHistory()
           .forEach(
@@ -300,9 +301,9 @@ public class AssetMapper {
               });
     }
 
-    if (!Utilities.isNullOrEmpty(newAsset.getOperations())) {
+    if (!ObjectToolkit.isNullOrEmpty(newAsset.getOperations())) {
       // Aggiungi logica per aggiungere le nuove operazioni
-      if (!Utilities.isNullOrEmpty(existingAsset.getOperations())) {
+      if (!ObjectToolkit.isNullOrEmpty(existingAsset.getOperations())) {
         List<Operations> operations = new ArrayList<>(existingAsset.getOperations());
         operations.addAll(newAsset.getOperations());
         existingAsset.setOperations(operations);

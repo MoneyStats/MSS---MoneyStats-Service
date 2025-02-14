@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.webClient.UtilsUriBuilder;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class AccessSphereClient extends AccessSphereConfig {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     headers.add(HttpHeaders.AUTHORIZATION, access_token);
-    if (!Utilities.isNullOrEmpty(sessionId)) headers.add("Session-ID", sessionId);
+    if (!ObjectToolkit.isNullOrEmpty(sessionId)) headers.add("Session-ID", sessionId);
     setTracing(headers);
 
     return webClientRest.perform(

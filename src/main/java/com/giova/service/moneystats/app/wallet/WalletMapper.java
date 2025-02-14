@@ -16,7 +16,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -39,22 +39,22 @@ public class WalletMapper {
       ForexData forex,
       List<MarketData> marketData,
       String userCurrency) {
-    if (Utilities.isNullOrEmpty(walletEntities)) return null;
+    if (ObjectToolkit.isNullOrEmpty(walletEntities)) return null;
     AtomicReference<Double> lastBalance = new AtomicReference<>(0D);
     return walletEntities.stream()
         .map(
             (walletEntity -> {
               Wallet wallet = new Wallet();
               BeanUtils.copyProperties(walletEntity, wallet);
-              if (!Utilities.isNullOrEmpty(walletEntity.getInfo())) {
+              if (!ObjectToolkit.isNullOrEmpty(walletEntity.getInfo())) {
                 wallet.setInfo(Mapper.readObject(walletEntity.getInfo(), new TypeReference<>() {}));
               }
-              if (!Utilities.isNullOrEmpty(walletEntity.getHistory())) {
+              if (!ObjectToolkit.isNullOrEmpty(walletEntity.getHistory())) {
                 lastBalance.set(walletEntity.getHistory().getLast().getBalance());
                 wallet.setHistory(StatsMapper.fromEntityToStats(walletEntity.getHistory()));
               }
               if ((includeAssets || includeFullAssets)
-                  && !Utilities.isNullOrEmpty(walletEntity.getAssets())) {
+                  && !ObjectToolkit.isNullOrEmpty(walletEntity.getAssets())) {
 
                 wallet.setAssets(
                     AssetMapper.fromAssetEntitiesToAssets(
@@ -62,7 +62,7 @@ public class WalletMapper {
               } else if (live
                   && !includeAssets
                   && !includeFullAssets
-                  && !Utilities.isNullOrEmpty(walletEntity.getAssets())) {
+                  && !ObjectToolkit.isNullOrEmpty(walletEntity.getAssets())) {
 
                 wallet.setAssets(
                     AssetMapper.fromAssetEntitiesLivePriceToAssets(
@@ -77,9 +77,9 @@ public class WalletMapper {
 
   private static void setLivePriceInWallet(
       Wallet wallet, ForexData forex, AtomicReference<Double> lastBalance, String userCurrency) {
-    if (Utilities.isNullOrEmpty(forex)
-        || Utilities.isNullOrEmpty(forex.getQuotes())
-        || Utilities.isNullOrEmpty(wallet.getAssets())) return;
+    if (ObjectToolkit.isNullOrEmpty(forex)
+        || ObjectToolkit.isNullOrEmpty(forex.getQuotes())
+        || ObjectToolkit.isNullOrEmpty(wallet.getAssets())) return;
 
     if (!wallet.getCategory().equalsIgnoreCase(Category.CRYPTO.getValue())) return;
     AtomicReference<Double> balance = new AtomicReference<>(0D);
@@ -116,7 +116,7 @@ public class WalletMapper {
     // if (wallet.getInfoString() != null && !wallet.getInfoString().isEmpty()) {
     walletEntity.setInfo(wallet.getInfoString());
     // } else
-    if (!Utilities.isNullOrEmpty(wallet.getInfo())) {
+    if (!ObjectToolkit.isNullOrEmpty(wallet.getInfo())) {
       walletEntity.setInfo(Mapper.convertMapToString(wallet.getInfo()));
     }
     walletEntity.setHistory(
@@ -135,7 +135,7 @@ public class WalletMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void mapWalletEntityToBeSaved(WalletEntity walletEntity, WalletEntity getFromDB) {
-    if (Utilities.isNullOrEmpty(getFromDB)) return;
+    if (ObjectToolkit.isNullOrEmpty(getFromDB)) return;
     walletEntity.setBalance(getFromDB.getBalance());
     walletEntity.setPerformanceLastStats(getFromDB.getPerformanceLastStats());
     walletEntity.setDifferenceLastStats(getFromDB.getDifferenceLastStats());
@@ -154,19 +154,19 @@ public class WalletMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void mapEmptyDataWalletEntity(WalletEntity walletEntity) {
-    if (Utilities.isNullOrEmpty(walletEntity.getBalance())) walletEntity.setBalance(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getPerformanceLastStats()))
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getBalance())) walletEntity.setBalance(0D);
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getPerformanceLastStats()))
       walletEntity.setPerformanceLastStats(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getDifferenceLastStats()))
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getDifferenceLastStats()))
       walletEntity.setDifferenceLastStats(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getHighPrice())) walletEntity.setHighPrice(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getHighPriceDate()))
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getHighPrice())) walletEntity.setHighPrice(0D);
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getHighPriceDate()))
       walletEntity.setHighPriceDate(LocalDate.now());
-    if (Utilities.isNullOrEmpty(walletEntity.getLowPrice())) walletEntity.setLowPrice(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getLowPriceDate()))
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getLowPrice())) walletEntity.setLowPrice(0D);
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getLowPriceDate()))
       walletEntity.setLowPriceDate(LocalDate.now());
-    if (Utilities.isNullOrEmpty(walletEntity.getAllTimeHigh())) walletEntity.setAllTimeHigh(0D);
-    if (Utilities.isNullOrEmpty(walletEntity.getAllTimeHighDate()))
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getAllTimeHigh())) walletEntity.setAllTimeHigh(0D);
+    if (ObjectToolkit.isNullOrEmpty(walletEntity.getAllTimeHighDate()))
       walletEntity.setAllTimeHighDate(LocalDate.now());
   }
 
@@ -178,7 +178,7 @@ public class WalletMapper {
     Wallet wallet = new Wallet();
     BeanUtils.copyProperties(walletEntity, wallet);
 
-    if (!Utilities.isNullOrEmpty(walletEntity.getInfo()))
+    if (!ObjectToolkit.isNullOrEmpty(walletEntity.getInfo()))
       wallet.setInfo(
           Mapper.readObject(walletEntity.getInfo(), new TypeReference<Map<String, String>>() {}));
 
@@ -198,7 +198,7 @@ public class WalletMapper {
               walletToEdit.setId(null);
               BeanUtils.copyProperties(walletToEdit, wallet);
 
-              if (!Utilities.isNullOrEmpty(walletToEdit.getHistory())) {
+              if (!ObjectToolkit.isNullOrEmpty(walletToEdit.getHistory())) {
                 wallet.setHistory(
                     walletToEdit.getHistory().stream()
                         .map(
@@ -210,7 +210,7 @@ public class WalletMapper {
                             })
                         .toList());
               }
-              if (!Utilities.isNullOrEmpty(walletToEdit.getAssets())) {
+              if (!ObjectToolkit.isNullOrEmpty(walletToEdit.getAssets())) {
                 wallet.setAssets(
                     walletToEdit.getAssets().stream()
                         .map(
@@ -218,7 +218,7 @@ public class WalletMapper {
                               Asset asset = new Asset();
                               assetMap.setId(null);
                               BeanUtils.copyProperties(assetMap, asset);
-                              if (!Utilities.isNullOrEmpty(assetMap.getHistory())) {
+                              if (!ObjectToolkit.isNullOrEmpty(assetMap.getHistory())) {
                                 asset.setHistory(
                                     assetMap.getHistory().stream()
                                         .map(
@@ -230,7 +230,7 @@ public class WalletMapper {
                                             })
                                         .toList());
                               }
-                              if (!Utilities.isNullOrEmpty(assetMap.getOperations())) {
+                              if (!ObjectToolkit.isNullOrEmpty(assetMap.getOperations())) {
                                 asset.setOperations(
                                     assetMap.getOperations().stream()
                                         .map(

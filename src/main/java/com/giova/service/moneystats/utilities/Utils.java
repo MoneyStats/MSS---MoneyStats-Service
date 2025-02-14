@@ -2,7 +2,7 @@ package com.giova.service.moneystats.utilities;
 
 import com.giova.service.moneystats.app.settings.dto.Status;
 import com.giova.service.moneystats.authentication.dto.UserData;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.util.ObjectUtils;
@@ -30,7 +30,7 @@ public class Utils {
   }
 
   public static Long convertToSize(String size) {
-    if (Utilities.isNullOrEmpty(size)) {
+    if (ObjectToolkit.isNullOrEmpty(size)) {
       throw new IllegalArgumentException("Size must not be null or empty");
     }
 

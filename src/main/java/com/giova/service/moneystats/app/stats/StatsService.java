@@ -9,7 +9,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,8 @@ public class StatsService {
                   Response res = walletService.addOrUpdateWallet(wallet, false, null).getBody();
                   // Response res = null;
                   List<Stats> statsList = new ArrayList<>();
-                  if (!Utilities.isNullOrEmpty(res) && !Utilities.isNullOrEmpty(res.getData())) {
+                  if (!ObjectToolkit.isNullOrEmpty(res)
+                      && !ObjectToolkit.isNullOrEmpty(res.getData())) {
                     Wallet w = Mapper.convertObject(res.getData(), Wallet.class);
                     statsList = statsComponent.getStatsByWallet(w.getId());
                   }

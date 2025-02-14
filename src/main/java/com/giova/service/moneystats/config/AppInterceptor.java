@@ -66,7 +66,7 @@ public class AppInterceptor implements WebFilter {
           "Not Found Data: Auth-Token is {} and Session ID is {}",
           isEmpty(authToken) ? "[EMPTY]" : "[NOT_EMPTY]",
           isEmpty(sessionId) ? "[EMPTY]" : "[NOT_EMPTY]");
-      return errorResponse(request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_008);
+      return errorResponse(request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_401);
     }
 
     return authRepository
@@ -91,7 +91,7 @@ public class AppInterceptor implements WebFilter {
                     request, response, exceptionResponse, (ExceptionMap) error.getExceptionCode());
               }
               return errorResponse(
-                  request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_008);
+                  request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_401);
             });
   }
 

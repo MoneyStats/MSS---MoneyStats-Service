@@ -10,7 +10,7 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -152,7 +152,7 @@ public class CryptoMapper {
     Double lastBalance = 0.0;
     for (Wallet wallet : getAllWallet) {
       wallet.setHistory(null);
-      if (!Utilities.isNullOrEmpty(wallet.getAssets())) {
+      if (!ObjectToolkit.isNullOrEmpty(wallet.getAssets())) {
         for (Asset asset : wallet.getAssets()) {
           balance += asset.getValue();
           if (wallet.getType().equalsIgnoreCase("Holding")) {

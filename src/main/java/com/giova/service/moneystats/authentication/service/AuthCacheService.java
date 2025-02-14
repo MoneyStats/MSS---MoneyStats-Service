@@ -7,7 +7,7 @@ import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -64,7 +64,14 @@ public class AuthCacheService extends CacheDataConfig implements AuthRepository 
                             // .set(cacheKey, userData, Duration.ofMinutes(30))
                             .set(cacheKey, userData, Duration.ofSeconds(expiration))
                             .subscribe(); // Assicura che l'operazione di salvataggio venga eseguita
-                      }));
+                      }))
+          .onErrorResume(
+              throwable -> {
+                LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, throwable.getMessage());
+                return accessSphereClient
+                    .getUserInfo(access_token, sessionId, true)
+                    .flatMap(AuthMapper::verifyAndMapAccessSphereResponse);
+              });
     } catch (Exception e) {
       LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
       return accessSphereClient
@@ -79,12 +86,12 @@ public class AuthCacheService extends CacheDataConfig implements AuthRepository 
       ServerHttpRequest request = exchange.getRequest();
       String sessionId = RequestManager.getCookieOrHeaderData("Session-ID", request);
 
-      if (Utilities.isNullOrEmpty(sessionId)) return;
+      if (ObjectToolkit.isNullOrEmpty(sessionId)) return;
 
       try {
         String cacheKey = application_name + SPACE + "authorize_" + sessionId;
 
-        if (!Utilities.isNullOrEmpty(userDataTemplate.opsForValue().get(cacheKey))) {
+        if (!ObjectToolkit.isNullOrEmpty(userDataTemplate.opsForValue().get(cacheKey))) {
           userDataTemplate.delete(cacheKey).subscribe();
           LOG.info("Cache evicted for key: {}", cacheKey);
         }

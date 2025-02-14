@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class ImageService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> saveAttachment(FilePart file) {
-    if (Utilities.isNullOrEmpty(file)) {
+    if (ObjectToolkit.isNullOrEmpty(file)) {
       LOG.error("The file you have been passed is invalid");
       throw new ImageException(
           "The file you have been passed is invalid", ExceptionMap.ERR_IMG_MSS_001.getMessage());
@@ -56,7 +56,7 @@ public class ImageService {
   public ResponseEntity<?> getAttachment(String imageName, Boolean getImage) {
     Image imageJSON = getAttachment(imageName);
 
-    if (Utilities.isNullOrEmpty(imageJSON)) {
+    if (ObjectToolkit.isNullOrEmpty(imageJSON)) {
       LOG.error("The image with name {} could not be found", imageName);
       throw new ImageException(ExceptionMap.ERR_IMG_MSS_001);
     }

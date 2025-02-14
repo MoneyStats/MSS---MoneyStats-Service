@@ -6,7 +6,7 @@ import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import com.giova.service.moneystats.crypto.operations.entity.OperationsEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
@@ -18,7 +18,7 @@ public class OperationsMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Operations> fromOperationsEntitiesToDTOS(
       List<OperationsEntity> operationsEntities) {
-    if (Utilities.isNullOrEmpty(operationsEntities)) return null;
+    if (ObjectToolkit.isNullOrEmpty(operationsEntities)) return null;
     return operationsEntities.stream()
         .map(
             operationsEntity -> {
@@ -32,7 +32,7 @@ public class OperationsMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<OperationsEntity> fromOperationDTOSToEntities(
       List<Operations> operations, UserData user, AssetEntity asset) {
-    if (Utilities.isNullOrEmpty(operations)) return null;
+    if (ObjectToolkit.isNullOrEmpty(operations)) return null;
     return operations.stream()
         .map(
             operation -> {

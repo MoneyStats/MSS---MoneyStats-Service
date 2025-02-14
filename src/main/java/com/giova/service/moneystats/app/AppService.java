@@ -14,7 +14,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,15 +50,15 @@ public class AppService {
       filter = getAllDates.stream().filter(d -> d.getYear() == currentYear).toList();
 
       Map<String, Dashboard> getData = mapDashBoard(filter, false);
-      if (!Utilities.isNullOrEmpty(getData)) {
+      if (!ObjectToolkit.isNullOrEmpty(getData)) {
         dashboard = getData.get(String.valueOf(currentYear));
       }
     } else {
       List<Wallet> getAllWallet = new ArrayList<>();
       ResponseEntity<Response> responseEntityWallet =
           walletService.getAllWallets(null, true, false, false);
-      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+          & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -85,10 +85,10 @@ public class AppService {
           getAllDates.stream().anyMatch(localDate -> localDate.getYear() < year);
       LocalDate today = LocalDate.now();
       Map<String, Dashboard> getDataProvision =
-          Utilities.isNullOrEmpty(filterDateByYear)
+          ObjectToolkit.isNullOrEmpty(filterDateByYear)
               ? null
               : mapDashBoard(filterDateByYear, (today.getYear() != year));
-      if (!Utilities.isNullOrEmpty(getDataProvision)) {
+      if (!ObjectToolkit.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }
       dashboard.setHasMoreRecords(hasPreviousYears); // Imposta il valore di hasMoreRecords
@@ -103,8 +103,8 @@ public class AppService {
       List<Wallet> getAllWallet = Collections.emptyList();
       ResponseEntity<Response> responseEntityWallet =
           walletService.getAllWallets(null, true, false, false);
-      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+          & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -184,7 +184,7 @@ public class AppService {
                   } else {
                     AppMapper.updateBalance(yearlyStats, datesByYear, lastBalance);
                   }
-                } else if (!Utilities.isNullOrEmpty(lastStats) && isLiveWalletActive) {
+                } else if (!ObjectToolkit.isNullOrEmpty(lastStats) && isLiveWalletActive) {
                   AppMapper.updateBalance(
                       List.of(lastStats), List.of(lastStats.getDate()), lastBalance);
                 }
@@ -211,8 +211,8 @@ public class AppService {
     ResponseEntity<Response> responseEntityWallet =
         walletService.getAllWallets(null, true, false, false);
     List<Wallet> getAllWallet = new ArrayList<>();
-    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-        & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+    if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+        & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
       getAllWallet =
           Mapper.convertObject(
               responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -239,7 +239,7 @@ public class AppService {
                       BeanUtils.copyProperties(wallet, wallet1);
                       wallet1.setAssets(null);
                       List<Stats> listFilter =
-                          !Utilities.isNullOrEmpty(wallet.getHistory())
+                          !ObjectToolkit.isNullOrEmpty(wallet.getHistory())
                               ? wallet.getHistory().stream()
                                   .filter(h -> h.getDate().getYear() == distinctDatesByYear)
                                   .toList()
@@ -247,7 +247,7 @@ public class AppService {
                       wallet1.setHistory(listFilter);
 
                       if (!isResume
-                          && !Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
+                          && !ObjectToolkit.isNullOrEmpty(user.getSettings().getLiveWallets())
                           && user.getSettings()
                               .getLiveWallets()
                               .equalsIgnoreCase(Status.ACTIVE.name()))
@@ -258,7 +258,7 @@ public class AppService {
                           AppMapper.updateBalance(listFilter, filterDateByYear, balance);
                           AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
                         } else {
-                          if (!Utilities.isNullOrEmpty(user.getSettings().getLiveWallets())
+                          if (!ObjectToolkit.isNullOrEmpty(user.getSettings().getLiveWallets())
                               && user.getSettings()
                                   .getLiveWallets()
                                   .equalsIgnoreCase(Status.ACTIVE.name()))

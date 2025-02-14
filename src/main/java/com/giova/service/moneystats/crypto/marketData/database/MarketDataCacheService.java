@@ -7,7 +7,7 @@ import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +43,7 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
                 List<MarketDataEntity> marketDataEntities =
                     iMarketDataDAO.findAllByCurrency(currency);
 
-                if (!Utilities.isNullOrEmpty(marketDataEntities)) {
+                if (!ObjectToolkit.isNullOrEmpty(marketDataEntities)) {
                   String json = Mapper.writeObjectToString(marketDataEntities);
                   marketDataEntityTemplate.opsForValue().set(cacheKey, json);
                 }
@@ -73,7 +73,7 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
                 LOG.info("[Caching] MarketData into Database");
                 List<MarketDataEntity> marketDataEntities = iMarketDataDAO.findAll();
 
-                if (!Utilities.isNullOrEmpty(marketDataEntities)) {
+                if (!ObjectToolkit.isNullOrEmpty(marketDataEntities)) {
                   String json = Mapper.writeObjectToString(marketDataEntities);
                   marketDataEntityTemplate.opsForValue().set(cacheKey, json);
                 }
@@ -125,12 +125,13 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
       // Cache key per full wallets list
       String keyFullMarketData = application_name + SPACE + CACHE_MARKET_DATA_FULL;
 
-      if (!Utilities.isNullOrEmpty(marketDataEntityTemplate.opsForValue().get(keyMarketData))) {
+      if (!ObjectToolkit.isNullOrEmpty(marketDataEntityTemplate.opsForValue().get(keyMarketData))) {
         marketDataEntityTemplate.delete(keyMarketData);
         LOG.info("Cache evicted for key: {}", keyMarketData);
       }
 
-      if (!Utilities.isNullOrEmpty(marketDataEntityTemplate.opsForValue().get(keyFullMarketData))) {
+      if (!ObjectToolkit.isNullOrEmpty(
+          marketDataEntityTemplate.opsForValue().get(keyFullMarketData))) {
         marketDataEntityTemplate.delete(keyFullMarketData);
         LOG.info("Cache evicted for key: {}", keyFullMarketData);
       }
@@ -147,7 +148,7 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
       LOG.debug("Redis connection factory is available.");
       RedisConnection connection = marketDataEntityTemplate.getConnectionFactory().getConnection();
 
-      if (!Utilities.isNullOrEmpty(connection)) {
+      if (!ObjectToolkit.isNullOrEmpty(connection)) {
         LOG.debug("Redis connection established successfully.");
         Set<String> keys = marketDataEntityTemplate.keys("*");
 

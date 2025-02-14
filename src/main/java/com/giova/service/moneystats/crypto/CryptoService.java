@@ -20,7 +20,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.math.MathService;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,14 +62,14 @@ public class CryptoService {
       filter = getAllDates.stream().filter(d -> d.getYear() == currentYear).toList();
 
       Map<String, CryptoDashboard> getData = mapDashBoard(filter, marketData, false);
-      if (!Utilities.isNullOrEmpty(getData)) {
+      if (!ObjectToolkit.isNullOrEmpty(getData)) {
         dashboard = getData.get(String.valueOf(currentYear));
       }
     } else {
       List<Wallet> getAllWallet = new ArrayList<>();
       ResponseEntity<Response> responseEntityWallet = walletService.getCryptoWallets(false);
-      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+          & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -103,7 +103,7 @@ public class CryptoService {
           getAllDates.stream().filter(localDate -> localDate.getYear() == year).toList();
       Map<String, CryptoDashboard> getDataProvision =
           mapDashBoard(filterDateByYear, marketData, true);
-      if (!Utilities.isNullOrEmpty(getDataProvision)) {
+      if (!ObjectToolkit.isNullOrEmpty(getDataProvision)) {
         dashboard = getDataProvision.get(String.valueOf(year));
       }
       dashboard.setYearsWalletStats(
@@ -116,8 +116,8 @@ public class CryptoService {
     } else {
       List<Wallet> getAllWallet = new ArrayList<>();
       ResponseEntity<Response> responseEntityWallet = walletService.getCryptoWallets(false);
-      if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-          & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+      if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+          & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
         getAllWallet =
             Mapper.convertObject(
                 responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -213,8 +213,8 @@ public class CryptoService {
 
     List<Wallet> getAllWallet = new ArrayList<>();
     ResponseEntity<Response> responseEntityWallet = walletService.getCryptoWallets(true);
-    if (!Utilities.isNullOrEmpty(responseEntityWallet.getBody())
-        & !Utilities.isNullOrEmpty(responseEntityWallet.getBody().getData()))
+    if (!ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody())
+        & !ObjectToolkit.isNullOrEmpty(responseEntityWallet.getBody().getData()))
       getAllWallet =
           Mapper.convertObject(
               responseEntityWallet.getBody().getData(), new TypeReference<List<Wallet>>() {});
@@ -267,7 +267,7 @@ public class CryptoService {
 
               // Filtro Wallet cancellati da anni che non hanno stats
               Predicate<Wallet> walletRemovedInThePast =
-                  wallet -> !Utilities.isNullOrEmpty(wallet.getDeletedDate());
+                  wallet -> !ObjectToolkit.isNullOrEmpty(wallet.getDeletedDate());
               filterWallet.removeIf(walletRemovedInThePast);
 
               // Mi serve per mappare il passato
@@ -277,7 +277,7 @@ public class CryptoService {
                     wallet ->
                         wallet.getAssets() != null
                             && wallet.getAssets().stream()
-                                .filter(asset -> !Utilities.isNullOrEmpty(asset.getHistory()))
+                                .filter(asset -> !ObjectToolkit.isNullOrEmpty(asset.getHistory()))
                                 .toList()
                                 .isEmpty();
                 filterWallet.removeIf(hasEmptyStats);
@@ -324,7 +324,7 @@ public class CryptoService {
                 wallet1.setHistory(List.of(history));
               }
 
-              if (!Utilities.isNullOrEmpty(wallet.getAssets()))
+              if (!ObjectToolkit.isNullOrEmpty(wallet.getAssets()))
                 wallet1.setAssets(
                     wallet.getAssets().stream()
                         .map(
@@ -332,7 +332,7 @@ public class CryptoService {
                               Asset asset1 = new Asset();
                               BeanUtils.copyProperties(asset, asset1);
                               List<Stats> listFilter = new ArrayList<>();
-                              if (!Utilities.isNullOrEmpty(asset.getHistory())) {
+                              if (!ObjectToolkit.isNullOrEmpty(asset.getHistory())) {
                                 listFilter =
                                     asset.getHistory().stream()
                                         .filter(h -> h.getDate().getYear() == year)
@@ -375,13 +375,13 @@ public class CryptoService {
                               checkAndMapWalletInThePast(
                                   index, listFilter, filterDateByYear, wallet1);
 
-                              if (!Utilities.isNullOrEmpty(asset1.getOperations()))
+                              if (!ObjectToolkit.isNullOrEmpty(asset1.getOperations()))
                                 asset1.setOperations(
                                     new ArrayList<>(asset1.getOperations())
                                         .stream()
                                             .filter(
                                                 o ->
-                                                    (Utilities.isNullOrEmpty(o.getExitDate())
+                                                    (ObjectToolkit.isNullOrEmpty(o.getExitDate())
                                                             && o.getEntryDate().getYear() <= year)
                                                         || o.getEntryDate().getYear() == year)
                                             .toList());
@@ -404,7 +404,7 @@ public class CryptoService {
               Predicate<Asset> hasEmptyStats =
                   asset -> asset.getHistory() == null || asset.getHistory().isEmpty();
               List<Asset> filterAsset =
-                  !Utilities.isNullOrEmpty(wallet1.getAssets())
+                  !ObjectToolkit.isNullOrEmpty(wallet1.getAssets())
                       ? new ArrayList<>(wallet1.getAssets())
                       : null;
               if (filterAsset != null && index.get() > 0) {
@@ -445,7 +445,7 @@ public class CryptoService {
     // Raccolgo tutti gli asset dai wallet
     List<Asset> assets =
         walletList.stream()
-            .filter(wallet -> !Utilities.isNullOrEmpty(wallet.getAssets()))
+            .filter(wallet -> !ObjectToolkit.isNullOrEmpty(wallet.getAssets()))
             .flatMap(wallet -> wallet.getAssets().stream())
             .toList();
 
@@ -482,7 +482,7 @@ public class CryptoService {
 
     // Se è resume, rimuovi gli asset senza history
     if (isResume) {
-      filteredAssets.removeIf(asset -> Utilities.isNullOrEmpty(asset.getHistory()));
+      filteredAssets.removeIf(asset -> ObjectToolkit.isNullOrEmpty(asset.getHistory()));
     }
 
     return filteredAssets;

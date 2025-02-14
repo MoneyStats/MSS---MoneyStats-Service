@@ -25,6 +25,11 @@ services:
       - CLIENT_ID_TOKEN=${CLIENT_ID_TOKEN}
       - SCHEDULER_FOREX_DELAY_START=${SCHEDULER_FOREX_DELAY_START}
       - SCHEDULER_FOREX_DELAY_END=${SCHEDULER_FOREX_DELAY_END}
+      - GCLOUD_PROJECT=${GCLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    volumes:
+      # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
+      - microservice:/secrets:ro
     deploy:
       replicas: 1
     networks:
@@ -35,3 +40,7 @@ services:
 networks:
   docker-network:
     external: true
+
+volumes:
+  # Il volume "microservice" verrà creato automaticamente se non esiste
+  microservice:

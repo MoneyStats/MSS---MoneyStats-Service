@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.authentication;
 
 import com.giova.service.moneystats.api.accessSphere.dto.UserInfoResponse;
+import com.giova.service.moneystats.api.accessSphere.dto.shared.JWTData;
 import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import com.giova.service.moneystats.app.settings.dto.UserSettingDTO;
 import com.giova.service.moneystats.authentication.dto.UserData;
@@ -11,6 +12,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -32,7 +34,8 @@ public class AuthMapper {
   public static UserData mapAccessSphereUserToUserData(User user) {
     UserData userData = new UserData();
     BeanUtils.copyProperties(user, userData);
-    if (user.getAttributes() != null && user.getAttributes().containsKey("money_stats_settings"))
+    if (!ObjectToolkit.isNullOrEmpty(user.getAttributes())
+        && user.getAttributes().containsKey("money_stats_settings"))
       userData.setSettings(
           Mapper.convertObject(
               user.getAttributes().get("money_stats_settings"), UserSettingDTO.class));
@@ -43,20 +46,30 @@ public class AuthMapper {
   public static Mono<UserData> verifyAndMapAccessSphereResponse(
       ResponseEntity<Response> responseEntity) {
     if (responseEntity.getStatusCode().isError()
-        || responseEntity.getBody() == null
-        || responseEntity.getBody().getData() == null) {
+        || ObjectToolkit.areNullOrEmptyCast(
+            responseEntity,
+            (ResponseEntity<Response> re) -> re.getBody(),
+            (Response body) -> body.getData())) {
+      // if (responseEntity.getStatusCode().isError()
+      //    || responseEntity.getBody() == null
+      //    || responseEntity.getBody().getData() == null) {
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_401, ExceptionMap.ERR_AUTH_MSS_401.getMessage());
     }
     UserInfoResponse userInfoResponse =
         Mapper.convertObject(responseEntity.getBody().getData(), UserInfoResponse.class);
-    if (userInfoResponse.getUserInfo().getRoles().stream()
-        .noneMatch(string -> Utils.isEnumValue(string, AppRole.class))) {
+    if (ObjectToolkit.areNotNullOrEmptyCast(
+            userInfoResponse,
+            (UserInfoResponse info) -> info.getUserInfo(), // Specifica il tipo per info
+            (JWTData data) -> data.getRoles()) // Specifica il tipo per data
+        && userInfoResponse.getUserInfo().getRoles().stream()
+            .noneMatch(string -> Utils.isEnumValue(string, AppRole.class))) {
       LOG.error(
           "The current user role {} not match with the app role",
           userInfoResponse.getUserInfo().getRoles());
       throw new AuthException(
-          ExceptionMap.ERR_AUTH_MSS_010, ExceptionMap.ERR_AUTH_MSS_010.getMessage());
+          ExceptionMap.ERR_AUTH_MSS_403,
+          "You cannot make this request cause you don't have the right roles");
     }
     expireDate = userInfoResponse.getUserInfo().getExp() - ZonedDateTime.now().toEpochSecond();
     return Mono.just(mapAccessSphereUserToUserData(userInfoResponse.getUser()));
