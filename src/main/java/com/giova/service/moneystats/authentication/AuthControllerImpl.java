@@ -23,4 +23,9 @@ public class AuthControllerImpl implements AuthController {
   public Mono<ResponseEntity<Response>> signUp(User user, String invitationCode) {
     return authService.register(user, invitationCode);
   }
+
+  @Override
+  public Mono<ResponseEntity<Response>> checkRegistrationToken(String invitationCode) {
+    return authService.checkRegistrationToken(invitationCode);
+  }
 }

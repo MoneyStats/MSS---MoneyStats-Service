@@ -19,6 +19,8 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,9 @@ import reactor.core.publisher.Mono;
 public class AuthService implements AuthRepository {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+  @Value(value = "${rest.client.access-sphere.token}")
+  private String registration_token;
 
   @Value(value = "${app.invitationCode}")
   private String registerToken;
@@ -112,5 +117,23 @@ public class AuthService implements AuthRepository {
               }
               return Mono.error(throwable);
             });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> checkRegistrationToken(String invitationCode) {
+
+    if (!registerToken.equalsIgnoreCase(invitationCode)) {
+      LOG.error("Invitation code: {}, is wrong", invitationCode);
+      throw new AuthException(
+          ExceptionMap.ERR_AUTH_MSS_005, ExceptionMap.ERR_AUTH_MSS_005.getMessage());
+    }
+
+    String message = "Invitation Code Successfully validated!";
+    Map<String, String> token = new HashMap<>();
+    token.put("registration_token", registration_token);
+
+    Response response = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), token);
+
+    return Mono.just(ResponseEntity.ok(response));
   }
 }

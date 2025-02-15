@@ -102,5 +102,5 @@ filter:
 
 app:
   version: @project.version@
-  shouldNotFilter: "/v1/auth/sign-up,/v1/settings/report/bug,/v1/settings/contact,**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
+  shouldNotFilter: "/v1/auth/code,/v1/settings/report/bug,/v1/settings/contact,**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
   invitationCode: ${TOKEN_INVITE}
