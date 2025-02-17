@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.authentication;
 
-import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import com.giova.service.moneystats.authentication.service.AuthService;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -18,11 +17,6 @@ import reactor.core.publisher.Mono;
 public class AuthControllerImpl implements AuthController {
 
   @Autowired private AuthService authService;
-
-  @Override
-  public Mono<ResponseEntity<Response>> signUp(User user, String invitationCode) {
-    return authService.register(user, invitationCode);
-  }
 
   @Override
   public Mono<ResponseEntity<Response>> checkRegistrationToken(String invitationCode) {

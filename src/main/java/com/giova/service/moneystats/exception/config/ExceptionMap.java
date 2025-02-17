@@ -25,7 +25,6 @@ public enum ExceptionMap implements ExceptionCode {
       "INVALID_INVITATION_CODE",
       HttpStatus.BAD_REQUEST,
       "Error on checking the current invitation code provided, wrong code, try again!"),
-  ERR_AUTH_MSS_009("INVALID_REGEX", HttpStatus.BAD_REQUEST, "Invalid regex passed!"),
   ERR_AUTH_MSS_400("BAD_REQUEST_EXCEPTION", HttpStatus.BAD_REQUEST, "A Bad Request Error Happen"),
   ERR_AUTH_MSS_401(
       "AUTH_TOKEN_NOT_VALID",

@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.authentication;
 
-import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -14,43 +13,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
 
 public interface AuthController {
-
-  @PostMapping(
-      value = "/sign-up",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to register an account",
-      summary = "Registration",
-      tags = "Authentication")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content =
-          @Content(
-              schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@register.json")))
-  @ApiResponse(
-      responseCode = "400",
-      description = "Username or Email already present",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@costraint-exception.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> signUp(
-      @RequestBody @Valid @Schema(description = "User Body of request", implementation = User.class)
-          User user,
-      @RequestParam @Valid @Schema(description = "Invitation Code to register")
-          String invitationCode);
 
   @GetMapping(
       value = "/code",
@@ -67,7 +33,7 @@ public interface AuthController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@register.json")))
+              examples = @ExampleObject(value = "@check-code.json")))
   @ApiResponse(
       responseCode = "400",
       description = "Username or Email already present",
@@ -75,7 +41,7 @@ public interface AuthController {
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@costraint-exception.json")))
+              examples = @ExampleObject(value = "@invalid-invitation-code.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> checkRegistrationToken(
       @RequestParam @Valid @Schema(description = "Invitation Code to register")

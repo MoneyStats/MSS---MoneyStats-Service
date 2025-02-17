@@ -70,20 +70,12 @@ public class CryptoController {
               examples = @ExampleObject(value = "@crypto-resume.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getCryptoResume(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
@@ -110,20 +102,12 @@ public class CryptoController {
               examples = @ExampleObject(value = "@crypto-resume.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getCryptoHistory(
       @RequestHeader(HttpHeaders.AUTHORIZATION)

@@ -11,23 +11,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class AccessSphereConfig {
-  static final String CACHE_USER_INFO = "user_info_cache_";
   final WebClientRest webClientRest = new WebClientRest();
-
-  @Value(value = "${rest.client.access-sphere.client-id}")
-  String clientID;
-
-  @Value(value = "${rest.client.access-sphere.token}")
-  String registration_token;
 
   @Value(value = "${rest.client.access-sphere.baseUrl}")
   String accessSphereBaseUrl;
 
   @Value(value = "${rest.client.access-sphere.userInfo}")
   String getUserInfoUrl;
-
-  @Value(value = "${rest.client.access-sphere.register}")
-  String registerUrl;
 
   @Autowired private WebClient.Builder builder;
 

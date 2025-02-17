@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.api.accessSphere;
 
-import com.giova.service.moneystats.api.accessSphere.dto.shared.User;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -36,25 +35,6 @@ public class AccessSphereClient extends AccessSphereConfig {
         HttpMethod.GET,
         UtilsUriBuilder.buildUri(getUserInfoUrl, params),
         null,
-        headers,
-        Response.class);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<Response>> register(User user) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("client_id", clientID);
-    params.put("registration_token", registration_token);
-    params.put("assign_new_client", true);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    setTracing(headers);
-
-    return webClientRest.perform(
-        HttpMethod.POST,
-        UtilsUriBuilder.buildUri(registerUrl, params),
-        user,
         headers,
         Response.class);
   }

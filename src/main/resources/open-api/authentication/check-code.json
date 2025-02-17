@@ -1,0 +1,8 @@
+{
+  "status": 200,
+  "message": "Invitation Code Successfully validated!",
+  "spanId": "e13f7442-e2b3-4197-8165-73f0dd893a11",
+  "data": {
+    "registration_token": "<registration_code>"
+  }
+}
