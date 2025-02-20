@@ -2,12 +2,12 @@ package com.giova.service.moneystats.app;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.giova.service.moneystats.app.model.Dashboard;
-import com.giova.service.moneystats.app.settings.dto.Status;
 import com.giova.service.moneystats.app.stats.StatsComponent;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.WalletService;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -134,8 +134,7 @@ public class AppService {
                 .sorted(Collections.reverseOrder())
                 .toList());
 
-    boolean isLiveWalletActive =
-        Status.ACTIVE.name().equalsIgnoreCase(user.getSettings().getLiveWallets());
+    boolean isLiveWalletActive = Utils.isLiveWallet(null, user);
 
     if (isLiveWalletActive) {
       LocalDate today = LocalDate.now();
@@ -171,7 +170,10 @@ public class AppService {
                                     .toList())
                         .orElse(Collections.emptyList());
 
-                Stats lastStats = wallet.getHistory().getLast();
+                Stats lastStats =
+                    ObjectToolkit.isNullOrEmpty(wallet.getHistory())
+                        ? null
+                        : wallet.getHistory().getLast();
 
                 if (yearIndex.get() == 0 && isLiveWalletActive) {
                   balance.updateAndGet(b -> b + wallet.getBalance());
@@ -246,11 +248,7 @@ public class AppService {
                               : Collections.emptyList();
                       wallet1.setHistory(listFilter);
 
-                      if (!isResume
-                          && !ObjectToolkit.isNullOrEmpty(user.getSettings().getLiveWallets())
-                          && user.getSettings()
-                              .getLiveWallets()
-                              .equalsIgnoreCase(Status.ACTIVE.name()))
+                      if (!isResume && Utils.isLiveWallet(null, user))
                         balance.updateAndGet(b -> b + wallet.getBalance());
 
                       if (!listFilter.isEmpty()) {
@@ -258,10 +256,7 @@ public class AppService {
                           AppMapper.updateBalance(listFilter, filterDateByYear, balance);
                           AppMapper.updateLastBalance(listFilter, filterDateByYear, lastBalance);
                         } else {
-                          if (!ObjectToolkit.isNullOrEmpty(user.getSettings().getLiveWallets())
-                              && user.getSettings()
-                                  .getLiveWallets()
-                                  .equalsIgnoreCase(Status.ACTIVE.name()))
+                          if (Utils.isLiveWallet(null, user))
                             // Uso questa funzione perchè prende l'ultimo saldo
                             AppMapper.updateBalance(listFilter, filterDateByYear, lastBalance);
                           else {

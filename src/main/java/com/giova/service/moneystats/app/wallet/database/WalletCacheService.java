@@ -5,6 +5,7 @@ import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
 import com.giova.service.moneystats.config.cache.CacheDataConfig;
 import com.giova.service.moneystats.config.cache.CacheUtils;
 import com.giova.service.moneystats.config.cache.RedisCacheConfig;
+import com.giova.service.moneystats.crypto.asset.database.AssetCacheService;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
@@ -20,6 +21,7 @@ import org.springframework.util.ObjectUtils;
 public class WalletCacheService extends CacheDataConfig implements WalletRepository {
 
   @Autowired private IWalletDAO walletDAO;
+  @Autowired private AssetCacheService assetCacheService;
   @Autowired private RedisTemplate<String, String> walletEntitiesTemplate;
   @Autowired private RedisTemplate<String, WalletEntity> walletEntityTemplate;
 
@@ -157,35 +159,6 @@ public class WalletCacheService extends CacheDataConfig implements WalletReposit
   }
 
   /**
-   * Find all Wallet Crypto
-   *
-   * @param userId of the wallet
-   * @param category Crypto category default
-   * @return Wallet founded
-   */
-  /*@LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public List<WalletEntity> findAllByUserIdentifierAndCategory(String userId, String category) {
-    LOG.info("[Caching] WalletEntity into Database by userId {} and category {}", userId, category);
-    String cacheKey = userId + CACHE_FULL_CRYPTO_WALLET_LIST;
-    try {
-      return Optional.ofNullable(walletEntitiesTemplate.opsForValue().get(cacheKey))
-          .orElseGet(
-              () -> {
-                LOG.info("[Caching] Full Crypto Wallet into Database for userId {}", userId);
-                List<WalletEntity> wallets = walletDAO.findAllByUserIdentifier(userId);
-
-                if (!ObjectUtils.isEmpty(wallets) && !wallets.isEmpty()) {
-                  walletEntitiesTemplate.opsForValue().set(cacheKey, wallets);
-                }
-                return wallets;
-              });
-    } catch (Exception e) {
-      LOG.error(RedisCacheConfig.REDIS_ERROR_LOG, e.getMessage());
-      return walletDAO.findAllByUserIdentifierAndCategory(userId, category);
-    }
-  }*/
-
-  /**
    * Method to delete the cache of the wallets of the user. Even if you update just a wallet we need
    * to delete the cache of al the wallet inorder to get fresh data.
    *
@@ -212,12 +185,14 @@ public class WalletCacheService extends CacheDataConfig implements WalletReposit
         LOG.info("Cache evicted for key: {}", keyFullWallets);
       }
 
-      String keyWalletById = userId + CACHE_WALLET_BY_ID + wallet.getId();
+      String keyWalletById =
+          application_name + SPACE + userId + CACHE_WALLET_BY_ID + wallet.getId();
 
       if (!ObjectToolkit.isNullOrEmpty(walletEntityTemplate.opsForValue().get(keyWalletById))) {
         walletEntityTemplate.delete(keyWalletById);
         LOG.info("Cache evicted for wallet key: {}", keyWalletById);
       }
+      assetCacheService.clearAllAssetsCache();
     } catch (Exception e) {
       LOG.error("Error while evicting cache for userId {}: {}", userId, e.getMessage());
     }
@@ -230,5 +205,6 @@ public class WalletCacheService extends CacheDataConfig implements WalletReposit
     CacheUtils.clearCache(walletEntityTemplate, "wallet data");
     CacheUtils.clearCache(walletEntitiesTemplate, "wallet entities data");
     LOG.info("Finished clearing wallet data cache.");
+    assetCacheService.clearAllAssetsCache();
   }
 }

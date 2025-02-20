@@ -203,7 +203,7 @@ public class AssetCacheService extends CacheDataConfig implements AssetRepositor
 
   /** Method to delete all the cache of the assets of the user. */
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public void clearAllWalletsCache() {
+  public void clearAllAssetsCache() {
     LOG.info("Starting to clear all assets data cache.");
     CacheUtils.clearCache(assetEntityTemplate, "assets data");
     CacheUtils.clearCache(assetLivePriceTemplate, "assets live data");

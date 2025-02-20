@@ -41,7 +41,8 @@ public class AssetDAOAdapter implements AssetRepository {
    * @return Assets list without operations and histories
    */
   @Override
-  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(List<Long> walletIds, String userId) {
+  public List<AssetWithoutOpAndStats> findAllAssetsByWalletIds(
+      List<Long> walletIds, String userId) {
     return iAssetDAO.findAllAssetsByWalletIds(walletIds);
   }
 
@@ -70,5 +71,5 @@ public class AssetDAOAdapter implements AssetRepository {
 
   /** Delete All Cache */
   @Override
-  public void clearAllWalletsCache() {}
+  public void clearAllAssetsCache() {}
 }

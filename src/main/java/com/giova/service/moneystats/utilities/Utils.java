@@ -15,10 +15,11 @@ public class Utils {
      * Setting if it has the live wallet status ACTIVE. For the FrontEnd is Recommended to use this
      * value as Null
      */
-    return !ObjectUtils.isEmpty(live)
+    return !ObjectToolkit.isNullOrEmpty(live)
         ? live
-        : !ObjectUtils.isEmpty(user.getSettings())
-            && !ObjectUtils.isEmpty(user.getSettings().getLiveWallets())
+        : !ObjectToolkit.isNullOrEmpty(user.getSettings())
+            && !ObjectToolkit.isNullOrEmpty(user.getSettings().getLiveWallets())
+            && !ObjectToolkit.isNullOrEmpty(user.getSettings().getCryptoCurrency())
             && user.getSettings().getLiveWallets().equalsIgnoreCase(Status.ACTIVE.toString());
   }
 

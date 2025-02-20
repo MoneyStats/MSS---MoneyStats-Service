@@ -134,7 +134,7 @@ public class AssetService {
         walletService.addOrUpdateWallet(wallet, isLiveWallet, message);
 
     if (!ObjectUtils.isEmpty(saveWallet.getBody())) {
-      assetRepository.clearAllWalletsCache();
+      assetRepository.clearAllAssetsCache();
     }
 
     Response response =
@@ -163,7 +163,7 @@ public class AssetService {
         walletService.addOrUpdateWallet(wallet, isLiveWallet, message);
 
     if (!ObjectUtils.isEmpty(saveWallet.getBody())) {
-      assetRepository.clearAllWalletsCache();
+      assetRepository.clearAllAssetsCache();
     }
 
     Response response =
@@ -198,7 +198,7 @@ public class AssetService {
     message.append("Successfully saved!");
 
     if (!ObjectToolkit.isNullOrEmpty(walletRes)) {
-      assetRepository.clearAllWalletsCache();
+      assetRepository.clearAllAssetsCache();
     }
 
     Response response =
@@ -232,7 +232,7 @@ public class AssetService {
     message.append("Successfully updated!");
 
     if (!ObjectToolkit.isNullOrEmpty(walletRes)) {
-      assetRepository.clearAllWalletsCache();
+      assetRepository.clearAllAssetsCache();
     }
 
     Response response =

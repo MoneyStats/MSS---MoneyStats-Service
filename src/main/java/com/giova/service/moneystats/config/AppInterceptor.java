@@ -23,7 +23,6 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -158,7 +157,7 @@ public class AppInterceptor implements WebFilter {
     response.getHeaders().set("Access-Control-Allow-Headers", "Authorization, Content-Type");
     response.getHeaders().set("Access-Control-Allow-Credentials", "true");
 
-    response.setStatusCode(HttpStatus.FORBIDDEN);
+    response.setStatusCode(exceptionResponse.getError().getStatus());
     response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
     DataBuffer responseBuffer =

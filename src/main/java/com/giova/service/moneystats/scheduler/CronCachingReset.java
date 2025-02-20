@@ -38,7 +38,7 @@ public class CronCachingReset extends CacheDataConfig {
     walletCacheService.clearAllWalletsCache();
     marketDataCacheService.clearAllMarketDataCache();
     forexDataCacheService.clearAllForexDataCache();
-    assetCacheService.clearAllWalletsCache();
+    assetCacheService.clearAllAssetsCache();
 
     LOG.info("[Clean-Cache] Scheduler Finished at {}", LocalDateTime.now());
   }

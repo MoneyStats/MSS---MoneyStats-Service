@@ -30,7 +30,7 @@ filter:
     shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
 
 logging:
-  config: classpath:logback-google.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
+  config: classpath:logback-spring.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
 
 app:
   version: @project.version@

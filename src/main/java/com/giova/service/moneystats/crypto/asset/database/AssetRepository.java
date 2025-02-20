@@ -51,5 +51,5 @@ public interface AssetRepository {
   List<AssetEntity> findAllByUserIdOrderByRank(String userId);
 
   /** Delete All Cache */
-  void clearAllWalletsCache();
+  void clearAllAssetsCache();
 }
