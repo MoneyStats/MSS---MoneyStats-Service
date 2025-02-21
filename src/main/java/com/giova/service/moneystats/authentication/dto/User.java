@@ -1,12 +1,11 @@
 package com.giova.service.moneystats.authentication.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.settings.dto.UserSettingDTO;
+import com.giova.service.moneystats.app.settings.dto.UserSettingDTO;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,11 +17,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User extends GenericDTO {
-  @NotNull @UpperCamelCase private String name;
+  @NotNull(message = "Name cannot be Null")
+  @UpperCamelCase
+  private String name;
+
   @NotNull @UpperCamelCase private String surname;
   @NotNull @LowerCase private String email;
   @NotNull @LowerCase private String username;
-  @NotNull private String password;
+  private String password;
   private UserRole role;
   @NotNull private String profilePhoto;
   private String imgName;
@@ -30,7 +32,6 @@ public class User extends GenericDTO {
   // private String cryptoCurrency;
   // private String githubUser;
 
-  private AuthToken authToken;
   private String tokenReset;
   private UserSettingDTO settings;
 

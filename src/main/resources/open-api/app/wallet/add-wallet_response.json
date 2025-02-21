@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "message": "Wallet Test Wallet Successfully saved!",
+  "spanId": "13a6d552-b12d-454e-a2a3-9ed7ad464716",
+  "data": {
+    "id": 1,
+    "creationDate": "2024-10-22T18:08:22",
+    "updateDate": "2024-10-22T18:08:22",
+    "name": "Test Wallet",
+    "balance": 0.0,
+    "img": "https://avatars.githubusercontent.com/u/1885080?s=280&v=4",
+    "allTimeHigh": 0.0,
+    "allTimeHighDate": "2024-10-22",
+    "highPrice": 0.0,
+    "highPriceDate": "2024-10-22",
+    "lowPrice": 0.0,
+    "lowPriceDate": "2024-10-22",
+    "performanceLastStats": 0.0,
+    "differenceLastStats": 0.0,
+    "category": "Investments"
+  }
+}

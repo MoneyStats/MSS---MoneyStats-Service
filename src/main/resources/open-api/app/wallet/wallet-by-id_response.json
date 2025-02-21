@@ -1,0 +1,78 @@
+{
+  "status": 200,
+  "message": "Found Test Wallet Wallet",
+  "spanId": "d072c1d9-524b-4361-b040-d010f6409c19",
+  "data": [
+    {
+      "id": 1,
+      "creationDate": "2023-07-04T11:07:23",
+      "updateDate": "2024-01-22T15:20:01",
+      "name": "Test Wallet",
+      "type": "Holding",
+      "balance": 50000,
+      "img": "../../../../assets/images/sample/wallet.png",
+      "allTimeHigh": 20000.0,
+      "allTimeHighDate": "2023-07-04",
+      "highPrice": 20000.0,
+      "highPriceDate": "2023-07-04",
+      "lowPrice": 10000,
+      "lowPriceDate": "2024-01-22",
+      "performanceLastStats": -10,
+      "differenceLastStats": -5000,
+      "dateLastStats": "2023-07-04",
+      "category": "Crypto",
+      "assets": [
+        {
+          "id": 1,
+          "creationDate": "2023-09-07T17:47:27",
+          "updateDate": "2024-01-22T15:20:01",
+          "identifier": "bitcoin",
+          "name": "Bitcoin",
+          "category": "Cryptocurrency",
+          "symbol": "BTC",
+          "rank": 1,
+          "current_price": 30000,
+          "value": 20000,
+          "icon": "icon",
+          "balance": 0.05,
+          "invested": 5000.0,
+          "lastUpdate": "2023-09-08",
+          "performance": 0.0,
+          "trend": 0.0,
+          "operations": [
+            {
+              "id": 1,
+              "creationDate": "2024-01-22T15:20:01",
+              "updateDate": "2024-01-22T15:20:01",
+              "identifier": "e16c176b-2565-4b84-987f-cde701b23a48",
+              "type": "Holding",
+              "status": "CLOSED",
+              "entryDate": "2024-01-22T14:19:13.591",
+              "entryCoin": "USDT",
+              "entryPrice": "26679",
+              "entryPriceValue": 100.0,
+              "entryQuantity": 0.005,
+              "exitDate": "2024-01-22T14:19:13.591",
+              "exitCoin": "BTC",
+              "exitPrice": "26679",
+              "exitPriceValue": 110.0,
+              "exitQuantity": 110.0,
+              "fees": 1.0
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": 1,
+          "creationDate": "2023-07-04T11:08:54",
+          "updateDate": "2023-07-04T11:08:54",
+          "date": "2023-07-04",
+          "balance": 20000.0,
+          "percentage": 0.0,
+          "trend": 20000.0
+        }
+      ]
+    }
+  ]
+}

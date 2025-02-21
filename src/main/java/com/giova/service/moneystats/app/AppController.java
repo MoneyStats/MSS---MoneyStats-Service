@@ -1,10 +1,5 @@
 package com.giova.service.moneystats.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.giova.service.moneystats.app.model.GithubIssues;
-import com.giova.service.moneystats.app.model.Support;
-import com.giova.service.moneystats.app.wallet.dto.Wallet;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -16,8 +11,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -45,29 +40,22 @@ public class AppController {
               examples = @ExampleObject(value = "@dashboard.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getDashboard(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException, JsonProcessingException {
-    return appService.getDashboardData(authToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token) {
+    return appService.getDashboardData();
   }
 
-  @GetMapping(value = "/resume", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/resume/{year}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(description = "API to resume data by years", summary = "Resume Data", tags = "App")
   @ApiResponse(
       responseCode = "200",
@@ -79,96 +67,28 @@ public class AppController {
               examples = @ExampleObject(value = "@resume.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getResume(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException {
-    return appService.getResumeData(authToken);
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token,
+      @PathVariable(value = "year")
+          @Schema(description = "Year of the data to be searched", example = "2024")
+          @Valid
+          @NotNull(message = "Year is a required field")
+          Long year) {
+    return appService.getResumeData(year);
   }
 
-  @PostMapping(
-      value = "/add/stats",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to register an account", summary = "Add Stats", tags = "App")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> addStats(
-      @RequestBody @Valid @Schema(description = "List of wallet with stats added")
-          List<Wallet> wallets,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException {
-    return appService.addStats(wallets, authToken);
-  }
-
-  @PostMapping(
-      value = "/report/bug",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to report a bug", summary = "Report Bug", tags = "App")
-  @ApiResponse(
-      responseCode = "400",
-      description = "Error",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@unprocessable-exception.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> bugReport( // @RequestHeader("authToken") String authToken,
-      @RequestBody @Valid @Schema(description = "Github Issues body") GithubIssues githubIssues)
-      throws JsonProcessingException {
-    return appService.reportBug(githubIssues);
-  }
-
-  @PostMapping(
-      value = "/contact",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to contact us", summary = "Contact US", tags = "App")
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> contactUs( // @RequestHeader("authToken") String authToken,
-      @RequestBody @Valid @Schema(description = "Support Body") Support support)
-      throws UtilsException {
-    return appService.contactSupport(support);
-  }
-
-  @GetMapping(
-      value = "/backup",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to Backup Wallet and Stats", summary = "Backup", tags = "App")
+  @GetMapping(value = "/history", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(description = "API to history data by years", summary = "History Data", tags = "App")
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",
@@ -176,57 +96,21 @@ public class AppController {
           @Content(
               schema = @Schema(implementation = Response.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@backup.json")))
+              examples = @ExampleObject(value = "@resume.json")))
   @ApiResponse(
       responseCode = "401",
-      description = "Invalid JWE",
+      description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> backupData(
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken)
-      throws UtilsException {
-    return appService.backupData();
-  }
-
-  @PostMapping(
-      value = "/restore",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to restore Wallets and Stats", summary = "Restore", tags = "App")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Invalid JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-jwe.json")))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Expired JWE",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@expired-jwe.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public ResponseEntity<Response> restoreData(
-      @RequestBody @Valid @Schema(description = "Wallets to restore") List<Wallet> wallets,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) @Valid @Schema(description = "Authorization Token")
-          String authToken) {
-    return appService.restoreData(wallets);
+  public ResponseEntity<Response> getHistory(
+      @RequestHeader(HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(description = "Authorization Token", example = "Bearer eykihugUiOj6bihiguu...")
+          String token) {
+    return appService.getHistoryData();
   }
 }

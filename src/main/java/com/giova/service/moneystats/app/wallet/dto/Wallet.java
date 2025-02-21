@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,10 +20,15 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Wallet extends GenericDTO {
 
-  @NotNull private String name;
+  @NotBlank(message = "Name cannot be null or empty")
+  private String name;
+
   private String type;
   private Double balance;
+
+  @NotBlank(message = "Image cannot be null or empty")
   private String img;
+
   private String imgName;
   private Double allTimeHigh;
   private LocalDate allTimeHighDate;
@@ -36,7 +41,9 @@ public class Wallet extends GenericDTO {
   private LocalDate dateLastStats;
   private Map<String, String> info;
   private String infoString;
-  @NotNull private String category;
+
+  @NotBlank(message = "Category cannot be null or empty")
+  private String category;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Asset> assets;

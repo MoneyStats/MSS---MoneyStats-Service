@@ -5,9 +5,9 @@ on:
     branches: [ develop ]
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY }}
 
 jobs:
   checkout-and-setup:
@@ -66,6 +66,13 @@ jobs:
       - name: 📝 Set Release Version
         run: |
           echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      #- name: create-json
+      #  uses: jsdaniell/create-json@v1.2.3
+      #  with:
+      #    name: "credentials.json"
+      #    json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+      #    dir: "src/main/resources/"
 
       - name: 🚀 Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6.4

@@ -1,0 +1,12 @@
+{
+  "dateTime": "2025-02-17T15:15:14",
+  "url": "/v1/auth/code",
+  "spanId": "8e2ed8c4-e21a-4e6e-aaad-34b92ebf3fd1",
+  "error": {
+    "errorCode": "ERR_AUTH_MSS_005",
+    "exception": "INVALID_INVITATION_CODE",
+    "status": "BAD_REQUEST",
+    "message": "Error on checking the current invitation code provided, wrong code, try again!",
+    "stackTrace": "com.giova.service.moneystats.authentication.service.AuthService.checkRegistrationToken(AuthService.java:128)"
+  }
+}

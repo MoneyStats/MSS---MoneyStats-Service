@@ -2,8 +2,8 @@ package com.giova.service.moneystats.crypto.forex.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import javax.persistence.*;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)

@@ -8,9 +8,9 @@ on:
     branches: [ master ]
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY }}
 
 jobs:
   checkout-and-setup:

@@ -2,12 +2,11 @@ package com.giova.service.moneystats.app.wallet.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
-import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,35 +35,35 @@ public class WalletEntity extends GenericEntity {
   @Column(name = "TYPE")
   private String type;
 
-  @Column(name = "BALANCE")
+  @Column(name = "BALANCE", nullable = false)
   private Double balance;
 
   @Lob
-  @Column(name = "IMG")
+  @Column(name = "IMG", nullable = false)
   private String img;
 
-  @Column(name = "ALL_TIME_HIGH")
+  @Column(name = "ALL_TIME_HIGH", nullable = false)
   private Double allTimeHigh;
 
-  @Column(name = "ALL_TIME_HIGH_DATE")
+  @Column(name = "ALL_TIME_HIGH_DATE", nullable = false)
   private LocalDate allTimeHighDate;
 
-  @Column(name = "HIGH_PRICE")
+  @Column(name = "HIGH_PRICE", nullable = false)
   private Double highPrice;
 
-  @Column(name = "HIGH_PRICE_DATE")
+  @Column(name = "HIGH_PRICE_DATE", nullable = false)
   private LocalDate highPriceDate;
 
-  @Column(name = "LOW_PRICE")
+  @Column(name = "LOW_PRICE", nullable = false)
   private Double lowPrice;
 
-  @Column(name = "LOW_PRICE_DATE")
+  @Column(name = "LOW_PRICE_DATE", nullable = false)
   private LocalDate lowPriceDate;
 
-  @Column(name = "PERFORMANCE_LAST_STATS")
+  @Column(name = "PERFORMANCE_LAST_STATS", nullable = false)
   private Double performanceLastStats;
 
-  @Column(name = "DIFFERENCE_LAST_STATS")
+  @Column(name = "DIFFERENCE_LAST_STATS", nullable = false)
   private Double differenceLastStats;
 
   @Column(name = "DATE_LAST_STATS")
@@ -74,15 +73,18 @@ public class WalletEntity extends GenericEntity {
   @Column(name = "INFO")
   private String info;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_ID", nullable = false)
-  private UserEntity user;
+  @Column(name = "USER_IDENTIFIER", nullable = false)
+  private String userIdentifier;
 
   @OrderBy(value = "rank")
-  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<AssetEntity> assets;
 
   @OrderBy(value = "date")
-  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
+
+  public WalletEntity empty() {
+    return null;
+  }
 }

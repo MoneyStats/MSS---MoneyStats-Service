@@ -1,3 +1,4 @@
+env: ${APP_ENV:Deploy} # Used for Google Cloud LOG
 server:
   servlet:
     context-path: ${CONTEXT_PATH}
@@ -23,73 +24,56 @@ spring:
   sql:
     init:
       mode: always
+  codec:
+    max-in-memory-size: 1MB
   servlet:
     multipart:
-      max-file-size: 1MB
       max-request-size: 1MB
+  data:
+    redis:
+      enabled: ${REDIS_CACHE_ENABLE}
+      cron: 0 0 1 * * *
+      host: ${REDIS_CACHE_HOST}
+      json: true
+      password: ${REDIS_CACHE_PASSWORD}
+      port: ${REDIS_CACHE_PORT}
+      sslEnabled: false
+      #sslTruststore: path of the truststore (.jks file)
+      #sslTruststorePassword: password of the trustore
+      username: ${REDIS_CACHE_USERNAME}
 
 rest:
   scheduled:
     marketData:
       active: ${SCHEDULER_MARKET_DATA_ACTIVE}
-      #quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
-      quantity: 250
+      quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
+      #quantity: 250
       delay:
-        #start: ${SCHEDULER_MARKET_DATA_DELAY_START}
-        #end: ${SCHEDULER_MARKET_DATA_DELAY_END}
-        start: 60000
-        end: 3600000
+        start: ${SCHEDULER_MARKET_DATA_DELAY_START:60000}
+        end: ${SCHEDULER_MARKET_DATA_DELAY_END:3600000}
     forex:
       active: ${SCHEDULER_FOREX_ACTIVE}
       delay:
-        start: 1800000
-        end: 10800000
-    caching:
-      active: true
-      cron: 0 0 1 * * MON
+        start: ${SCHEDULER_FOREX_DELAY_START:1800000}
+        end: ${SCHEDULER_FOREX_DELAY_END:32400000}
   client:
-    github:
-      baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
-      authToken: ${GITHUB_AUTH_TOKEN}
     emailSender:
-      url: http://email.sender:8080/email-sender
-      sendEmailUrl: /v1/send-email
-    coinGecko:
-      url: https://api.coingecko.com
-      marketDataUrl: /api/v3/coins/markets
-    exchangeRates:
-      baseUrl: http://api.exchangerate.host
-      rates: /live
-      apiKey: ${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
-    anyApi:
-      baseUrl: https://anyapi.io/api
-      rates: /v1/exchange/rates
-      apiKey: ${REST_CLIENT_ANY_API_TOKEN}
+      url: http://email.sender:8080
+    access-sphere:
+      client-id: ${CLIENT_ID} #MONEYSTATS-PROD-01
+      token: ${CLIENT_ID_TOKEN}
+      baseUrl: ${ACCESS_SPHERE_URL}
 
 logging:
+  config: classpath:logback-google.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
   level:
     com.giova.service.moneystats: ${LOGGING_LEVEL}
     io.github.giovannilamarmora.utils: ${LOGGING_LEVEL}
-    web: INFO
-    root: INFO
-    org:
-      springframework:
-        web: INFO
-      hibernate: ERROR
 
-jwt:
-  secret: ${JWT_SECRET}
-  time: ${JWT_TIME}
+filter:
+  requestResponse:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
+
 app:
   version: @project.version@
-  exception:
-    stacktrace: ${SHOW_UTILS_EXCEPTION_STACKTRACE}
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/token/refresh,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,**/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/,/index.html,/documentation/**,/dist/**,/site.webmanifest"
-  cors:
-    enabled: false # Usando CrossOrigin non ne ho bisogno
-  logTail:
-    active: true
-  invitationCode: ${TOKEN_INVITE}
-  fe:
-    url: ${FE_URL}
