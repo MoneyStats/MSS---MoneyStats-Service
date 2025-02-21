@@ -375,17 +375,40 @@ public class CryptoService {
                               checkAndMapWalletInThePast(
                                   index, listFilter, filterDateByYear, wallet1);
 
-                              if (!ObjectToolkit.isNullOrEmpty(asset1.getOperations()))
+                              if (!ObjectToolkit.isNullOrEmpty(asset1.getOperations())) {
                                 asset1.setOperations(
-                                    new ArrayList<>(asset1.getOperations())
-                                        .stream()
-                                            .filter(
-                                                o ->
-                                                    (ObjectToolkit.isNullOrEmpty(o.getExitDate())
-                                                            && o.getEntryDate().getYear() <= year)
-                                                        || o.getEntryDate().getYear() == year)
-                                            .toList());
+                                    asset1.getOperations().stream()
+                                        .filter(
+                                            o -> {
+                                              boolean isExitDateNull =
+                                                  ObjectToolkit.isNullOrEmpty(o.getExitDate());
+                                              if (isExitDateNull) {
+                                                return o.getEntryDate().getYear() <= year;
+                                              } else {
+                                                return o.getExitDate().getYear() == year;
+                                              }
+                                            })
+                                        .toList());
+                              }
                               return asset1;
+
+                              //  if (!ObjectToolkit.isNullOrEmpty(asset1.getOperations()))
+                              //  asset1.setOperations(
+                              //      new ArrayList<>(asset1.getOperations())
+                              //          .stream()
+                              //              .filter(
+                              //                  o ->
+                              //                      //
+                              // (ObjectToolkit.isNullOrEmpty(o.getExitDate())
+                              //                      //        && o.getEntryDate().getYear() <=
+                              // year)
+                              //                      //    || o.getEntryDate().getYear() == year)
+                              //                      // Inverted Entry to Exit date
+                              //                      (ObjectToolkit.isNullOrEmpty(o.getExitDate())
+                              //                              && o.getExitDate().getYear() <= year)
+                              //                          || o.getExitDate().getYear() == year)
+                              //              .toList());
+                              // return asset1;
                             })
                         .toList());
               if (wallet.getType().equalsIgnoreCase("Trading")) {

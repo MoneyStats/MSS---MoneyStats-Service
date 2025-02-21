@@ -46,8 +46,8 @@ rest:
   scheduled:
     marketData:
       active: ${SCHEDULER_MARKET_DATA_ACTIVE}
-      #quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
-      quantity: 250
+      quantity: ${SCHEDULER_MARKET_DATA_QUANTITY}
+      #quantity: 250
       delay:
         start: ${SCHEDULER_MARKET_DATA_DELAY_START:60000}
         end: ${SCHEDULER_MARKET_DATA_DELAY_END:3600000}
@@ -56,15 +56,13 @@ rest:
       delay:
         start: ${SCHEDULER_FOREX_DELAY_START:1800000}
         end: ${SCHEDULER_FOREX_DELAY_END:32400000}
-    caching:
-      active: true
   client:
     emailSender:
       url: http://email.sender:8080
     access-sphere:
-      client-id: MONEYSTATS-PROD-01
+      client-id: ${CLIENT_ID} #MONEYSTATS-PROD-01
       token: ${CLIENT_ID_TOKEN}
-      baseUrl: http://localhost:8081
+      baseUrl: ${ACCESS_SPHERE_URL}
 
 logging:
   config: classpath:logback-google.xml # classpath:logback-google.xml, classpath:logback-logtail.xml
@@ -78,4 +76,4 @@ filter:
     shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
 
 app:
-  invitationCode: ${TOKEN_INVITE}
+  version: @project.version@
