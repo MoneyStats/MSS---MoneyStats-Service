@@ -21,8 +21,8 @@ jobs:
         id: setup
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: '22'
+          distribution: 'corretto'
 
   install-test-and-build:
     name: 🌱 Install, Test and Build
