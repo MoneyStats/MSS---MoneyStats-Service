@@ -36,6 +36,7 @@ public class MarketDataDAOAdapter implements MarketDataRepository {
   @Override
   public void deleteMarketDataEntitiesByCurrency(String currency) {
     iMarketDataDAO.deleteMarketDataEntitiesByCurrency(currency);
+    iMarketDataDAO.resetAutoIncrement();
   }
 
   /**

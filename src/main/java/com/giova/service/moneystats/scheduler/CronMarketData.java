@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class CronMarketData {
 
     // Cancello tutti i dati dalla tabella MarketData
     marketDataService.deleteMarketData();
+    AtomicInteger counter = new AtomicInteger(0);
 
     // Uso un Flux per gestire in modo reattivo ogni operazione su ciascuna valuta
     Flux.fromIterable(fiatCurrencies)
@@ -85,7 +87,7 @@ public class CronMarketData {
                   //      rollBackMarketData(fiatCurrencies, allMarketData);
                   //    })
                   // Aspetta 60 secondi tra una valuta e l'altra
-                  .delaySubscription(Duration.ofSeconds(90));
+                  .delaySubscription(Duration.ofSeconds(counter.getAndIncrement() > 0 ? 90 : 0));
             })
         .doOnComplete(() -> LOG.info("Scheduler Finished at {}", LocalDateTime.now()))
         .doOnError(
