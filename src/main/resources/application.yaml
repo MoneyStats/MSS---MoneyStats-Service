@@ -29,7 +29,7 @@ spring:
     redis:
       repositories:
         enabled: false
-      enabled: true
+      enabled: false
       cron: 0 0 1 * * MON
       host: pc-giovanni
       json: false
@@ -43,7 +43,7 @@ spring:
 rest:
   scheduled:
     marketData:
-      active: false
+      active: true
       quantity: 250
       delay:
         start: 5000

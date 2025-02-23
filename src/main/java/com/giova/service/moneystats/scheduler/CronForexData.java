@@ -59,30 +59,6 @@ public class CronForexData {
 
     // Cancello tutti i dati dalla tabella MarketData
     forexDataService.deleteForexData();
-    // IntStream.range(0, fiatCurrencies.size())
-    //    .forEach(
-    //        index -> {
-    //          LOG.info("Getting and Saving ForexData for currency {}", fiatCurrencies.get(index));
-    //          forexDataService
-    //              .getFromExchangeRateForexData(fiatCurrencies.get(index))
-    //              .doOnError(
-    //                  throwable -> {
-    //                    LOG.error(
-    //                        "Transaction is rolling back cause an error happen during getting
-    // Forex for a currency");
-    //                    LOG.error("The exception message is {}", throwable.getMessage());
-    //                    LOG.error("Cleaning Forex Database");
-    //                    rollBackForexData(fiatCurrencies, allForexData);
-    //                  })
-    //              .contextWrite(MDCUtils.contextViewMDC(env))
-    //              .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
-    //              .subscribe(
-    //                  forexData -> {
-    //                    LOG.info("Found {} rates of Forex Data", forexData.getQuotes().size());
-    //                    forexDataService.saveForexData(forexData);
-    //                    if (index != fiatCurrencies.size() - 1) ThreadManager.threadSeep(5000);
-    //                  });
-    //        });
     Flux.fromIterable(fiatCurrencies)
         .flatMap(
             currency ->

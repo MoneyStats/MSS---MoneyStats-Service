@@ -5,6 +5,7 @@ import com.giova.service.moneystats.api.coingecko.CoinGeckoException;
 import com.giova.service.moneystats.api.coingecko.dto.CoinGeckoMarketData;
 import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataCacheService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataRefreshCache;
 import com.giova.service.moneystats.crypto.marketData.database.MarketDataRepository;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.marketData.entity.MarketDataEntity;
@@ -37,9 +38,13 @@ public class MarketDataService {
   @Autowired private CoinGeckoClient coinGeckoClient;
   @Autowired private MarketDataCacheService marketDataCacheService;
   @Autowired private MarketDataRepository marketDataRepository;
+  @Autowired private MarketDataRefreshCache marketDataRefreshCache;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> getMarketData(String currency) {
+    if (marketDataRefreshCache.isUpdating())
+      return marketDataRefreshCache.getMarketDataByCurrency(currency);
+
     LOG.info("Getting MarketData for currency {}", currency);
     List<MarketDataEntity> getMarketData = marketDataRepository.findAllByCurrency(currency);
 
@@ -54,6 +59,8 @@ public class MarketDataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<MarketData> getAllMarketData() {
+    if (marketDataRefreshCache.isUpdating()) return marketDataRefreshCache.getMarketData();
+
     LOG.info("Getting All MarketData from Database");
     List<MarketDataEntity> getMarketData = marketDataRepository.findAll();
 

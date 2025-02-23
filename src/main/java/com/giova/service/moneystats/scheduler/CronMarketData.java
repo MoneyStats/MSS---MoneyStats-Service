@@ -1,6 +1,7 @@
 package com.giova.service.moneystats.scheduler;
 
 import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataRefreshCache;
 import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -36,6 +37,7 @@ public class CronMarketData {
   private Integer marketDataQuantity;
 
   @Autowired private MarketDataService marketDataService;
+  @Autowired private MarketDataRefreshCache marketDataRefreshCache;
 
   @Scheduled(
       fixedDelayString = "${rest.scheduled.marketData.delay.end}",
@@ -56,6 +58,7 @@ public class CronMarketData {
 
     // Mi salvo tutti i Market Data presenti a DB in caso di rollback
     List<MarketData> allMarketData = marketDataService.getAllMarketData();
+    marketDataRefreshCache.setMarketData(allMarketData);
 
     // Cancello tutti i dati dalla tabella MarketData
     marketDataService.deleteMarketData();
@@ -77,19 +80,14 @@ public class CronMarketData {
                         // Salvataggio dei dati al DB
                         return Mono.just(marketDataService.saveMarketData(getMarketData, currency));
                       })
-                  // .doOnError(
-                  //    e -> {
-                  //      LOG.error(
-                  //          "Error while processing MarketData for currency {}: {}",
-                  //          currency,
-                  //          e.getMessage());
-                  //      LOG.error("Rolling back MarketData for {}", currency);
-                  //      rollBackMarketData(fiatCurrencies, allMarketData);
-                  //    })
                   // Aspetta 60 secondi tra una valuta e l'altra
                   .delaySubscription(Duration.ofSeconds(counter.getAndIncrement() > 0 ? 90 : 0));
             })
-        .doOnComplete(() -> LOG.info("Scheduler Finished at {}", LocalDateTime.now()))
+        .doOnComplete(
+            () -> {
+              LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+              marketDataRefreshCache.removeMarketData();
+            })
         .doOnError(
             e -> {
               LOG.error("Transaction is rolling back due to an error during MarketData processing");
