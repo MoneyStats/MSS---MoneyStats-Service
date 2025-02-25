@@ -72,14 +72,6 @@ public class CronForexData {
                               currency);
                           forexDataService.saveForexData(forexData);
                         })
-                    .doOnError(
-                        throwable -> {
-                          LOG.error(
-                              "Transaction is rolling back due to an error: {}",
-                              throwable.getMessage());
-                          LOG.error("Cleaning Forex Database");
-                          rollBackForexData(fiatCurrencies, allForexData);
-                        })
                     .contextWrite(MDCUtils.contextViewMDC(env))
                     .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
                     .onErrorMap(
@@ -88,6 +80,12 @@ public class CronForexData {
                           return new AnyAPIException("Error processing currency: " + currency);
                         }))
         .doOnTerminate(() -> LOG.info("All operations completed"))
+        .doOnError(
+            throwable -> {
+              LOG.error("Transaction is rolling back due to an error: {}", throwable.getMessage());
+              LOG.error("Cleaning Forex Database");
+              rollBackForexData(fiatCurrencies, allForexData);
+            })
         .subscribe();
 
     LOG.info("Scheduler Finished at {}", LocalDateTime.now());

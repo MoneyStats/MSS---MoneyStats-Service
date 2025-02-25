@@ -103,6 +103,11 @@ public class MarketDataCacheService extends CacheDataConfig implements MarketDat
   public void deleteMarketDataEntitiesByCurrency(String currency) {
     evictMarketDataCache(currency);
     iMarketDataDAO.deleteMarketDataEntitiesByCurrency(currency);
+  }
+
+  /** Reset MarketData id on 1 */
+  @Override
+  public void resetAutoIncrement() {
     iMarketDataDAO.resetAutoIncrement();
   }
 
