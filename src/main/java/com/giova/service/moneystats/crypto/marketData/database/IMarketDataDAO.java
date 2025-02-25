@@ -36,7 +36,7 @@ public interface IMarketDataDAO extends JpaRepository<MarketDataEntity, Long> {
 
   @Modifying
   @Transactional
-  @Query(value = "ALTER TABLE market_data AUTO_INCREMENT = 1", nativeQuery = true)
+  @Query(value = "ALTER TABLE MARKET_DATA AUTO_INCREMENT = 1", nativeQuery = true)
   void resetAutoIncrement();
 
   // @Modifying
