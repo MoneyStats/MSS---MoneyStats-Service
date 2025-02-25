@@ -28,6 +28,9 @@ public interface MarketDataRepository {
    */
   void deleteMarketDataEntitiesByCurrency(String currency);
 
+  /** Reset MarketData id on 1 */
+  void resetAutoIncrement();
+
   /**
    * Select the Crypto Fiat Currency to be used deleted
    *

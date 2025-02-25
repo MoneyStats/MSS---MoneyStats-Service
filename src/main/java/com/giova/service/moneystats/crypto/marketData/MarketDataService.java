@@ -76,9 +76,12 @@ public class MarketDataService {
   public void deleteMarketData() {
     LOG.info("Deleting All MarketData from Database");
     List<String> currencies = marketDataRepository.selectDistinctCurrency();
-    if (!currencies.isEmpty())
+    if (!currencies.isEmpty()) {
       currencies.forEach(
           currency -> marketDataRepository.deleteMarketDataEntitiesByCurrency(currency));
+      LOG.info("Reset Auto Increment");
+      marketDataRepository.resetAutoIncrement();
+    }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

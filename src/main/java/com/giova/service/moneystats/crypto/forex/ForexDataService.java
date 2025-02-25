@@ -97,7 +97,7 @@ public class ForexDataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ForexData> getFromExchangeRateForexData(String currency) {
-    LOG.info("Getting MarketData for {}", currency);
+    LOG.info("Getting ForexData for {}", currency);
     // ResponseEntity<ExchangeRates> exchangeRatesList = exchangeRatesClient.getForexData(currency);
 
     return anyAPIClient
