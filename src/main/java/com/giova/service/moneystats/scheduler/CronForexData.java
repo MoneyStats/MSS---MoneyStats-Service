@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.scheduler;
 
-import com.giova.service.moneystats.api.forex.anyApi.AnyAPIException;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -73,12 +72,7 @@ public class CronForexData {
                           forexDataService.saveForexData(forexData);
                         })
                     .contextWrite(MDCUtils.contextViewMDC(env))
-                    .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
-                    .onErrorMap(
-                        throwable -> {
-                          // Mapping the error to propagate it through the stream
-                          return new AnyAPIException("Error processing currency: " + currency);
-                        }))
+                    .doOnEach(signal -> MDCUtils.setContextMap(contextMap)))
         .doOnTerminate(() -> LOG.info("All operations completed"))
         .doOnError(
             throwable -> {
