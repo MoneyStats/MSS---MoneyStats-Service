@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -17,11 +18,11 @@ import org.springframework.stereotype.Component;
 public class AppMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateBalance(
+  public static void updateBalance(
       List<Stats> listFilter, List<LocalDate> filterDateByYear, AtomicReference<Double> balance) {
     Double balanceFilter =
         listFilter.stream()
-            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1)))
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.getLast()))
             .findFirst()
             .map(Stats::getBalance)
             .orElse(0.0);
@@ -29,13 +30,13 @@ public class AppMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateInitialBalance(
+  public static void updateInitialBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
       AtomicReference<Double> initialBalance) {
     Double initialBalanceFilter =
         listFilter.stream()
-            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.getFirst()))
             .findFirst()
             .map(Stats::getBalance)
             .orElse(0.0);
@@ -43,7 +44,7 @@ public class AppMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateLastBalance(
+  public static void updateLastBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
       AtomicReference<Double> lastBalance) {
@@ -62,21 +63,22 @@ public class AppMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void mapDashboardBalanceAndPerformance(
+  public static void mapDashboardBalanceAndPerformance(
       Dashboard dashboard,
       AtomicReference<Double> balance,
       AtomicReference<Double> lastBalance,
-      AtomicReference<Double> initialBalance)
-      throws UtilsException {
-    dashboard.setPerformanceValue(MathService.round(balance.get() - initialBalance.get(), 2));
+      AtomicReference<Double> initialBalance) {
+    if (!ObjectToolkit.isNullOrEmpty(initialBalance))
+      dashboard.setPerformanceValue(MathService.round(balance.get() - initialBalance.get(), 2));
     dashboard.setLastStatsBalanceDifference(
         MathService.round(balance.get() - lastBalance.get(), 2));
     dashboard.setBalance(MathService.round(balance.get(), 2));
-    dashboard.setPerformance(
-        balance.get() == 0 && initialBalance.get() == 0
-            ? 0D
-            : MathService.round(
-                ((balance.get() - initialBalance.get()) / initialBalance.get()) * 100, 2));
+    if (!ObjectToolkit.isNullOrEmpty(initialBalance))
+      dashboard.setPerformance(
+          balance.get() == 0 || initialBalance.get() == 0
+              ? 0D
+              : MathService.round(
+                  ((balance.get() - initialBalance.get()) / initialBalance.get()) * 100, 2));
     dashboard.setLastStatsPerformance(
         balance.get() == 0 || lastBalance.get() == 0
             ? 1000D
@@ -85,9 +87,8 @@ public class AppMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void mapWalletInThePast(Wallet wallet) throws UtilsException, RuntimeException {
+  public static void mapWalletInThePast(Wallet wallet) {
     AtomicReference<Double> balance = new AtomicReference<>(0D);
-    AtomicReference<Double> initialBalance = new AtomicReference<>(0D);
     AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
     Stats highPrice =
         wallet.getHistory().stream()
@@ -107,7 +108,7 @@ public class AppMapper {
         v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 1 : 0).getBalance());
     lastBalance.updateAndGet(
         v -> v + getStats.get(getStats.size() > 1 ? getStats.size() - 2 : 0).getBalance());
-    wallet.setDateLastStats(getStats.get(getStats.size() - 1).getDate());
+    wallet.setDateLastStats(getStats.getLast().getDate());
     wallet.setDifferenceLastStats(MathService.round(balance.get() - lastBalance.get(), 2));
     wallet.setBalance(MathService.round(balance.get(), 2));
 

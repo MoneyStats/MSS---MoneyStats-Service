@@ -1,3 +1,8 @@
+env: Local # Used for Google Cloud LOG
+server:
+  servlet:
+    context-path:
+    #context-path: /moneystats-service
 spring:
   datasource:
     url: jdbc:h2:mem:mydb
@@ -9,6 +14,25 @@ spring:
   sql:
     init:
       mode: never
+  codec:
+    max-in-memory-size: 2MB
+  webflux:
+    multipart:
+      max-request-size: 2MB
+  data:
+    redis:
+      repositories:
+        enabled: false
+      enabled: true
+      cron: 0 0 1 * * MON
+      host: pc-giovanni
+      json: false
+      password: password
+      port: 6379
+      sslEnabled: false
+      #sslTruststore: path of the truststore (.jks file)
+      #sslTruststorePassword: password of the trustore
+      username: username
 
 springdoc:
   packagesToScan: com.giova.service.moneystats
@@ -16,46 +40,45 @@ springdoc:
 rest:
   scheduled:
     marketData:
-      active: true
+      active: false
+      quantity: 250
       delay:
-        start: 60000
+        start: 5000
         #end: 60000
         end: 3600000
     forex:
-      active: true
+      active: false
       delay:
         start: 5000
-        end: 3600000
-    caching:
-      active: true
-      cron: 0 0 1 * * MON
+        end: 10800000
   client:
     github:
       baseUrl: https://api.github.com
-      issuesUrl: /repos/MoneyStats/App/issues
+      issuesUrl: /repos/MoneyStats/moneystats.github.io/issues
       authToken: token
     emailSender:
-      url: http://localhost:8086
+      url: https://email-sender.giovannilamarmora.com
       sendEmailUrl: /v1/send-email
     coinGecko:
       url: https://api.coingecko.com
       marketDataUrl: /api/v3/coins/markets
-    exchangeRates:
-      baseUrl: http://api.exchangerate.host
-      rates: /live
-      apiKey: apiKey
     anyApi:
       baseUrl: https://anyapi.io/api
       rates: /v1/exchange/rates
-      apiKey: apiKey
+      apiKey: token
+    access-sphere:
+      client-id: MONEYSTATS-TEST-01
+      token: token
+      baseUrl: http://localhost:8081
+      userInfo: /v1/userInfo
+      register: /v1/users/register
 
-jwt:
-  secret: B71E3A5B2B0834ECC17FAAC9977FE2980C4604E9AAA593C144A94BE9FB4B1EFF
-  time: 3600
+filter:
+  requestResponse:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
+
 app:
-  shouldNotFilter: "/v1/auth/sign-up,/v1/auth/login,/v1/auth/forgot-password,/v1/auth/reset-password,/v1/app/report/bug,/v1/app/contact,/v1/upload/attachment,/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/swagger-config"
-  logTail:
-    active: false
+  version: 1.0.0
+  shouldNotFilter: "/v1/auth/code,/v1/settings/report/bug,/v1/settings/contact,**/swagger-ui/**,**/api-docs/**,/api-docs,*/,**/dist/**,**/documentation/**"
   invitationCode: token
-  fe:
-    url: http://localhost:4200

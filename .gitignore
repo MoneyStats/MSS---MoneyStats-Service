@@ -35,3 +35,4 @@ build/
 /.mvn/wrapper/maven-wrapper.properties
 
 *.log
+/src/main/resources/secret.json

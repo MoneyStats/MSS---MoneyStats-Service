@@ -1,11 +1,11 @@
 package com.giova.service.moneystats.crypto.operations.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -72,11 +72,11 @@ public class OperationsEntity extends GenericEntity {
   @Column(name = "FEES")
   private Double fees;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_ID", nullable = false)
-  private UserEntity user;
+  @Column(name = "USER_IDENTIFIER", nullable = false)
+  private String userIdentifier;
 
   @ManyToOne
   @JoinColumn(name = "ASSET_ID", nullable = false)
+  @JsonIgnore // 🔹 Evita la serializzazione ciclica
   private AssetEntity asset;
 }

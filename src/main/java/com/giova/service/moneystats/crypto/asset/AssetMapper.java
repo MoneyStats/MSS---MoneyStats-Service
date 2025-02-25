@@ -1,40 +1,37 @@
 package com.giova.service.moneystats.crypto.asset;
 
+import com.giova.service.moneystats.app.stats.StatsMapper;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
+import com.giova.service.moneystats.authentication.dto.UserData;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
+import com.giova.service.moneystats.crypto.asset.dto.AssetLivePrice;
+import com.giova.service.moneystats.crypto.asset.dto.AssetWithoutOpAndStats;
 import com.giova.service.moneystats.crypto.asset.entity.AssetEntity;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.operations.OperationsMapper;
+import com.giova.service.moneystats.crypto.operations.dto.Operations;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 public class AssetMapper {
 
-  private final UserEntity user;
-  @Autowired private OperationsMapper operationsMapper;
-
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Asset> fromAssetEntitiesToAssets(
+  public static List<Asset> fromAssetEntitiesToAssets(
       List<AssetEntity> assetEntityList, List<MarketData> marketData, List<LocalDate> getAllDates) {
+    if (ObjectToolkit.isNullOrEmpty(assetEntityList)) return Collections.emptyList();
     LocalDate lastDate =
-        (getAllDates != null && !getAllDates.isEmpty())
-            ? getAllDates.get(getAllDates.size() - 1)
-            : LocalDate.now();
+        (!ObjectToolkit.isNullOrEmpty(getAllDates)) ? getAllDates.getLast() : LocalDate.now();
     return assetEntityList.stream()
         .map(
             assetEntity -> {
@@ -44,16 +41,8 @@ public class AssetMapper {
               asset.setCurrent_price(getAssetValue(marketData, asset));
               asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
 
-              if (assetEntity.getHistory() != null && !assetEntity.getHistory().isEmpty()) {
-                asset.setHistory(
-                    assetEntity.getHistory().stream()
-                        .map(
-                            statsEntity -> {
-                              Stats stats = new Stats();
-                              BeanUtils.copyProperties(statsEntity, stats);
-                              return stats;
-                            })
-                        .collect(Collectors.toList()));
+              if (!ObjectToolkit.isNullOrEmpty(assetEntity.getHistory())) {
+                asset.setHistory(StatsMapper.fromEntityToStats(assetEntity.getHistory()));
                 Stats lastStats =
                     asset.getHistory().stream()
                         .filter(a -> a.getDate().isEqual(lastDate))
@@ -67,18 +56,86 @@ public class AssetMapper {
                             2)
                         : 0.0);
               }
-              if (assetEntity.getOperations() != null && !assetEntity.getOperations().isEmpty())
-                asset.setOperations(
-                    operationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
-
+              asset.setOperations(
+                  OperationsMapper.fromOperationsEntitiesToDTOS(assetEntity.getOperations()));
               return asset;
             })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<AssetEntity> fromAssetToAssetsEntities(
-      List<Asset> assetList, UserEntity userEntity, WalletEntity walletEntity) {
+  public static List<Asset> fromAssetEntitiesLivePriceToAssets(
+      List<AssetEntity> assetEntityList, List<MarketData> marketData) {
+    if (ObjectToolkit.isNullOrEmpty(assetEntityList)) return null;
+    return assetEntityList.stream()
+        .map(
+            assetEntity -> {
+              Asset asset = new Asset();
+              BeanUtils.copyProperties(assetEntity, asset);
+              asset.setCurrent_price(getAssetValue(marketData, asset));
+              asset.setValue(MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
+              return asset;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<AssetEntity> fromAssetLivePricesToAssetEntities(
+      List<AssetLivePrice> assetLivePrices, Long walletID) {
+    if (ObjectToolkit.isNullOrEmpty(assetLivePrices)) return null;
+    return assetLivePrices.stream()
+        .filter(assetLivePrice -> Objects.equals(assetLivePrice.getWalletId(), walletID))
+        .map(
+            assetLivePrice -> {
+              AssetEntity assetEntity = new AssetEntity();
+              BeanUtils.copyProperties(assetLivePrice, assetEntity);
+              return assetEntity;
+            })
+        .toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<AssetEntity> fromAssetToAssetEntities(
+      List<AssetWithoutOpAndStats> assetWithoutOpAndStatsList, Long walletID) {
+    if (ObjectToolkit.isNullOrEmpty(assetWithoutOpAndStatsList)) return null;
+    return assetWithoutOpAndStatsList.stream()
+        .filter(
+            assetWithoutOpAndStats ->
+                Objects.equals(assetWithoutOpAndStats.getWalletId(), walletID))
+        .map(
+            assetWithoutOpAndStats -> {
+              AssetEntity assetEntity = new AssetEntity();
+              BeanUtils.copyProperties(assetWithoutOpAndStats, assetEntity);
+              return assetEntity;
+            })
+        .toList();
+  }
+
+  private static Double getAssetValue(List<MarketData> marketData, Asset asset) {
+    if (ObjectToolkit.isNullOrEmpty(marketData) || marketData.isEmpty()) {
+      return 1D;
+    } else {
+      double current_price =
+          marketData.stream()
+              .filter(
+                  marketData1 ->
+                      marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
+              .findFirst()
+              .map(MarketData::getCurrent_price)
+              .orElse(1D);
+      final double THRESHOLD = 1;
+      if (current_price < THRESHOLD && current_price > 0) {
+        return current_price;
+      } else {
+        return MathService.round(current_price, 2);
+      }
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<AssetEntity> fromAssetToAssetsEntities(
+      List<Asset> assetList, UserData user, WalletEntity walletEntity) {
+    if (ObjectToolkit.isNullOrEmpty(assetList)) return null;
     return assetList.stream()
         .map(
             asset -> {
@@ -94,25 +151,24 @@ public class AssetMapper {
                             statsEntity -> {
                               StatsEntity stats = new StatsEntity();
                               BeanUtils.copyProperties(statsEntity, stats);
-                              stats.setUser(userEntity);
+                              stats.setUserIdentifier(user.getIdentifier());
                               stats.setAsset(assetEntity);
                               return stats;
                             })
                         .collect(Collectors.toList()));
               }
-              assetEntity.setUser(userEntity);
+              assetEntity.setUserIdentifier(user.getIdentifier());
               assetEntity.setWallet(walletEntity);
-              if (asset.getOperations() != null && !asset.getOperations().isEmpty())
-                assetEntity.setOperations(
-                    operationsMapper.fromOperationDTOSToEntities(
-                        asset.getOperations(), userEntity, assetEntity));
+              assetEntity.setOperations(
+                  OperationsMapper.fromOperationDTOSToEntities(
+                      asset.getOperations(), user, assetEntity));
               return assetEntity;
             })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public List<Asset> mapAssetList(
+  public static List<Asset> mapAssetList(
       List<Asset> assetList, List<MarketData> marketData, List<LocalDate> getAllDates) {
     Map<String, Asset> assetMap = new HashMap<>();
 
@@ -120,7 +176,7 @@ public class AssetMapper {
         asset -> {
           Asset existingAsset = assetMap.get(asset.getName());
 
-          if (existingAsset != null) {
+          if (!ObjectToolkit.isNullOrEmpty(existingAsset)) {
             // Aggiorna l'asset esistente
             updateExistingAsset(existingAsset, asset, getAllDates);
           } else {
@@ -132,7 +188,7 @@ public class AssetMapper {
                 MathService.round(asset.getBalance() * newAsset.getCurrent_price(), 2));
             newAsset.setId(null);
 
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
+            if (!ObjectToolkit.isNullOrEmpty(asset.getHistory())) {
               newAsset.setHistory(
                   asset.getHistory().stream()
                       .map(
@@ -144,19 +200,15 @@ public class AssetMapper {
                           })
                       .collect(Collectors.toList()));
             }
-
             assetMap.put(asset.getName(), newAsset);
           }
         });
-
-    return assetMap.values().stream()
-        .sorted(Comparator.comparing(Asset::getRank))
-        .collect(Collectors.toList());
+    return assetMap.values().stream().sorted(Comparator.comparing(Asset::getRank)).toList();
   }
 
-  private void updateExistingAsset(
+  private static void updateExistingAsset(
       Asset existingAsset, Asset newAsset, List<LocalDate> getAllDates) {
-    LocalDate lastDate = getAllDates.get(getAllDates.size() - 1);
+    LocalDate lastDate = getAllDates.getLast();
     LocalDate beforeLastDate =
         getAllDates.size() >= 2 ? getAllDates.get(getAllDates.size() - 2) : null;
     existingAsset.setBalance(
@@ -179,7 +231,8 @@ public class AssetMapper {
                 .orElse(new Stats(lastDate, 0D, 0D, 0D))
             : new Stats(lastDate, 0D, 0D, 0D);
 
-    if (existingAsset.getPerformance() != null && newAsset.getPerformance() != null) {
+    if (!ObjectToolkit.isNullOrEmpty(existingAsset.getPerformance())
+        && !ObjectToolkit.isNullOrEmpty(newAsset.getPerformance())) {
       // existingAsset.setPerformance(
       //    MathService.round((existingAsset.getPerformance() + newAsset.getPerformance()) / 2, 2));
       Double lastStatsBalance =
@@ -191,7 +244,8 @@ public class AssetMapper {
               : 0.0);
     }
 
-    if (existingAsset.getTrend() != null && newAsset.getTrend() != null) {
+    if (!ObjectToolkit.isNullOrEmpty(existingAsset.getTrend())
+        && !ObjectToolkit.isNullOrEmpty(newAsset.getTrend())) {
       existingAsset.setTrend(
           MathService.round(existingAssetLastStats.getTrend() + newAssetLastStats.getTrend(), 2));
     }
@@ -199,162 +253,63 @@ public class AssetMapper {
     existingAsset.setInvested(
         MathService.round(existingAsset.getInvested() + newAsset.getInvested(), 2));
 
-    if (newAsset.getHistory() != null && !newAsset.getHistory().isEmpty()) {
-      for (Stats newStats : newAsset.getHistory()) {
-        if (existingAsset.getHistory() == null) {
-          existingAsset.setHistory(new ArrayList<>());
-        }
+    if (!ObjectToolkit.isNullOrEmpty(newAsset.getHistory())) {
+      newAsset
+          .getHistory()
+          .forEach(
+              newStats -> {
+                if (existingAsset.getHistory() == null) {
+                  existingAsset.setHistory(new ArrayList<>());
+                }
 
-        Optional<Stats> existingStatsOptional =
-            existingAsset.getHistory().stream()
-                .filter(h -> h.getDate().isEqual(newStats.getDate()))
-                .findFirst();
+                Optional<Stats> existingStatsOptional =
+                    existingAsset.getHistory().stream()
+                        .filter(h -> h.getDate().isEqual(newStats.getDate()))
+                        .findFirst();
 
-        Optional<Stats> beforeStatsOptional =
-            beforeLastDate != null
-                ? existingAsset.getHistory().stream()
-                    .filter(h -> h.getDate().isEqual(beforeLastDate))
-                    .findFirst()
-                : Optional.empty();
+                Optional<Stats> beforeStatsOptional =
+                    beforeLastDate != null
+                        ? existingAsset.getHistory().stream()
+                            .filter(h -> h.getDate().isEqual(beforeLastDate))
+                            .findFirst()
+                        : Optional.empty();
 
-        if (existingStatsOptional.isPresent()) {
-          // Aggiorna l'elemento esistente nella history
-          Stats existingStats = existingStatsOptional.get();
-          existingStats.setBalance(
-              MathService.round(existingStats.getBalance() + newStats.getBalance(), 2));
-          existingStats.setTrend(
-              MathService.round(existingStats.getTrend() + newStats.getTrend(), 2));
-          if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
-          else
-            existingStats.setPercentage(
-                MathService.round(
-                    ((existingStats.getBalance() - beforeStatsOptional.get().getBalance())
-                            / beforeStatsOptional.get().getBalance())
-                        * 100,
-                    2));
-        } else {
-          // Aggiungi un nuovo elemento alla history
-          Stats newStatsToAdd = new Stats();
-          BeanUtils.copyProperties(newStats, newStatsToAdd);
-          newStatsToAdd.setId(null);
-          existingAsset.getHistory().add(newStatsToAdd);
-        }
-      }
+                if (existingStatsOptional.isPresent()) {
+                  // Aggiorna l'elemento esistente nella history
+                  Stats existingStats = existingStatsOptional.get();
+                  existingStats.setBalance(
+                      MathService.round(existingStats.getBalance() + newStats.getBalance(), 2));
+                  existingStats.setTrend(
+                      MathService.round(existingStats.getTrend() + newStats.getTrend(), 2));
+                  if (beforeStatsOptional.isEmpty()) existingStats.setPercentage(0D);
+                  else
+                    existingStats.setPercentage(
+                        MathService.round(
+                            ((existingStats.getBalance() - beforeStatsOptional.get().getBalance())
+                                    / beforeStatsOptional.get().getBalance())
+                                * 100,
+                            2));
+                } else {
+                  // Aggiungi un nuovo elemento alla history
+                  Stats newStatsToAdd = new Stats();
+                  BeanUtils.copyProperties(newStats, newStatsToAdd);
+                  newStatsToAdd.setId(null);
+                  List<Stats> histories = new ArrayList<>(existingAsset.getHistory());
+                  histories.add(newStatsToAdd);
+                  existingAsset.setHistory(histories);
+                }
+              });
     }
 
-    if (newAsset.getOperations() != null && !newAsset.getOperations().isEmpty()) {
+    if (!ObjectToolkit.isNullOrEmpty(newAsset.getOperations())) {
       // Aggiungi logica per aggiungere le nuove operazioni
-      if (existingAsset.getOperations() != null) {
-        existingAsset.getOperations().addAll(newAsset.getOperations());
+      if (!ObjectToolkit.isNullOrEmpty(existingAsset.getOperations())) {
+        List<Operations> operations = new ArrayList<>(existingAsset.getOperations());
+        operations.addAll(newAsset.getOperations());
+        existingAsset.setOperations(operations);
       } else {
         existingAsset.setOperations(newAsset.getOperations());
       }
-    }
-  }
-
-  @Deprecated
-  public List<Asset> mapAssetListOLD(List<Asset> assetList, List<MarketData> marketData) {
-    List<Asset> response = new ArrayList<>();
-    assetList.forEach(
-        asset -> {
-          Asset assetToReturn = new Asset();
-          if (!response.stream()
-              .filter(a -> a.getName().equalsIgnoreCase(asset.getName()))
-              .findAny()
-              .isEmpty()) {
-            int index =
-                response.indexOf(
-                    response.stream()
-                        .filter(a -> a.getName().equalsIgnoreCase(asset.getName()))
-                        .findFirst()
-                        .get());
-            Asset mapResponse = response.get(index);
-            mapResponse.setBalance(
-                MathService.round(mapResponse.getBalance() + asset.getBalance(), 8));
-            if (mapResponse.getPerformance() != null && asset.getPerformance() != null)
-              mapResponse.setPerformance(
-                  MathService.round(
-                      ((mapResponse.getPerformance() + asset.getPerformance()) / 2), 2));
-            if (mapResponse.getTrend() != null && asset.getTrend() != null)
-              mapResponse.setTrend(mapResponse.getTrend() + asset.getTrend());
-            mapResponse.setInvested(mapResponse.getInvested() + asset.getInvested());
-            mapResponse.setValue(MathService.round(mapResponse.getValue() + asset.getValue(), 2));
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
-              mapResponse.setHistory(
-                  asset.getHistory().stream()
-                      .map(
-                          stats -> {
-                            if (response.get(index) == null
-                                || response.get(index).getHistory() == null
-                                || response.get(index).getHistory().stream()
-                                    .filter(h -> h.getDate().isEqual(stats.getDate()))
-                                    .findFirst()
-                                    .isEmpty()) {
-                              stats.setId(null);
-                              return stats;
-                            }
-                            Stream<Stats> filter =
-                                response.get(index).getHistory().stream()
-                                    .filter(h -> h.getDate().isEqual(stats.getDate()));
-                            int indexH =
-                                response.get(index).getHistory().indexOf(filter.findFirst().get());
-                            Stats indexed = response.get(index).getHistory().get(indexH);
-
-                            indexed.setId(null);
-                            indexed.setBalance(indexed.getBalance() + stats.getBalance());
-                            indexed.setTrend(indexed.getTrend() + stats.getTrend());
-                            indexed.setPercentage(
-                                MathService.round(
-                                    ((indexed.getPercentage() + stats.getPercentage()) / 2), 2));
-                            return indexed;
-                          })
-                      .collect(Collectors.toList()));
-              if (asset.getOperations() != null && !asset.getOperations().isEmpty())
-                if (mapResponse.getOperations() != null)
-                  mapResponse.getOperations().addAll(asset.getOperations());
-                else mapResponse.setOperations(asset.getOperations());
-            }
-          } else {
-            BeanUtils.copyProperties(asset, assetToReturn);
-            assetToReturn.setCurrent_price(getAssetValue(marketData, asset));
-            assetToReturn.setValue(
-                MathService.round(asset.getBalance() * asset.getCurrent_price(), 2));
-            assetToReturn.setId(null);
-
-            if (asset.getHistory() != null && !asset.getHistory().isEmpty()) {
-              assetToReturn.setHistory(
-                  asset.getHistory().stream()
-                      .map(
-                          stats -> {
-                            Stats statsToReturn = new Stats();
-                            BeanUtils.copyProperties(stats, statsToReturn);
-                            statsToReturn.setId(null);
-                            return statsToReturn;
-                          })
-                      .collect(Collectors.toList()));
-            }
-
-            response.add(assetToReturn);
-          }
-        });
-    return response.stream()
-        .sorted(Comparator.comparing(Asset::getRank))
-        .collect(Collectors.toList());
-  }
-
-  private Double getAssetValue(List<MarketData> marketData, Asset asset) {
-    if (marketData.isEmpty()) {
-      return 1D;
-    } else {
-      return MathService.round(
-          marketData.stream()
-              .filter(
-                  marketData1 ->
-                      marketData1.getIdentifier().equalsIgnoreCase(asset.getIdentifier()))
-              .findFirst()
-              .map(MarketData::getCurrent_price)
-              .orElse(1D),
-          2);
     }
   }
 }

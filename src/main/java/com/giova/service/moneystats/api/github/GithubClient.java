@@ -9,12 +9,10 @@ import io.github.giovannilamarmora.utils.webClient.WebClientRest;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +20,6 @@ import reactor.core.publisher.Mono;
 @Logged
 public class GithubClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
   private final WebClientRest webClientRest = new WebClientRest();
 
   @Value(value = "${rest.client.github.baseUrl}")
@@ -42,33 +39,18 @@ public class GithubClient {
     webClientRest.init(builder);
   }
 
-  @Deprecated
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public ResponseEntity<Object> openGithubIssuesRest(GithubIssues githubIssues) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Accept", "application/vnd.github+json");
-    headers.add("Authorization", "Bearer " + githubAuthToken);
-    headers.add("X-GitHub-Api-Version", "2022-11-28");
-    HttpEntity<GithubIssues> request = new HttpEntity<>(githubIssues, headers);
-
-    return restTemplate.exchange(openGithubIssuesUrl, HttpMethod.POST, request, Object.class);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public ResponseEntity<Object> openGithubIssues(GithubIssues githubIssues) {
+  public Mono<ResponseEntity<Object>> openGithubIssues(GithubIssues githubIssues) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.ACCEPT, "application/vnd.github+json");
     headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + githubAuthToken);
     headers.add("X-GitHub-Api-Version", "2022-11-28");
 
-    Mono<ResponseEntity<Object>> response =
-        webClientRest.perform(
-            HttpMethod.POST,
-            UtilsUriBuilder.toBuild().set(openGithubIssuesUrl, null),
-            githubIssues,
-            headers,
-            Object.class);
-
-    return response.block();
+    return webClientRest.perform(
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(openGithubIssuesUrl, null),
+        githubIssues,
+        headers,
+        Object.class);
   }
 }

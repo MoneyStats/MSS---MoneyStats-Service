@@ -2,93 +2,128 @@ package com.giova.service.moneystats.config;
 
 import static io.github.giovannilamarmora.utils.exception.UtilsException.getExceptionResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.giova.service.moneystats.authentication.AuthException;
-import com.giova.service.moneystats.authentication.AuthService;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
-import com.giova.service.moneystats.authentication.token.dto.AuthToken;
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.authentication.dto.UserData;
+import com.giova.service.moneystats.authentication.service.AuthRepository;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
-import java.io.IOException;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.HeaderManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.util.List;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.PatternMatchUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 @Component
 @AllArgsConstructor
-public class AppInterceptor extends OncePerRequestFilter {
+public class AppInterceptor implements WebFilter {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-  private final ObjectMapper objectMapper =
-      new ObjectMapper()
-          .registerModule(new JavaTimeModule())
-          .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-  private final UserEntity user;
+  private final UserData userInfo;
 
   @Value(value = "${app.shouldNotFilter}")
   private List<String> shouldNotFilter;
 
-  @Autowired private AuthService authService;
+  @Autowired private AuthRepository authRepository;
 
   private static boolean isEmpty(String value) {
     return value == null || value.isBlank();
   }
 
   @Override
-  protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
+  public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    if (shouldNotFilter(exchange.getRequest())) return chain.filter(exchange);
     LOG.debug("Starting Filter Authentication");
-    String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+    ServerHttpRequest request = exchange.getRequest();
+    ServerHttpResponse response = exchange.getResponse();
+    String authToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    String sessionId = RequestManager.getCookieOrHeaderData("Session-ID", request);
     ExceptionResponse exceptionResponse = new ExceptionResponse();
 
-    if (isEmpty(authToken)) {
-      LOG.error("Auth-Token not found");
-      errorResponse(request, response, exceptionResponse);
-      return;
-    }
-    UserEntity checkUser = new UserEntity();
-    AuthToken generateToken = new AuthToken();
-    try {
-      checkUser = authService.checkLogin(authToken);
-      generateToken = authService.regenerateToken(checkUser);
-    } catch (Exception e) {
+    if (isEmpty(authToken) || isEmpty(sessionId)) {
       LOG.error(
-          "Auth-Token error on checking user or regenerate token, message: {}", e.getMessage());
-      errorResponse(request, response, exceptionResponse);
-      return;
+          "Not Found Data: Auth-Token is {} and Session ID is {}",
+          isEmpty(authToken) ? "[EMPTY]" : "[NOT_EMPTY]",
+          isEmpty(sessionId) ? "[EMPTY]" : "[NOT_EMPTY]");
+      return errorResponse(request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_401);
     }
-    setUserInContext(checkUser);
-    // setTokenInCookie(generateToken, response);
-    response.setHeader(HttpHeaders.AUTHORIZATION, generateToken.getAccessToken());
-    LOG.debug("Ending Filter Authentication");
-    filterChain.doFilter(request, response);
+
+    return authRepository
+        .authorize(authToken, sessionId)
+        .flatMap(
+            userInfoResponse -> {
+              // Imposta i dati dell'utente nel contesto
+              setUserInContext(userInfoResponse);
+
+              // Imposta il nuovo token nell'header
+              response.getHeaders().set(HttpHeaders.AUTHORIZATION, authToken);
+              setSessionIDInResponse(sessionId, response);
+              settingTracing(request, response);
+
+              LOG.debug("Ending Filter Authentication");
+              return chain.filter(exchange);
+            })
+        .onErrorResume(
+            throwable -> {
+              if (throwable instanceof AuthException error) {
+                return errorResponse(
+                    request, response, exceptionResponse, (ExceptionMap) error.getExceptionCode());
+              }
+              return errorResponse(
+                  request, response, exceptionResponse, ExceptionMap.ERR_AUTH_MSS_401);
+            });
   }
 
-  @Override
-  protected boolean shouldNotFilter(HttpServletRequest request) {
-    String method = request.getMethod();
-    if (method.equalsIgnoreCase(HttpMethod.OPTIONS.name())) return true;
-    String path = request.getRequestURI();
+  private void setSessionIDInResponse(String sessionId, ServerHttpResponse response) {
+    CookieManager.setCookieInResponse("Session-ID", sessionId, "giovannilamarmora.com", response);
+    HeaderManager.addHeaderInResponse("Session-ID", sessionId, response);
+  }
+
+  private void settingTracing(ServerHttpRequest request, ServerHttpResponse response) {
+    // Leggi gli header dalla richiesta
+    String spanId = request.getHeaders().getFirst("Span-ID");
+    String traceId = request.getHeaders().getFirst("Trace-ID");
+    String parentId = request.getHeaders().getFirst("Parent-ID");
+
+    // Imposta gli stessi header nella risposta
+    if (spanId != null) {
+      response.getHeaders().set("Span-ID", spanId);
+    }
+    if (traceId != null) {
+      response.getHeaders().set("Trace-ID", traceId);
+    }
+    if (parentId != null) {
+      response.getHeaders().set("Parent-ID", parentId);
+    }
+  }
+
+  protected boolean shouldNotFilter(ServerHttpRequest request) {
+    String method = request.getMethod().name();
+    if (method.equalsIgnoreCase(HttpMethod.OPTIONS.name())) {
+      LOG.debug("CORS Preflight request detected");
+      return true; // Ignora la richiesta OPTIONS
+    }
+    String path = request.getPath().value();
     if (shouldNotFilter.stream()
         .noneMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path)))
       LOG.debug("Filtering Authentication on {}", path);
@@ -96,24 +131,38 @@ public class AppInterceptor extends OncePerRequestFilter {
         .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
 
-  private void setUserInContext(UserEntity user) {
-    BeanUtils.copyProperties(user, this.user);
+  private void setUserInContext(UserData user) {
+    BeanUtils.copyProperties(user, this.userInfo);
   }
 
-  private void errorResponse(
-      HttpServletRequest request, HttpServletResponse response, ExceptionResponse exceptionResponse)
-      throws IOException {
+  private Mono<Void> errorResponse(
+      ServerHttpRequest request,
+      ServerHttpResponse response,
+      ExceptionResponse exceptionResponse,
+      ExceptionMap exception) {
+
     exceptionResponse =
         getExceptionResponse(
-            new AuthException(
-                ExceptionMap.ERR_AUTH_MSS_008, ExceptionMap.ERR_AUTH_MSS_008.getMessage()),
-            request,
-            ExceptionMap.ERR_AUTH_MSS_008);
-    exceptionResponse.setCorrelationId(CorrelationIdUtils.getCorrelationId());
+            new AuthException(exception, exception.getMessage()), request, exception);
+    exceptionResponse.setSpanId(TraceUtils.getSpanID());
     exceptionResponse.getError().setStackTrace(null);
-    response.setStatus(HttpStatus.FORBIDDEN.value());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(Utilities.convertObjectToJson(exceptionResponse));
-    // response.reset();
+    exceptionResponse.getError().setMessage(exceptionResponse.getError().getExceptionMessage());
+    exceptionResponse.getError().setExceptionMessage(null);
+
+    // Aggiungi header CORS
+    response
+        .getHeaders()
+        .set("Access-Control-Allow-Origin", request.getHeaders().getFirst("origin"));
+    response.getHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.getHeaders().set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    response.getHeaders().set("Access-Control-Allow-Credentials", "true");
+
+    response.setStatusCode(exceptionResponse.getError().getStatus());
+    response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+    DataBuffer responseBuffer =
+        new DefaultDataBufferFactory()
+            .wrap(Mapper.writeObjectToString(exceptionResponse).getBytes());
+    return response.writeWith(Mono.just(responseBuffer));
   }
 }

@@ -1,14 +1,14 @@
 package com.giova.service.moneystats.crypto.asset.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.giova.service.moneystats.app.stats.entity.StatsEntity;
 import com.giova.service.moneystats.app.wallet.entity.WalletEntity;
-import com.giova.service.moneystats.authentication.entity.UserEntity;
 import com.giova.service.moneystats.crypto.operations.entity.OperationsEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
-import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -62,18 +62,28 @@ public class AssetEntity extends GenericEntity {
   private Double trend;
 
   @OrderBy(value = "exitDate DESC")
-  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<OperationsEntity> operations;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_ID", nullable = false)
-  private UserEntity user;
+  @Column(name = "USER_IDENTIFIER", nullable = false)
+  private String userIdentifier;
 
   @ManyToOne
   @JoinColumn(name = "WALLET_ID", nullable = false)
+  @JsonIgnore // 🔹 Evita la serializzazione ciclica
   private WalletEntity wallet;
 
   @OrderBy(value = "date")
-  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<StatsEntity> history;
+
+  @Transient // Questo campo non viene salvato nel database
+  private Long walletId;
+
+  @PostLoad
+  private void init() {
+    if (this.wallet != null) {
+      this.walletId = this.wallet.getId();
+    }
+  }
 }

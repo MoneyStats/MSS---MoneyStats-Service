@@ -1,26 +1,34 @@
 package com.giova.service.moneystats.scheduler;
 
-import com.giova.service.moneystats.crypto.coinGecko.MarketDataService;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.MarketDataService;
+import com.giova.service.moneystats.crypto.marketData.database.MarketDataRefreshCache;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.web.ThreadManager;
+import io.github.giovannilamarmora.utils.logger.MDCUtils;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Component
 public class CronMarketData {
 
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+  @Value(value = "${env:Default}")
+  private String env;
 
   @Value(value = "#{new Boolean(${rest.scheduled.marketData.active:false})}")
   private Boolean isSchedulerActive;
@@ -29,12 +37,15 @@ public class CronMarketData {
   private Integer marketDataQuantity;
 
   @Autowired private MarketDataService marketDataService;
+  @Autowired private MarketDataRefreshCache marketDataRefreshCache;
 
   @Scheduled(
       fixedDelayString = "${rest.scheduled.marketData.delay.end}",
       initialDelayString = "${rest.scheduled.marketData.delay.start}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleAllCryptoAsset() {
+    MDCUtils.registerDefaultMDC(env).subscribe();
+    Map<String, String> contextMap = MDC.getCopyOfContextMap();
     LOG.info("Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {
@@ -42,46 +53,50 @@ public class CronMarketData {
       return;
     }
 
-    // Ottenengo la lista di currency per cui fare il salvataggio a DB
-    // List<String> fiatCurrencies = authService.getCryptoFiatUsersCurrency();
+    // Ottengo la lista di currency per cui fare il salvataggio a DB
     List<String> fiatCurrencies = List.of("USD", "EUR", "GBP");
-
-    // if (fiatCurrencies.isEmpty()) {
-    //  LOG.info("No Currency found on Database, Stopping Scheduler");
-    //  return;
-    // }
 
     // Mi salvo tutti i Market Data presenti a DB in caso di rollback
     List<MarketData> allMarketData = marketDataService.getAllMarketData();
+    marketDataRefreshCache.setMarketData(allMarketData);
 
     // Cancello tutti i dati dalla tabella MarketData
     marketDataService.deleteMarketData();
+    AtomicInteger counter = new AtomicInteger(0);
 
-    try {
-      IntStream.range(0, fiatCurrencies.size())
-          .forEach(
-              index -> {
-                LOG.info(
-                    "Getting and Saving MarketData for currency {}", fiatCurrencies.get(index));
-                List<MarketData> getMarketData = new ArrayList<>();
+    // Uso un Flux per gestire in modo reattivo ogni operazione su ciascuna valuta
+    Flux.fromIterable(fiatCurrencies)
+        .concatMap(
+            currency -> {
+              LOG.info("Getting and Saving MarketData for currency {}", currency);
 
-                getMarketData =
-                    marketDataService.getCoinGeckoMarketData(
-                        fiatCurrencies.get(index), marketDataQuantity);
-                LOG.info("Found {} data of Market Data", getMarketData.size());
-                marketDataService.saveMarketData(getMarketData, fiatCurrencies.get(index));
+              // Chiamata reattiva al servizio per ottenere MarketData
+              return marketDataService
+                  .getCoinGeckoMarketData(currency, marketDataQuantity)
+                  .flatMap(
+                      getMarketData -> {
+                        LOG.info("Found {} data of Market Data", getMarketData.size());
 
-                if (index != fiatCurrencies.size() - 1) ThreadManager.threadSeep(60000);
-              });
-    } catch (Exception e) {
-      LOG.error(
-          "Transaction is rolling back cause an error happen during getting MarketData for a currency");
-      LOG.error("The exception message is {}", e.getMessage());
-      LOG.error("Cleaning MarketData Database");
-      rollBackMarketData(fiatCurrencies, allMarketData);
-      return;
-    }
-    LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+                        // Salvataggio dei dati al DB
+                        return Mono.just(marketDataService.saveMarketData(getMarketData, currency));
+                      })
+                  // Aspetta 60 secondi tra una valuta e l'altra
+                  .delaySubscription(Duration.ofSeconds(counter.getAndIncrement() > 0 ? 90 : 0));
+            })
+        .doOnComplete(
+            () -> {
+              LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+              marketDataRefreshCache.removeMarketData();
+            })
+        .doOnError(
+            e -> {
+              LOG.error("Transaction is rolling back due to an error during MarketData processing");
+              LOG.error("Exception: {}", e.getMessage());
+              rollBackMarketData(fiatCurrencies, allMarketData);
+            })
+        .contextWrite(MDCUtils.contextViewMDC(env))
+        .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
+        .subscribe(); // Necessario per attivare il flusso reattivo
   }
 
   private void rollBackMarketData(List<String> fiatCurrencies, List<MarketData> allMarketData) {

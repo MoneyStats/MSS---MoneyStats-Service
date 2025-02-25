@@ -3,29 +3,29 @@ package com.giova.service.moneystats.crypto;
 import com.giova.service.moneystats.app.stats.dto.Stats;
 import com.giova.service.moneystats.app.wallet.dto.Wallet;
 import com.giova.service.moneystats.crypto.asset.dto.Asset;
-import com.giova.service.moneystats.crypto.coinGecko.dto.MarketData;
+import com.giova.service.moneystats.crypto.marketData.dto.MarketData;
 import com.giova.service.moneystats.crypto.model.CryptoDashboard;
 import com.giova.service.moneystats.crypto.model.DashboardInfo;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.math.MathService;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CryptoMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateBalance(
+  public static void updateBalance(
       List<Stats> listFilter, List<LocalDate> filterDateByYear, AtomicReference<Double> balance) {
     Double balanceFilter =
         listFilter.stream()
-            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(filterDateByYear.size() - 1)))
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.getLast()))
             .findFirst()
             .map(Stats::getBalance)
             .orElse(0.0);
@@ -33,13 +33,13 @@ public class CryptoMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateInitialBalance(
+  public static void updateInitialBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
       AtomicReference<Double> initialBalance) {
     Double initialBalanceFilter =
         listFilter.stream()
-            .filter(lF -> lF.getDate().isEqual(filterDateByYear.get(0)))
+            .filter(lF -> lF.getDate().isEqual(filterDateByYear.getFirst()))
             .findFirst()
             .map(Stats::getBalance)
             .orElse(0.0);
@@ -47,7 +47,7 @@ public class CryptoMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void updateLastBalance(
+  public static void updateLastBalance(
       List<Stats> listFilter,
       List<LocalDate> filterDateByYear,
       AtomicReference<Double> lastBalance,
@@ -69,7 +69,7 @@ public class CryptoMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void mapWalletInThePast(Wallet wallet) throws RuntimeException {
+  public static void mapWalletInThePast(Wallet wallet) {
     // AtomicReference<Double> balance = new AtomicReference<>(0D);
     // AtomicReference<Double> lastBalance = new AtomicReference<>(0.00001D);
 
@@ -96,7 +96,7 @@ public class CryptoMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public void mapDashboardBalanceAndPerformance(
+  public static void mapDashboardBalanceAndPerformance(
       CryptoDashboard dashboard,
       AtomicReference<Double> balance,
       AtomicReference<Double> holdingBalance,
@@ -110,8 +110,6 @@ public class CryptoMapper {
     dashboard.setBtcBalance(MathService.round(balance.get() / BTC_VALUE, 8));
 
     DashboardInfo holding = new DashboardInfo();
-    System.out.println(holdingLastBalance);
-    System.out.println(holdingBalance);
     holding.setPerformance(
         (holdingBalance.get() == 0 || holdingLastBalance.get() == 0
             ? 0D
@@ -144,9 +142,8 @@ public class CryptoMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public CryptoDashboard mapCryptoDashboardWithoutStats(
-      String currency, List<Wallet> getAllWallet, List<Asset> getAllAsset, Double BTC_VALUE)
-      throws UtilsException {
+  public static CryptoDashboard mapCryptoDashboardWithoutStats(
+      String currency, List<Wallet> getAllWallet, List<Asset> getAllAsset, Double BTC_VALUE) {
     CryptoDashboard dashboard = new CryptoDashboard();
     dashboard.setLastUpdate(LocalDate.now());
     dashboard.setCurrency(currency);
@@ -155,7 +152,7 @@ public class CryptoMapper {
     Double lastBalance = 0.0;
     for (Wallet wallet : getAllWallet) {
       wallet.setHistory(null);
-      if (wallet.getAssets() != null && !wallet.getAssets().isEmpty()) {
+      if (!ObjectToolkit.isNullOrEmpty(wallet.getAssets())) {
         for (Asset asset : wallet.getAssets()) {
           balance += asset.getValue();
           if (wallet.getType().equalsIgnoreCase("Holding")) {
@@ -182,57 +179,6 @@ public class CryptoMapper {
     DashboardInfo trading = new DashboardInfo();
     trading.setPerformance(0.0);
     trading.setBalance(0.0);
-    trading.setLastUpdate(dashboard.getLastUpdate());
-    dashboard.setTrading(trading);
-    dashboard.setWallets(getAllWallet);
-    dashboard.setAssets(getAllAsset);
-    return dashboard;
-  }
-
-  @Deprecated
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public CryptoDashboard mapCryptoDashboardWithoutStats_OLD(
-      String currency, List<Wallet> getAllWallet, List<Asset> getAllAsset, Double BTC_VALUE)
-      throws UtilsException {
-    CryptoDashboard dashboard = new CryptoDashboard();
-    dashboard.setLastUpdate(LocalDate.now());
-    dashboard.setCurrency(currency);
-    AtomicReference<Double> balance = new AtomicReference<>(0D);
-    AtomicReference<Double> holdingBalance = new AtomicReference<>(0D);
-    getAllWallet.stream()
-        .peek(
-            wallet -> {
-              wallet.setHistory(null);
-              if (wallet.getAssets() != null && !wallet.getAssets().isEmpty())
-                wallet.getAssets().stream()
-                    .peek(
-                        asset -> {
-                          // TODO: Modica 2 con Asset Price anche giù nel mapDashboard
-                          // asset.setValue(asset.getBalance() * BTC_VALUE);
-                          balance.updateAndGet(v -> v + asset.getValue());
-                          if (wallet.getType().equalsIgnoreCase("Holding"))
-                            holdingBalance.updateAndGet(v -> v + asset.getValue());
-                        })
-                    .collect(Collectors.toList());
-            })
-        .collect(Collectors.toList());
-    dashboard.setBalance(MathService.round(balance.get(), 2));
-    dashboard.setBtcBalance(MathService.round(balance.get() / BTC_VALUE, 8));
-    DashboardInfo performance = new DashboardInfo();
-    performance.setPerformance(0D);
-    performance.setBalance(0D);
-    performance.setLastUpdate(dashboard.getLastUpdate());
-    dashboard.setPerformance(performance);
-
-    DashboardInfo holding = new DashboardInfo();
-    holding.setPerformance(1000D);
-    holding.setBalance(MathService.round(holdingBalance.get(), 2));
-    holding.setLastUpdate(dashboard.getLastUpdate());
-    dashboard.setHoldingLong(holding);
-
-    DashboardInfo trading = new DashboardInfo();
-    trading.setPerformance(0D);
-    trading.setBalance(0D);
     trading.setLastUpdate(dashboard.getLastUpdate());
     dashboard.setTrading(trading);
     dashboard.setWallets(getAllWallet);

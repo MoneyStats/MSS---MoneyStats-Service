@@ -2,8 +2,7 @@ package com.giova.service.moneystats.app.attachments.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -14,21 +13,17 @@ import lombok.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Image extends GenericDTO {
 
-  @NotNull(message = "Name must not be null")
-  @NotEmpty(message = "Name must not be empty")
+  @NotBlank(message = "Name must not be valid")
   private String name;
 
-  @NotNull(message = "fileName must not be null")
-  @NotEmpty(message = "fileName must not be empty")
+  @NotBlank(message = "fileName must not be valid")
   private String fileName;
 
-  @NotNull(message = "contentType must not be null")
-  @NotEmpty(message = "contentType must not be empty")
+  @NotBlank(message = "contentType must not be valid")
   private String contentType;
 
   private long size;
 
-  @NotNull(message = "body must not be null")
-  @NotEmpty(message = "body must not be empty")
+  @NotBlank(message = "body must not be valid")
   private byte[] body;
 }

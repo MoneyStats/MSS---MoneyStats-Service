@@ -8,46 +8,47 @@ services:
       - "8001-8002:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=deploy
+      - APP_ENV=${APP_ENV}
       - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - LOGTAIL_LOGS=${LOGTAIL_LOGS}
-      - LOGTAIL_APP_NAME=${LOGTAIL_APP_NAME}
-      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_CACHE_ENABLE=${REDIS_CACHE_ENABLE}
+      - REDIS_CACHE_HOST=${REDIS_CACHE_HOST}
+      - REDIS_CACHE_PORT=${REDIS_CACHE_PORT}
+      - REDIS_CACHE_USERNAME=${REDIS_CACHE_USERNAME}
+      - REDIS_CACHE_PASSWORD=${REDIS_CACHE_PASSWORD}
       - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
       - TOKEN_INVITE=${TOKEN_INVITE}
-      - JWT_TIME=${JWT_TIME}
       - CONTEXT_PATH=${CONTEXT_PATH}
-      - FE_URL=${FE_URL}
-      - SCHEDULER_MARKET_DATA_ACTIVE=${SCHEDULER_ACTIVE}
-      - SCHEDULER_FOREX_ACTIVE=${SCHEDULER_ACTIVE}
-      #- SCHEDULER_MARKET_DATA_QUANTITY=${SCHEDULER_MARKET_DATA_QUANTITY}
-      #- SCHEDULER_MARKET_DATA_DELAY_START=${SCHEDULER_MARKET_DATA_DELAY_START}
-      #- SCHEDULER_MARKET_DATA_DELAY_END=${SCHEDULER_MARKET_DATA_DELAY_END}
-      - REST_CLIENT_EXCHANGE_RATES_API_TOKEN=${REST_CLIENT_EXCHANGE_RATES_API_TOKEN}
+      - SCHEDULER_MARKET_DATA_ACTIVE=${SCHEDULER_MARKET_DATA_ACTIVE}
+      - SCHEDULER_MARKET_DATA_QUANTITY=${SCHEDULER_MARKET_DATA_QUANTITY}
+      - SCHEDULER_MARKET_DATA_DELAY_START=${SCHEDULER_MARKET_DATA_DELAY_START}
+      - SCHEDULER_MARKET_DATA_DELAY_END=${SCHEDULER_MARKET_DATA_DELAY_END}
+      - SCHEDULER_FOREX_ACTIVE=${SCHEDULER_FOREX_ACTIVE}
+      - SCHEDULER_FOREX_DELAY_START=${SCHEDULER_FOREX_DELAY_START}
+      - SCHEDULER_FOREX_DELAY_END=${SCHEDULER_FOREX_DELAY_END}
       - REST_CLIENT_ANY_API_TOKEN=${REST_CLIENT_ANY_API_TOKEN}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
-      - SHOW_UTILS_EXCEPTION_STACKTRACE=${SHOW_UTILS_EXCEPTION_STACKTRACE}
+      - ACCESS_SPHERE_URL=${ACCESS_SPHERE_URL}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_ID_TOKEN=${CLIENT_ID_TOKEN}
+      - GCLOUD_PROJECT=${GCLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    volumes:
+      # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
+      - microservice:/secrets:ro
     deploy:
-      replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
-      #update_config:
-      #  parallelism: 1
-      #  delay: 10s
-      #restart_policy:
-      #  condition: on-failure
-      #placement:
-      #  constraints:
-      #    - node.role == manager
+      replicas: 1
     networks:
       docker-network:
         aliases:
           - stg.moneystats.service
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend-service.rule=Host(`stg.moneystats.service`)"
-      - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
 
 networks:
   docker-network:
+    external: true
+
+volumes:
+  microservice:
     external: true

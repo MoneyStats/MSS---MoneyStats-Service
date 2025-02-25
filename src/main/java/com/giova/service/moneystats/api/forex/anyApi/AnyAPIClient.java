@@ -45,7 +45,7 @@ public class AnyAPIClient {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public ResponseEntity<Rates> getAnyApiForexData(String currency) {
+  public Mono<ResponseEntity<Rates>> getAnyApiForexData(String currency) {
     Map<String, Object> params = new HashMap<>();
     params.put("base", currency);
     params.put("apiKey", apiKey);
@@ -55,25 +55,19 @@ public class AnyAPIClient {
 
     Mono<ResponseEntity<Rates>> response =
         webClientRest.perform(
-            HttpMethod.GET,
-            UtilsUriBuilder.toBuild().set(getRates, params),
-            null,
-            headers,
-            Rates.class);
+            HttpMethod.GET, UtilsUriBuilder.buildUri(getRates, params), null, headers, Rates.class);
     return validateAndGetExchangeRates(response);
   }
 
-  private ResponseEntity<Rates> validateAndGetExchangeRates(
+  private Mono<ResponseEntity<Rates>> validateAndGetExchangeRates(
       Mono<ResponseEntity<Rates>> exchangeRatesMono) {
-    ResponseEntity<Rates> exchangeRates = exchangeRatesMono.block();
-
-    if (exchangeRates == null || exchangeRates.getBody() == null) {
-      LOG.error("ExchangeRate Response is null");
-      throw new AnyAPIException("The Response of WebClient body is null");
-    }
-
-    return ResponseEntity.status(exchangeRates.getStatusCode())
-        .headers(exchangeRates.getHeaders())
-        .body(exchangeRates.getBody());
+    return exchangeRatesMono.map(
+        exchangeRates -> {
+          if (exchangeRates == null || exchangeRates.getBody() == null) {
+            LOG.error("ExchangeRate Response is null");
+            throw new AnyAPIException("The Response of WebClient body is null");
+          }
+          return exchangeRates;
+        });
   }
 }

@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.giova.service.moneystats.api.emailSender.dto.EmailContent;
 import com.giova.service.moneystats.api.emailSender.dto.EmailResponse;
-import com.giova.service.moneystats.exception.ExceptionMap;
+import com.giova.service.moneystats.exception.config.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -20,6 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
+import reactor.core.publisher.Mono;
 
 @Logged
 @Component
@@ -40,7 +41,7 @@ public class EmailSenderService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public EmailResponse sendEmail(
+  public Mono<EmailResponse> sendEmail(
       String templatePath, Map<String, String> params, EmailContent emailContent)
       throws UtilsException {
     Resource resource = resourceLoader.getResource("classpath:templates/" + templatePath);
@@ -50,14 +51,19 @@ public class EmailSenderService {
     }
 
     emailContent.setText(template);
-    EmailResponse responseEm = emailSenderClient.sendEmail(emailContent).getBody();
-    if (responseEm == null) {
-      LOG.error("Error on sending email");
-      throw new EmailException(
-          ExceptionMap.ERR_EMAIL_SEND_001.getMessage()
-              + "Error on sending email for "
-              + emailContent.getFrom());
-    }
-    return responseEm;
+    return emailSenderClient
+        .sendEmail(emailContent)
+        .map(
+            emailResponseResponseEntity -> {
+              EmailResponse responseEm = emailResponseResponseEntity.getBody();
+              if (responseEm == null) {
+                LOG.error("Error on sending email");
+                throw new EmailException(
+                    ExceptionMap.ERR_EMAIL_SEND_001.getMessage()
+                        + "Error on sending email for "
+                        + emailContent.getFrom());
+              }
+              return responseEm;
+            });
   }
 }

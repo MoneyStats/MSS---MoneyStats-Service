@@ -24,6 +24,9 @@ public class CryptoDashboard {
   private DashboardInfo performance;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private List<Integer> yearsWalletStats;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<LocalDate> statsAssetsDays;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)

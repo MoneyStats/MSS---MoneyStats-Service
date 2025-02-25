@@ -1,12 +1,12 @@
 {
   "status": 200,
-  "message": "Attachment file Successfully uploaded!",
-  "correlationId": "cbbd8e87-7594-46fb-8e5f-8d72e18f88ba",
+  "message": "Attachment image.jpg Successfully uploaded!",
+  "spanId": "091382de-8886-48c7-b475-a7c39fbaed19",
   "data": {
-    "name": "file",
-    "fileName": "2641576.webp",
-    "contentType": "image/webp",
-    "size": 389618,
+    "name": "image.jpg",
+    "fileName": "image.jpg",
+    "contentType": "image/jpeg",
+    "size": 1002759,
     "body": "image"
   }
 }
