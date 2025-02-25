@@ -8,7 +8,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,16 +46,16 @@ public class StatsController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@wallets-full-list_response.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@wallets-full-list_response.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE/*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> addStats(
       @RequestBody

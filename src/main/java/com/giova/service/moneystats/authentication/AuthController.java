@@ -6,7 +6,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -32,16 +31,16 @@ public interface AuthController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@check-code.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@check-code.json")*/))
   @ApiResponse(
       responseCode = "400",
       description = "Username or Email already present",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-invitation-code.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-invitation-code.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> checkRegistrationToken(
       @RequestParam @Valid @Schema(description = "Invitation Code to register")

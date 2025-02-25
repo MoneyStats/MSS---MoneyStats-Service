@@ -6,7 +6,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -29,16 +28,16 @@ public interface MarketDataController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@market-data.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@market-data.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> getMarketDataByCurrency(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
@@ -61,16 +60,16 @@ public interface MarketDataController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@market-data.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@market-data.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> getMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
@@ -95,8 +94,8 @@ public interface MarketDataController {
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> deleteMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
@@ -117,16 +116,16 @@ public interface MarketDataController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@import-marketData.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@import-marketData.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE/*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   ResponseEntity<Response> importMarketData(
       @RequestHeader(HttpHeaders.AUTHORIZATION)

@@ -7,7 +7,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,16 +35,16 @@ public class AppController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@dashboard.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@dashboard.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getDashboard(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
@@ -63,16 +62,16 @@ public class AppController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@resume.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@resume.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getResume(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
@@ -95,16 +94,16 @@ public class AppController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@resume.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@resume.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE/*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public ResponseEntity<Response> getHistory(
       @RequestHeader(HttpHeaders.AUTHORIZATION)

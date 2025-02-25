@@ -4,7 +4,6 @@ import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -33,24 +32,24 @@ public interface ImageController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@upload.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+               examples = @ExampleObject(value = "@upload.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @ApiResponse(
       responseCode = "404",
       description = "Image not found",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<?> getAttachment(
       @PathVariable(value = "imageName")
           @Valid
@@ -81,32 +80,32 @@ public interface ImageController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@upload.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@upload.json")*/))
   @ApiResponse(
       responseCode = "400",
       description = "File To Larger",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@file-to-big.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@file-to-big.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   @ApiResponse(
       responseCode = "404",
       description = "Image not found",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   Mono<ResponseEntity<Response>> uploadAttachment(
       @RequestPart(name = "file")
           @Valid
@@ -135,11 +134,9 @@ public interface ImageController {
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
+      content = @Content(schema = @Schema(implementation = ExceptionResponse.class) /*,
               mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> removeAttachment(
       @PathVariable(value = "imageName")
           @Valid

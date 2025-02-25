@@ -7,7 +7,6 @@ import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -38,8 +37,8 @@ public interface SettingsController {
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@unprocessable-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@unprocessable-exception.json")*/))
   Mono<ResponseEntity<Response>> bugReport(
       @RequestBody
           @Valid
@@ -63,16 +62,16 @@ public interface SettingsController {
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@backup.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@backup.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> backupData(
       @RequestHeader(HttpHeaders.AUTHORIZATION)
           @Valid
@@ -100,8 +99,8 @@ public interface SettingsController {
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> restoreData(
       @RequestBody @Valid @Schema(description = "Wallets to restore", implementation = Wallet.class)
           List<Wallet> wallets,
@@ -132,23 +131,23 @@ public interface SettingsController {
    * @return Cache cleaned
    */
   @PatchMapping(value = "/cache/clean", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(description = "API to clean the cache", summary = "Cache Clean", tags = "Crypto")
+  @Operation(description = "API to clean the cache", summary = "Cache Clean", tags = "Settings")
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",
       content =
           @Content(
               schema = @Schema(implementation = Response.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@cache-clean.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@cache-clean.json")*/))
   @ApiResponse(
       responseCode = "401",
       description = "Invalid Token",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@invalid-token-exception.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE /*,
+              examples = @ExampleObject(value = "@invalid-token-exception.json")*/))
   ResponseEntity<Response> cleanCache(
       ServerWebExchange exchange,
       @RequestParam(value = "isUserInfo", required = false, defaultValue = "false")
