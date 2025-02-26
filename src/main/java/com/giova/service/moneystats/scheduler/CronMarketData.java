@@ -46,10 +46,10 @@ public class CronMarketData {
   public void scheduleAllCryptoAsset() {
     MDCUtils.registerDefaultMDC(env).subscribe();
     Map<String, String> contextMap = MDC.getCopyOfContextMap();
-    LOG.info("Scheduler Started at {}", LocalDateTime.now());
+    LOG.info("[Market Data] Scheduler Started at {}", LocalDateTime.now());
 
     if (!isSchedulerActive) {
-      LOG.info("Scheduler Active status is NOT-ACTIVE, Stopping Scheduler");
+      LOG.info("[Market Data] Scheduler Active status is NOT-ACTIVE, Stopping Scheduler");
       return;
     }
 
@@ -68,14 +68,15 @@ public class CronMarketData {
     Flux.fromIterable(fiatCurrencies)
         .concatMap(
             currency -> {
-              LOG.info("Getting and Saving MarketData for currency {}", currency);
+              LOG.info("[Market Data] Getting and Saving MarketData for currency {}", currency);
 
               // Chiamata reattiva al servizio per ottenere MarketData
               return marketDataService
                   .getCoinGeckoMarketData(currency, marketDataQuantity)
                   .flatMap(
                       getMarketData -> {
-                        LOG.info("Found {} data of Market Data", getMarketData.size());
+                        LOG.info(
+                            "[Market Data] Found {} data of Market Data", getMarketData.size());
 
                         // Salvataggio dei dati al DB
                         return Mono.just(marketDataService.saveMarketData(getMarketData, currency));
@@ -85,13 +86,14 @@ public class CronMarketData {
             })
         .doOnComplete(
             () -> {
-              LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+              LOG.info("[Market Data] Scheduler Finished at {}", LocalDateTime.now());
               marketDataRefreshCache.removeMarketData();
             })
         .doOnError(
             e -> {
-              LOG.error("Transaction is rolling back due to an error during MarketData processing");
-              LOG.error("Exception: {}", e.getMessage());
+              LOG.error(
+                  "[Market Data] Transaction is rolling back due to an error during MarketData processing");
+              LOG.error("[Market Data] Exception: {}", e.getMessage());
               rollBackMarketData(fiatCurrencies, allMarketData);
             })
         .contextWrite(MDCUtils.contextViewMDC(env))
@@ -103,7 +105,7 @@ public class CronMarketData {
     marketDataService.deleteMarketData();
     fiatCurrencies.forEach(
         fc -> {
-          LOG.info("Found {} data of Market Data to RollBack", allMarketData.size());
+          LOG.info("[Market Data] Found {} data of Market Data to RollBack", allMarketData.size());
           if (!allMarketData.isEmpty())
             marketDataService.saveMarketData(
                 allMarketData.stream()

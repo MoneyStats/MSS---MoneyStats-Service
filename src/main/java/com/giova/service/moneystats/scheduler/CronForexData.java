@@ -49,7 +49,7 @@ public class CronForexData {
     List<String> fiatCurrencies = List.of("USD", "EUR", "GBP");
 
     if (fiatCurrencies.isEmpty()) {
-      LOG.info("No Currency found on Database, Stopping Scheduler");
+      LOG.info("[Forex] No Currency found on Database, Stopping Scheduler");
       return;
     }
 
@@ -66,30 +66,32 @@ public class CronForexData {
                     .doOnNext(
                         forexData -> {
                           LOG.info(
-                              "Found {} rates of Forex Data for {}",
+                              "[Forex] Found {} rates of Forex Data for {}",
                               forexData.getQuotes().size(),
                               currency);
                           forexDataService.saveForexData(forexData);
                         })
                     .contextWrite(MDCUtils.contextViewMDC(env))
                     .doOnEach(signal -> MDCUtils.setContextMap(contextMap)))
-        .doOnTerminate(() -> LOG.info("All operations completed"))
+        .doOnTerminate(() -> LOG.info("[Forex] All operations completed"))
         .doOnError(
             throwable -> {
-              LOG.error("Transaction is rolling back due to an error: {}", throwable.getMessage());
-              LOG.error("Cleaning Forex Database");
+              LOG.error(
+                  "[Forex] Transaction is rolling back due to an error: {}",
+                  throwable.getMessage());
+              LOG.error("[Forex] Cleaning Forex Database");
               rollBackForexData(fiatCurrencies, allForexData);
             })
         .subscribe();
 
-    LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+    LOG.info("[Forex] Scheduler Finished at {}", LocalDateTime.now());
   }
 
   private void rollBackForexData(List<String> fiatCurrencies, List<ForexData> forexDataList) {
     forexDataService.deleteForexData();
     fiatCurrencies.forEach(
         fc -> {
-          LOG.info("Found {} data of Forex Data to RollBack", forexDataList.size());
+          LOG.info("[Forex] Found {} data of Forex Data to RollBack", forexDataList.size());
           if (!forexDataList.isEmpty())
             forexDataService.saveForexData(
                 forexDataList.stream()
