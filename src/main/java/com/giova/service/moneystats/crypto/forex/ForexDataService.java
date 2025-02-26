@@ -104,8 +104,11 @@ public class ForexDataService {
         .getAnyApiForexData(currency)
         .flatMap(
             exchangeRatesList -> {
-              if (!ObjectToolkit.isNullOrEmpty(exchangeRatesList.getBody())) {
-                LOG.error("Error on fetching Exchange Rates");
+              if (ObjectToolkit.isNullOrEmpty(exchangeRatesList.getBody())) {
+                LOG.error(
+                    "Error on fetching Exchange Rates for {}, body {}",
+                    currency,
+                    exchangeRatesList.getBody());
                 throw new ForexDataException(
                     "An error occurred during calling Exchange Rates, empty body");
               }

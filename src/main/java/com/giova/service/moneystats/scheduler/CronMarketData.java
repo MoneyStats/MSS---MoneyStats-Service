@@ -84,17 +84,17 @@ public class CronMarketData {
                   // Aspetta 60 secondi tra una valuta e l'altra
                   .delaySubscription(Duration.ofSeconds(counter.getAndIncrement() > 0 ? 90 : 0));
             })
-        .doOnComplete(
-            () -> {
-              LOG.info("[Market Data] Scheduler Finished at {}", LocalDateTime.now());
-              marketDataRefreshCache.removeMarketData();
-            })
         .doOnError(
             e -> {
               LOG.error(
                   "[Market Data] Transaction is rolling back due to an error during MarketData processing");
               LOG.error("[Market Data] Exception: {}", e.getMessage());
               rollBackMarketData(fiatCurrencies, allMarketData);
+            })
+        .doOnTerminate(
+            () -> {
+              marketDataRefreshCache.removeMarketData();
+              LOG.info("[Market Data] Scheduler Finished at {}", LocalDateTime.now());
             })
         .contextWrite(MDCUtils.contextViewMDC(env))
         .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
