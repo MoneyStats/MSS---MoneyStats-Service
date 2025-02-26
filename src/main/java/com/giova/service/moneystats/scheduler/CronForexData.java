@@ -1,6 +1,5 @@
 package com.giova.service.moneystats.scheduler;
 
-import com.giova.service.moneystats.api.forex.anyApi.AnyAPIException;
 import com.giova.service.moneystats.crypto.forex.ForexDataService;
 import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -32,8 +31,8 @@ public class CronForexData {
   @Autowired private ForexDataService forexDataService;
 
   @Scheduled(
-      fixedDelayString = "${rest.scheduled.marketData.delay.end}",
-      initialDelayString = "${rest.scheduled.marketData.delay.start}")
+      fixedDelayString = "${rest.scheduled.forex.delay.end}",
+      initialDelayString = "${rest.scheduled.forex.delay.start}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleAllCryptoAsset() {
     MDCUtils.registerDefaultMDC(env).subscribe();
@@ -50,7 +49,7 @@ public class CronForexData {
     List<String> fiatCurrencies = List.of("USD", "EUR", "GBP");
 
     if (fiatCurrencies.isEmpty()) {
-      LOG.info("No Currency found on Database, Stopping Scheduler");
+      LOG.info("[Forex] No Currency found on Database, Stopping Scheduler");
       return;
     }
 
@@ -67,35 +66,32 @@ public class CronForexData {
                     .doOnNext(
                         forexData -> {
                           LOG.info(
-                              "Found {} rates of Forex Data for {}",
+                              "[Forex] Found {} rates of Forex Data for {}",
                               forexData.getQuotes().size(),
                               currency);
                           forexDataService.saveForexData(forexData);
                         })
                     .contextWrite(MDCUtils.contextViewMDC(env))
-                    .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
-                    .onErrorMap(
-                        throwable -> {
-                          // Mapping the error to propagate it through the stream
-                          return new AnyAPIException("Error processing currency: " + currency);
-                        }))
-        .doOnTerminate(() -> LOG.info("All operations completed"))
+                    .doOnEach(signal -> MDCUtils.setContextMap(contextMap)))
+        .doOnTerminate(() -> LOG.info("[Forex] All operations completed"))
         .doOnError(
             throwable -> {
-              LOG.error("Transaction is rolling back due to an error: {}", throwable.getMessage());
-              LOG.error("Cleaning Forex Database");
+              LOG.error(
+                  "[Forex] Transaction is rolling back due to an error: {}",
+                  throwable.getMessage());
+              LOG.error("[Forex] Cleaning Forex Database");
               rollBackForexData(fiatCurrencies, allForexData);
             })
         .subscribe();
 
-    LOG.info("Scheduler Finished at {}", LocalDateTime.now());
+    LOG.info("[Forex] Scheduler Finished at {}", LocalDateTime.now());
   }
 
   private void rollBackForexData(List<String> fiatCurrencies, List<ForexData> forexDataList) {
     forexDataService.deleteForexData();
     fiatCurrencies.forEach(
         fc -> {
-          LOG.info("Found {} data of Forex Data to RollBack", forexDataList.size());
+          LOG.info("[Forex] Found {} data of Forex Data to RollBack", forexDataList.size());
           if (!forexDataList.isEmpty())
             forexDataService.saveForexData(
                 forexDataList.stream()

@@ -4,7 +4,7 @@ server:
     context-path: ${CONTEXT_PATH}
 spring:
   application:
-    name: MoneyStats Service
+    name: ${APPLICATION_NAME}
     starter-log: true
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
