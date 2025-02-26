@@ -31,8 +31,8 @@ public class CronForexData {
   @Autowired private ForexDataService forexDataService;
 
   @Scheduled(
-      fixedDelayString = "${rest.scheduled.marketData.delay.end}",
-      initialDelayString = "${rest.scheduled.marketData.delay.start}")
+      fixedDelayString = "${rest.scheduled.forex.delay.end}",
+      initialDelayString = "${rest.scheduled.forex.delay.start}")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void scheduleAllCryptoAsset() {
     MDCUtils.registerDefaultMDC(env).subscribe();
