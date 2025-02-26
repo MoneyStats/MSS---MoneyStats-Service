@@ -5,9 +5,11 @@ import com.giova.service.moneystats.crypto.forex.dto.ForexData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -55,11 +57,12 @@ public class CronForexData {
 
     // Mi salvo tutti i Market Data presenti a DB in caso di rollback
     List<ForexData> allForexData = forexDataService.getAllForexData();
+    AtomicInteger counter = new AtomicInteger(0);
 
     // Cancello tutti i dati dalla tabella MarketData
     forexDataService.deleteForexData();
     Flux.fromIterable(fiatCurrencies)
-        .flatMap(
+        .concatMap(
             currency ->
                 forexDataService
                     .getFromExchangeRateForexData(currency)
@@ -71,9 +74,7 @@ public class CronForexData {
                               currency);
                           forexDataService.saveForexData(forexData);
                         })
-                    .contextWrite(MDCUtils.contextViewMDC(env))
-                    .doOnEach(signal -> MDCUtils.setContextMap(contextMap)))
-        .doOnTerminate(() -> LOG.info("[Forex] All operations completed"))
+                    .delaySubscription(Duration.ofSeconds(counter.getAndIncrement() > 0 ? 5 : 0)))
         .doOnError(
             throwable -> {
               LOG.error(
@@ -82,9 +83,14 @@ public class CronForexData {
               LOG.error("[Forex] Cleaning Forex Database");
               rollBackForexData(fiatCurrencies, allForexData);
             })
+        .doOnTerminate(
+            () -> {
+              LOG.info("[Forex] All operations completed");
+              LOG.info("[Forex] Scheduler Finished at {}", LocalDateTime.now());
+            })
+        .contextWrite(MDCUtils.contextViewMDC(env))
+        .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
         .subscribe();
-
-    LOG.info("[Forex] Scheduler Finished at {}", LocalDateTime.now());
   }
 
   private void rollBackForexData(List<String> fiatCurrencies, List<ForexData> forexDataList) {
